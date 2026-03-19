@@ -5,7 +5,7 @@ from sqlalchemy import func
 from typing import List, Dict, Any
 from datetime import datetime, timedelta
 from database import get_db
-from models.models import Course, Enrollment, User, UserRole, Analytics
+from models.models import Course, Enrollment, User, UserRole, Analytics, SeatExpansionLog
 from utils.auth import check_admin, get_current_user
 
 router = APIRouter(prefix="/analytics", tags=["analytics"])
@@ -389,3 +389,89 @@ async def get_recommendations(db: AsyncSession = Depends(get_db), current_user=D
             "popularity": row[3]
         } for row in data]
     }
+
+@router.get("/admin-vitals")
+async def get_admin_vitals(
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(check_admin)
+):
+    try:
+        # 1. Dashboard Stats & summary
+        stats_res = await get_dashboard_stats(db, current_user)
+        summary = stats_res.get("data", {})
+
+        # 2. Enrollment Trends
+        trends_res = await get_enrollment_trends(db, current_user)
+        trends = trends_res.get("data", [])
+
+        # 3. Course Popularity
+        pop_res = await get_course_popularity(db, current_user)
+        top_courses = pop_res.get("data", [])
+
+        # 4. Demand Prediction
+        pred_res = await get_demand_prediction(db)
+        prediction = pred_res.get("data", [])
+
+        # 5. Department Stats
+        dept_stats_res = await get_dept_stats(db)
+        dept_stats = dept_stats_res.get("data", [])
+
+        # 6. Course Inventory (optimized with join)
+        course_query = select(
+            Course.id, Course.course_code, Course.course_name, Course.department,
+            Course.seat_limit
+        ).order_by(Course.course_name)
+        
+        course_objs = (await db.execute(course_query)).all()
+        final_courses = []
+        for r in course_objs:
+            # Get exact enrollment count for each
+            count = await db.scalar(select(func.count(Enrollment.id)).where(Enrollment.course_id == r[0]))
+            final_courses.append({
+                "id": r[0],
+                "course_code": r[1],
+                "course_name": r[2],
+                "department": r[3],
+                "seat_limit": r[4],
+                "enrolled_students": count or 0
+            })
+
+        # 7. Department Utilization
+        util_res = await get_department_utilization(db, current_user)
+        dept_util = util_res.get("data", [])
+
+        # 8. Heatmap
+        hm_res = await get_enrollment_heatmap(db)
+        heatmap = hm_res if isinstance(hm_res, list) else []
+
+        # 9. Seat Expansion Logs
+        log_query = select(SeatExpansionLog, Course).join(Course, Course.id == SeatExpansionLog.course_id).order_by(SeatExpansionLog.timestamp.desc()).limit(15)
+        logs_res = (await db.execute(log_query)).all()
+        logs_data = []
+        for log, course in logs_res:
+            logs_data.append({
+                "id": log.id,
+                "course_name": course.course_name,
+                "old_limit": log.old_limit,
+                "new_limit": log.new_limit,
+                "increment_by": log.increment_by,
+                "timestamp": log.timestamp
+            })
+
+        return {
+            "status": "success",
+            "data": {
+                "summary": summary,
+                "trends": trends,
+                "topCourses": top_courses,
+                "prediction": prediction,
+                "deptStats": dept_stats,
+                "courses": final_courses,
+                "deptUtilization": dept_util,
+                "heatmap": heatmap,
+                "expansionLogs": logs_data
+            }
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+

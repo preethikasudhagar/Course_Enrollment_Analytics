@@ -134,7 +134,8 @@ export const analyticsService = {
         params: { format, report_type: reportType },
         responseType: 'blob'
     }),
-    getSeatExpansionLogs: async () => await api.get('/seat-expansion-logs')
+    getSeatExpansionLogs: async () => await api.get('/seat-expansion-logs'),
+    getAdminVitals: async () => await api.get('/analytics/admin-vitals')
 };
 
 export const enrollmentService = {

@@ -65,30 +65,24 @@ const AdminDashboard = () => {
     }, []);
 
     const fetchAdminData = async () => {
-        const safeFetch = async (promise, fallback) => {
-            try {
-                const res = await promise;
-                return res ?? fallback;
-            } catch (e) {
-                console.warn('Admin dashboard API failed:', e);
-                return fallback;
-            }
-        };
-
         try {
             setLoading(true);
             setError(null);
-            const [sRes, tRes, uRes, pRes, dRes, cRes, duRes, hmRes, logsRes] = await Promise.all([
-                safeFetch(analyticsService.getDashboardStats(), null),
-                safeFetch(analyticsService.getEnrollmentTrends(), []),
-                safeFetch(analyticsService.getPopularity(), []),
-                safeFetch(analyticsService.getDemandPrediction(), []),
-                safeFetch(analyticsService.getDeptStats(), []),
-                safeFetch(courseService.getAll(), []),
-                safeFetch(analyticsService.getDeptUtilization(), []),
-                safeFetch(analyticsService.getHeatmap(), []),
-                safeFetch(analyticsService.getSeatExpansionLogs(), [])
-            ]);
+            
+            const data = await analyticsService.getAdminVitals();
+            if (!data) throw new Error("No data received");
+
+            const { 
+                summary: sRes, 
+                trends: tRes, 
+                topCourses: uRes, 
+                prediction: pRes, 
+                deptStats: dRes, 
+                courses: cRes, 
+                deptUtilization: duRes, 
+                heatmap: hmRes, 
+                expansionLogs: logsRes 
+            } = data;
 
             setSummary(sRes || {
                 total_students: 0,
@@ -98,6 +92,7 @@ const AdminDashboard = () => {
                 most_popular_course_enrollment_count: 0,
                 utilization: 0
             });
+
             setCharts({
                 trends: Array.isArray(tRes) ? tRes : [],
                 topCourses: (Array.isArray(uRes) ? uRes : []).map(p => ({
@@ -123,7 +118,7 @@ const AdminDashboard = () => {
             setExpansionLogs(Array.isArray(logsRes) ? logsRes : []);
         } catch (error) {
             console.error("Dashboard fetch error:", error);
-            setError(null);
+            setError("Failed to load dashboard statistics.");
         } finally {
             setLoading(false);
         }
