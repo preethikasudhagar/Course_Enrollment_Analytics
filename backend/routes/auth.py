@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, BackgroundTasks
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
@@ -215,12 +215,12 @@ async def verify_otp(req: VerifyOTPRequest, db: AsyncSession = Depends(get_db)):
     return {"message": "OTP verified successfully"}
 
 @router.post("/seed-institutional-data")
-async def seed_institutional_data_endpoint(db: AsyncSession = Depends(get_db)):
-    from .auth import seed_admin # It's already here but we want the BIG seed
-    # Import the actual seeding logic or just paste it here for one-off
-    from seed_institutional_data import seed_data
-    await seed_data()
-    return {"status": "success", "message": "Institutional data seeded successfully"}
+async def seed_institutional_data_endpoint(background_tasks: BackgroundTasks):
+    async def run_seed():
+        from seed_institutional_data import seed_data
+        await seed_data()
+    background_tasks.add_task(run_seed)
+    return {"status": "accepted", "message": "Seeding started in background. Check backend logs for completion."}
 
 @router.post("/reset-password")
 async def reset_password(req: ResetPasswordRequest, db: AsyncSession = Depends(get_db)):
