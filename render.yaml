@@ -13,11 +13,10 @@ services:
         value: 8000
 
   # Frontend Static Site
-  - type: static_site
+  - type: static
     name: course-analytics-frontend
-    env: static
     buildCommand: npm install && npm run build
-    staticPublishDir: frontend/dist
+    staticPublishPath: frontend/dist
     plan: free
     envVars:
       - key: VITE_API_URL
