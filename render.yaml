@@ -3,20 +3,6 @@ services:
   - type: web
     name: course-analytics-backend
     env: docker
-    dockerfilePath: backend/Dockerfile
-    dockerContext: backend
-    plan: free
-    envVars:
-      - key: DATABASE_URL
-        sync: false # Set this in the Render Dashboard (Aiven MySQL URL)
-      - key: PORT
-        value: 8000
-
-  # Frontend Static Site
-  - type: web
-    name: course-analytics-frontend
-    runtime: static
-    buildCommand: npm install && npm run build
     staticPublishPath: frontend/dist
     envVars:
       - key: VITE_API_URL
