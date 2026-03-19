@@ -96,4 +96,4 @@ course-enrollment-analytics/
 This project was developed to solve the logistical challenges of manual course administration. By leveraging real-time data and automated logic, it reduces administrative overhead while providing students with a transparent and efficient enrollment experience.
 
 ---
-*Created with ❤️ by [Preethika Sudhagar](https://github.com/preethikasudhagar)*
+*Created by [Preethika Sudhagar](https://github.com/preethikasudhagar)*
