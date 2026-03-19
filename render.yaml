@@ -1,0 +1,32 @@
+services:
+  # Backend Web Service
+  - type: web
+    name: course-analytics-backend
+    env: docker
+    dockerfilePath: backend/Dockerfile
+    dockerContext: .
+    plan: free
+    envVars:
+      - key: DATABASE_URL
+        sync: false # Set this in the Render Dashboard (Aiven MySQL URL)
+      - key: PORT
+        value: 8000
+
+  # Frontend Static Site
+  - type: static
+    name: course-analytics-frontend
+    env: static
+    buildCommand: npm install && npm run build
+    staticPublishDir: frontend/dist
+    plan: free
+    envVars:
+      - key: VITE_API_URL
+        fromService:
+          type: web
+          name: course-analytics-backend
+          property: host
+    # For Vite apps on Render, we need to handle routing for SPA
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
