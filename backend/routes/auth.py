@@ -217,10 +217,97 @@ async def verify_otp(req: VerifyOTPRequest, db: AsyncSession = Depends(get_db)):
 @router.post("/seed-institutional-data")
 async def seed_institutional_data_endpoint(background_tasks: BackgroundTasks):
     async def run_seed():
-        from seed_institutional_data import seed_data
-        await seed_data()
+        import random
+        import logging
+        from datetime import datetime
+        from sqlalchemy import text
+        from database import AsyncSessionLocal, init_db
+        from models.models import User, Course, Enrollment, Notification, Analytics, UserRole
+        from utils.auth import get_password_hash
+        logger = logging.getLogger("seeder")
+        try:
+            logger.info("Seeding: init_db...")
+            await init_db()
+            async with AsyncSessionLocal() as db:
+                await db.execute(text("SET FOREIGN_KEY_CHECKS = 0;"))
+                for table in ["enrollments", "notifications", "analytics", "courses", "users"]:
+                    await db.execute(text(f"TRUNCATE TABLE {table};"))
+                await db.execute(text("SET FOREIGN_KEY_CHECKS = 1;"))
+                await db.commit()
+                admin = User(name="Institutional Admin", email="admin@example.com", password=get_password_hash("admin123"), role=UserRole.ADMIN)
+                faculty = User(name="Lead Faculty", email="faculty@example.com", password=get_password_hash("faculty123"), role=UserRole.FACULTY)
+                db.add_all([admin, faculty])
+                await db.commit()
+                departments = ["Computer Science", "Information Technology", "Artificial Intelligence", "Data Science", "Electronics"]
+                first_names = ["Rahul", "Priya", "Arjun", "Sneha", "Kavya", "Nikhil", "Ananya", "Rohit", "Divya", "Aditya"]
+                last_names = ["Sharma", "Patel", "Mehta", "Reddy", "Iyer", "Verma", "Gupta", "Nair", "Menon", "Singh"]
+                students = []
+                for i in range(50):
+                    fname = random.choice(first_names)
+                    lname = random.choice(last_names)
+                    email = f"{fname.lower()}.{lname.lower()}{i}@university.edu"
+                    student = User(name=f"{fname} {lname}", email=email, password=get_password_hash("student123"), role=UserRole.STUDENT)
+                    db.add(student)
+                    students.append(student)
+                await db.commit()
+                for s in students: await db.refresh(s)
+                course_configs = [
+                    ("CS201", "Data Structures", "Computer Science", 45),
+                    ("CS220", "Web Development", "Information Technology", 50),
+                    ("CS210", "Database Systems", "Software Engineering", 40),
+                    ("CS305", "Machine Learning", "Artificial Intelligence", 35),
+                    ("CS330", "Cloud Computing", "Computer Science", 30),
+                    ("CS301", "Operating Systems", "Computer Science", 40),
+                    ("CS401", "Artificial Intelligence", "Artificial Intelligence", 30),
+                    ("CS320", "Computer Networks", "Information Technology", 35),
+                    ("CS350", "Cyber Security", "Information Technology", 25),
+                    ("CS360", "Data Analytics", "Data Science", 40),
+                    ("CS370", "Software Engineering", "Software Engineering", 45),
+                    ("CS450", "Deep Learning", "Artificial Intelligence", 20)
+                ]
+                courses = []
+                for code, name, dept, limit in course_configs:
+                    course = Course(course_code=code, course_name=name, department=dept, seat_limit=limit)
+                    db.add(course)
+                    courses.append(course)
+                await db.commit()
+                for c in courses: await db.refresh(c)
+                high_demand = ["Machine Learning", "Data Analytics", "Web Development"]
+                medium_demand = ["Data Structures", "Database Systems", "Cloud Computing"]
+                enrollments_count = 0
+                used_pairs = set()
+                while enrollments_count < 100:
+                    s = random.choice(students)
+                    c = random.choice(courses)
+                    if (s.id, c.id) in used_pairs: continue
+                    if c.course_name in high_demand: prob = 0.9
+                    elif c.course_name in medium_demand: prob = 0.6
+                    else: prob = 0.3
+                    if random.random() < prob:
+                        month = random.randint(1, 4)
+                        day = random.randint(1, 28)
+                        enrollment = Enrollment(student_id=s.id, course_id=c.id, enrollment_date=datetime(2024, month, day))
+                        db.add(enrollment)
+                        used_pairs.add((s.id, c.id))
+                        enrollments_count += 1
+                await db.commit()
+                notif_samples = [
+                    ("Machine Learning seats almost full.", "admin"),
+                    ("New course 'Deep Learning' added to catalog.", "student"),
+                    ("Cloud Computing enrollment increased by 20%.", "faculty"),
+                ]
+                for msg, role in notif_samples:
+                    db.add(Notification(message=msg, role=role, status="unread"))
+                for c in courses:
+                    count = len([e for e in used_pairs if e[1] == c.id])
+                    score = (count / c.seat_limit) * 10
+                    db.add(Analytics(course_id=c.id, demand_score=score, trend_data=f"Growth index: {random.uniform(1.1, 1.5):.2f}"))
+                await db.commit()
+                logger.info(f"Seeding complete: 50 students, 12 courses, {enrollments_count} enrollments.")
+        except Exception as e:
+            logger.error(f"Seeding FAILED: {e}", exc_info=True)
     background_tasks.add_task(run_seed)
-    return {"status": "accepted", "message": "Seeding started in background. Check backend logs for completion."}
+    return {"status": "accepted", "message": "Seeding started in background. Check Render logs for completion."}
 
 @router.post("/reset-password")
 async def reset_password(req: ResetPasswordRequest, db: AsyncSession = Depends(get_db)):
