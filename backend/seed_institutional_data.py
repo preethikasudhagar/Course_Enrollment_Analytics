@@ -7,7 +7,7 @@ from models.models import User, Course, Enrollment, Notification, Analytics, Use
 from utils.auth import get_password_hash
 
 async def seed_data():
-    print("🚀 Initializing Institutional Data Synthesis...")
+    print("Initializing Institutional Data Synthesis...")
     await init_db()
     
     async with AsyncSessionLocal() as db:
@@ -83,7 +83,6 @@ async def seed_data():
         for c in courses: await db.refresh(c)
 
         # 4. Seed Enrollments (100)
-        # We need to simulate demand: ML, Data Analytics, Web Dev = High Demand
         high_demand = ["Machine Learning", "Data Analytics", "Web Development"]
         medium_demand = ["Data Structures", "Database Systems", "Cloud Computing"]
         
@@ -93,20 +92,16 @@ async def seed_data():
         while enrollments_count < 100:
             s = random.choice(students)
             c = random.choice(courses)
-            
             if (s.id, c.id) in used_pairs: continue
             
-            # Probability bypass for demand simulation
             if c.course_name in high_demand: prob = 0.9
             elif c.course_name in medium_demand: prob = 0.6
             else: prob = 0.3
             
             if random.random() < prob:
-                # Enrollment date across Jan-Apr
                 month = random.randint(1, 4)
                 day = random.randint(1, 28)
                 enroll_date = datetime(2024, month, day)
-                
                 enrollment = Enrollment(student_id=s.id, course_id=c.id, enrollment_date=enroll_date)
                 db.add(enrollment)
                 used_pairs.add((s.id, c.id))
@@ -115,7 +110,6 @@ async def seed_data():
         await db.commit()
 
         # 5. Seed Analytics & Notifications
-        # Simulate some notifications
         notif_samples = [
             ("Machine Learning seats almost full. Protocol optimization suggested.", "admin"),
             ("New course 'Deep Learning' added to catalog.", "student"),
@@ -128,17 +122,14 @@ async def seed_data():
             n = Notification(message=msg, role=role, status="unread")
             db.add(n)
         
-        # Seed Analytics table for charts
         for c in courses:
-            # Count actual enrollments
             count = len([e for e in used_pairs if e[1] == c.id])
-            # Demand score based on count
             score = (count / c.seat_limit) * 10
             a = Analytics(course_id=c.id, demand_score=score, trend_data=f"Growth index: {random.uniform(1.1, 1.5):.2f}")
             db.add(a)
 
         await db.commit()
-        print(f"✅ Synthesis Complete: 50 Students, 12 Courses, {enrollments_count} Enrollments generated.")
+        print(f"Synthesis Complete: 50 Students, 12 Courses, {enrollments_count} Enrollments generated.")
 
 if __name__ == "__main__":
     asyncio.run(seed_data())

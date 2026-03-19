@@ -214,6 +214,14 @@ async def verify_otp(req: VerifyOTPRequest, db: AsyncSession = Depends(get_db)):
         
     return {"message": "OTP verified successfully"}
 
+@router.post("/seed-institutional-data")
+async def seed_institutional_data_endpoint(db: AsyncSession = Depends(get_db)):
+    from .auth import seed_admin # It's already here but we want the BIG seed
+    # Import the actual seeding logic or just paste it here for one-off
+    from seed_institutional_data import seed_data
+    await seed_data()
+    return {"status": "success", "message": "Institutional data seeded successfully"}
+
 @router.post("/reset-password")
 async def reset_password(req: ResetPasswordRequest, db: AsyncSession = Depends(get_db)):
     # Verify OTP again
