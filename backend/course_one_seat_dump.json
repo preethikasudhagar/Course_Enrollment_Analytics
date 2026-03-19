@@ -1,0 +1,152 @@
+[
+  {
+    "course_id": 1,
+    "course_code": "CS201",
+    "course_name": "Data Structures",
+    "department": "Computer Science",
+    "seat_limit": 45,
+    "enrolled_students": 44,
+    "remaining_seats": 1,
+    "status": "Almost Full"
+  },
+  {
+    "course_id": 3,
+    "course_code": "CS210",
+    "course_name": "Database Systems",
+    "department": "Software Engineering",
+    "seat_limit": 40,
+    "enrolled_students": 39,
+    "remaining_seats": 1,
+    "status": "Almost Full"
+  },
+  {
+    "course_id": 4,
+    "course_code": "CS305",
+    "course_name": "Machine Learning",
+    "department": "Artificial Intelligence",
+    "seat_limit": 35,
+    "enrolled_students": 34,
+    "remaining_seats": 1,
+    "status": "Almost Full"
+  },
+  {
+    "course_id": 5,
+    "course_code": "CS330",
+    "course_name": "Cloud Computing",
+    "department": "Computer Science",
+    "seat_limit": 30,
+    "enrolled_students": 29,
+    "remaining_seats": 1,
+    "status": "Almost Full"
+  },
+  {
+    "course_id": 6,
+    "course_code": "CS301",
+    "course_name": "Data Structures",
+    "department": "Computer Science and Engineering",
+    "seat_limit": 45,
+    "enrolled_students": 44,
+    "remaining_seats": 1,
+    "status": "Almost Full"
+  },
+  {
+    "course_id": 7,
+    "course_code": "CS401",
+    "course_name": "Artificial Intelligence",
+    "department": "Artificial Intelligence",
+    "seat_limit": 30,
+    "enrolled_students": 29,
+    "remaining_seats": 1,
+    "status": "Almost Full"
+  },
+  {
+    "course_id": 8,
+    "course_code": "CS320",
+    "course_name": "Computer Networks",
+    "department": "Information Technology",
+    "seat_limit": 35,
+    "enrolled_students": 34,
+    "remaining_seats": 1,
+    "status": "Almost Full"
+  },
+  {
+    "course_id": 9,
+    "course_code": "CS350",
+    "course_name": "Cyber Security",
+    "department": "Information Technology",
+    "seat_limit": 25,
+    "enrolled_students": 24,
+    "remaining_seats": 1,
+    "status": "Almost Full"
+  },
+  {
+    "course_id": 10,
+    "course_code": "CS360",
+    "course_name": "Data Analytics",
+    "department": "Data Science",
+    "seat_limit": 40,
+    "enrolled_students": 39,
+    "remaining_seats": 1,
+    "status": "Almost Full"
+  },
+  {
+    "course_id": 11,
+    "course_code": "CS370",
+    "course_name": "Software Engineering",
+    "department": "Software Engineering",
+    "seat_limit": 45,
+    "enrolled_students": 44,
+    "remaining_seats": 1,
+    "status": "Almost Full"
+  },
+  {
+    "course_id": 12,
+    "course_code": "CS450",
+    "course_name": "Deep Learning",
+    "department": "Artificial Intelligence",
+    "seat_limit": 20,
+    "enrolled_students": 19,
+    "remaining_seats": 1,
+    "status": "Almost Full"
+  },
+  {
+    "course_id": 13,
+    "course_code": "IT401",
+    "course_name": "Web Development",
+    "department": "Information Technology",
+    "seat_limit": 40,
+    "enrolled_students": 39,
+    "remaining_seats": 1,
+    "status": "Almost Full"
+  },
+  {
+    "course_id": 14,
+    "course_code": "IT420",
+    "course_name": "Cloud Computing",
+    "department": "Information Technology",
+    "seat_limit": 40,
+    "enrolled_students": 39,
+    "remaining_seats": 1,
+    "status": "Almost Full"
+  },
+  {
+    "course_id": 15,
+    "course_code": "AI510",
+    "course_name": "Machine Learning",
+    "department": "Artificial Intelligence and Data Science",
+    "seat_limit": 50,
+    "enrolled_students": 49,
+    "remaining_seats": 1,
+    "status": "Almost Full"
+  },
+  {
+    "course_id": 16,
+    "course_code": "EC330",
+    "course_name": "Digital Signal Processing",
+    "department": "Electronics and Communication Engineering",
+    "seat_limit": 40,
+    "enrolled_students": 39,
+    "remaining_seats": 1,
+    "status": "Almost Full"
+  }
+]

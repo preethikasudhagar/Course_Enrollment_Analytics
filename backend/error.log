@@ -1,0 +1,17 @@
+Traceback (most recent call last):
+  File "C:\Users\preet\OneDrive\Desktop\Mn\course-enrollment-analytics\backend\generate_scenarios.py", line 158, in <module>
+    asyncio.run(test_scenarios())
+    ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "C:\Users\preet\AppData\Local\Programs\Python\Python314\Lib\asyncio\runners.py", line 204, in run
+    return runner.run(main)
+           ~~~~~~~~~~^^^^^^
+  File "C:\Users\preet\AppData\Local\Programs\Python\Python314\Lib\asyncio\runners.py", line 127, in run
+    return self._loop.run_until_complete(task)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "C:\Users\preet\AppData\Local\Programs\Python\Python314\Lib\asyncio\base_events.py", line 719, in run_until_complete
+    return future.result()
+           ~~~~~~~~~~~~~^^
+  File "C:\Users\preet\OneDrive\Desktop\Mn\course-enrollment-analytics\backend\generate_scenarios.py", line 56, in test_scenarios
+    course_id=c1.course_id,
+              ^^^^^^^^^^^^
+AttributeError: 'Course' object has no attribute 'course_id'. Did you mean: 'course_code'?

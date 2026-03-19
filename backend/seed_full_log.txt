@@ -1,0 +1,897 @@
+Initializing Realistic Demo Data Seeding...
+2026-03-07 10:07:19,635 INFO sqlalchemy.engine.Engine SELECT DATABASE()
+2026-03-07 10:07:19,635 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-03-07 10:07:19,636 INFO sqlalchemy.engine.Engine SELECT @@sql_mode
+2026-03-07 10:07:19,636 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-03-07 10:07:19,637 INFO sqlalchemy.engine.Engine SELECT @@lower_case_table_names
+2026-03-07 10:07:19,637 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-03-07 10:07:19,638 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-03-07 10:07:19,638 INFO sqlalchemy.engine.Engine DESCRIBE `course_analytics_db`.`users`
+2026-03-07 10:07:19,638 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-03-07 10:07:19,695 INFO sqlalchemy.engine.Engine DESCRIBE `course_analytics_db`.`courses`
+2026-03-07 10:07:19,695 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-03-07 10:07:19,699 INFO sqlalchemy.engine.Engine DESCRIBE `course_analytics_db`.`enrollments`
+2026-03-07 10:07:19,699 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-03-07 10:07:19,701 INFO sqlalchemy.engine.Engine DESCRIBE `course_analytics_db`.`notifications`
+2026-03-07 10:07:19,701 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-03-07 10:07:19,704 INFO sqlalchemy.engine.Engine DESCRIBE `course_analytics_db`.`system_settings`
+2026-03-07 10:07:19,704 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-03-07 10:07:19,707 INFO sqlalchemy.engine.Engine DESCRIBE `course_analytics_db`.`system_activities`
+2026-03-07 10:07:19,708 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-03-07 10:07:19,711 INFO sqlalchemy.engine.Engine DESCRIBE `course_analytics_db`.`otp_records`
+2026-03-07 10:07:19,711 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-03-07 10:07:19,714 INFO sqlalchemy.engine.Engine DESCRIBE `course_analytics_db`.`suggestions`
+2026-03-07 10:07:19,714 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-03-07 10:07:19,717 INFO sqlalchemy.engine.Engine DESCRIBE `course_analytics_db`.`waitlist`
+2026-03-07 10:07:19,717 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-03-07 10:07:19,721 INFO sqlalchemy.engine.Engine DESCRIBE `course_analytics_db`.`faculty_performance`
+2026-03-07 10:07:19,721 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-03-07 10:07:19,724 INFO sqlalchemy.engine.Engine DESCRIBE `course_analytics_db`.`analytics`
+2026-03-07 10:07:19,724 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-03-07 10:07:19,728 INFO sqlalchemy.engine.Engine ALTER TABLE users ADD COLUMN department VARCHAR(100)
+2026-03-07 10:07:19,728 INFO sqlalchemy.engine.Engine [generated in 0.00044s] ()
+2026-03-07 10:07:19,731 INFO sqlalchemy.engine.Engine ALTER TABLE users ADD COLUMN year INT
+2026-03-07 10:07:19,731 INFO sqlalchemy.engine.Engine [generated in 0.00037s] ()
+2026-03-07 10:07:19,734 INFO sqlalchemy.engine.Engine ALTER TABLE courses ADD COLUMN remaining_seats INT DEFAULT 40
+2026-03-07 10:07:19,734 INFO sqlalchemy.engine.Engine [generated in 0.00034s] ()
+2026-03-07 10:07:19,737 INFO sqlalchemy.engine.Engine ALTER TABLE courses ADD COLUMN waitlist_count INT DEFAULT 0
+2026-03-07 10:07:19,738 INFO sqlalchemy.engine.Engine [generated in 0.00025s] ()
+2026-03-07 10:07:19,739 INFO sqlalchemy.engine.Engine ALTER TABLE courses ADD COLUMN auto_expand_enabled BOOLEAN DEFAULT TRUE
+2026-03-07 10:07:19,740 INFO sqlalchemy.engine.Engine [generated in 0.00025s] ()
+2026-03-07 10:07:19,742 INFO sqlalchemy.engine.Engine ALTER TABLE courses ADD COLUMN max_seat_limit INT DEFAULT 200
+2026-03-07 10:07:19,742 INFO sqlalchemy.engine.Engine [generated in 0.00028s] ()
+2026-03-07 10:07:19,744 INFO sqlalchemy.engine.Engine ALTER TABLE courses ADD COLUMN created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+2026-03-07 10:07:19,744 INFO sqlalchemy.engine.Engine [generated in 0.00031s] ()
+2026-03-07 10:07:19,746 INFO sqlalchemy.engine.Engine COMMIT
+Setting up departments table...
+2026-03-07 10:07:19,748 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-03-07 10:07:19,749 INFO sqlalchemy.engine.Engine 
+            CREATE TABLE IF NOT EXISTS departments (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                name VARCHAR(100) NOT NULL UNIQUE
+            )
+        
+2026-03-07 10:07:19,749 INFO sqlalchemy.engine.Engine [generated in 0.00025s] ()
+Clearing existing data...
+2026-03-07 10:07:19,758 INFO sqlalchemy.engine.Engine SET FOREIGN_KEY_CHECKS = 0;
+2026-03-07 10:07:19,758 INFO sqlalchemy.engine.Engine [generated in 0.00029s] ()
+2026-03-07 10:07:19,759 INFO sqlalchemy.engine.Engine TRUNCATE TABLE enrollments;
+2026-03-07 10:07:19,759 INFO sqlalchemy.engine.Engine [generated in 0.00026s] ()
+2026-03-07 10:07:19,847 INFO sqlalchemy.engine.Engine TRUNCATE TABLE notifications;
+2026-03-07 10:07:19,847 INFO sqlalchemy.engine.Engine [generated in 0.00033s] ()
+2026-03-07 10:07:19,916 INFO sqlalchemy.engine.Engine TRUNCATE TABLE analytics;
+2026-03-07 10:07:19,916 INFO sqlalchemy.engine.Engine [generated in 0.00033s] ()
+2026-03-07 10:07:19,996 INFO sqlalchemy.engine.Engine TRUNCATE TABLE courses;
+2026-03-07 10:07:19,996 INFO sqlalchemy.engine.Engine [generated in 0.00034s] ()
+2026-03-07 10:07:20,070 INFO sqlalchemy.engine.Engine TRUNCATE TABLE users;
+2026-03-07 10:07:20,070 INFO sqlalchemy.engine.Engine [generated in 0.00019s] ()
+2026-03-07 10:07:20,149 INFO sqlalchemy.engine.Engine TRUNCATE TABLE departments;
+2026-03-07 10:07:20,149 INFO sqlalchemy.engine.Engine [generated in 0.00018s] ()
+2026-03-07 10:07:20,220 INFO sqlalchemy.engine.Engine TRUNCATE TABLE system_activities;
+2026-03-07 10:07:20,221 INFO sqlalchemy.engine.Engine [generated in 0.00026s] ()
+2026-03-07 10:07:20,259 INFO sqlalchemy.engine.Engine SET FOREIGN_KEY_CHECKS = 1;
+2026-03-07 10:07:20,259 INFO sqlalchemy.engine.Engine [generated in 0.00017s] ()
+2026-03-07 10:07:20,259 INFO sqlalchemy.engine.Engine COMMIT
+Inserting Departments...
+2026-03-07 10:07:20,260 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-03-07 10:07:20,260 INFO sqlalchemy.engine.Engine INSERT INTO departments (name) VALUES (%s)
+2026-03-07 10:07:20,260 INFO sqlalchemy.engine.Engine [generated in 0.00012s] ('Computer Science and Engineering',)
+2026-03-07 10:07:20,263 INFO sqlalchemy.engine.Engine INSERT INTO departments (name) VALUES (%s)
+2026-03-07 10:07:20,263 INFO sqlalchemy.engine.Engine [cached since 0.003178s ago] ('Information Technology',)
+2026-03-07 10:07:20,264 INFO sqlalchemy.engine.Engine INSERT INTO departments (name) VALUES (%s)
+2026-03-07 10:07:20,264 INFO sqlalchemy.engine.Engine [cached since 0.004165s ago] ('Information Science and Engineering',)
+2026-03-07 10:07:20,265 INFO sqlalchemy.engine.Engine INSERT INTO departments (name) VALUES (%s)
+2026-03-07 10:07:20,265 INFO sqlalchemy.engine.Engine [cached since 0.004926s ago] ('Artificial Intelligence and Data Science',)
+2026-03-07 10:07:20,266 INFO sqlalchemy.engine.Engine INSERT INTO departments (name) VALUES (%s)
+2026-03-07 10:07:20,266 INFO sqlalchemy.engine.Engine [cached since 0.005784s ago] ('Electronics and Communication Engineering',)
+2026-03-07 10:07:20,266 INFO sqlalchemy.engine.Engine COMMIT
+Inserting Courses...
+2026-03-07 10:07:20,279 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-03-07 10:07:20,280 INFO sqlalchemy.engine.Engine INSERT INTO courses (course_name, course_code, department, faculty_assigned, seat_limit, enrolled_students, remaining_seats, waitlist_count, auto_expand_enabled, max_seat_limit, course_description, course_duration, credits, created_at) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+2026-03-07 10:07:20,280 INFO sqlalchemy.engine.Engine [generated in 0.00023s] ('Data Structures', 'CS201', 'Computer Science and Engineering', 'Dr. Data Expert', 60, 0, 40, 0, 1, 200, None, None, 3, datetime.datetime(2026, 3, 7, 4, 37, 20, 280471))
+2026-03-07 10:07:20,285 INFO sqlalchemy.engine.Engine INSERT INTO courses (course_name, course_code, department, faculty_assigned, seat_limit, enrolled_students, remaining_seats, waitlist_count, auto_expand_enabled, max_seat_limit, course_description, course_duration, credits, created_at) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+2026-03-07 10:07:20,285 INFO sqlalchemy.engine.Engine [cached since 0.005109s ago] ('Database Systems', 'CS210', 'Computer Science and Engineering', 'Dr. Database Expert', 60, 0, 40, 0, 1, 200, None, None, 3, datetime.datetime(2026, 3, 7, 4, 37, 20, 285372))
+2026-03-07 10:07:20,286 INFO sqlalchemy.engine.Engine INSERT INTO courses (course_name, course_code, department, faculty_assigned, seat_limit, enrolled_students, remaining_seats, waitlist_count, auto_expand_enabled, max_seat_limit, course_description, course_duration, credits, created_at) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+2026-03-07 10:07:20,286 INFO sqlalchemy.engine.Engine [cached since 0.006081s ago] ('Machine Learning', 'CS305', 'Artificial Intelligence and Data Science', 'Dr. Machine Expert', 60, 0, 40, 0, 1, 200, None, None, 3, datetime.datetime(2026, 3, 7, 4, 37, 20, 286377))
+2026-03-07 10:07:20,287 INFO sqlalchemy.engine.Engine INSERT INTO courses (course_name, course_code, department, faculty_assigned, seat_limit, enrolled_students, remaining_seats, waitlist_count, auto_expand_enabled, max_seat_limit, course_description, course_duration, credits, created_at) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+2026-03-07 10:07:20,287 INFO sqlalchemy.engine.Engine [cached since 0.006911s ago] ('Computer Networks', 'CS320', 'Computer Science and Engineering', 'Dr. Computer Expert', 50, 0, 40, 0, 1, 200, None, None, 3, datetime.datetime(2026, 3, 7, 4, 37, 20, 287200))
+2026-03-07 10:07:20,287 INFO sqlalchemy.engine.Engine INSERT INTO courses (course_name, course_code, department, faculty_assigned, seat_limit, enrolled_students, remaining_seats, waitlist_count, auto_expand_enabled, max_seat_limit, course_description, course_duration, credits, created_at) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+2026-03-07 10:07:20,287 INFO sqlalchemy.engine.Engine [cached since 0.007595s ago] ('Operating Systems', 'CS330', 'Computer Science and Engineering', 'Dr. Operating Expert', 50, 0, 40, 0, 1, 200, None, None, 3, datetime.datetime(2026, 3, 7, 4, 37, 20, 287896))
+2026-03-07 10:07:20,288 INFO sqlalchemy.engine.Engine INSERT INTO courses (course_name, course_code, department, faculty_assigned, seat_limit, enrolled_students, remaining_seats, waitlist_count, auto_expand_enabled, max_seat_limit, course_description, course_duration, credits, created_at) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+2026-03-07 10:07:20,288 INFO sqlalchemy.engine.Engine [cached since 0.00833s ago] ('Web Development', 'IT201', 'Information Technology', 'Dr. Web Expert', 60, 0, 40, 0, 1, 200, None, None, 3, datetime.datetime(2026, 3, 7, 4, 37, 20, 288633))
+2026-03-07 10:07:20,289 INFO sqlalchemy.engine.Engine INSERT INTO courses (course_name, course_code, department, faculty_assigned, seat_limit, enrolled_students, remaining_seats, waitlist_count, auto_expand_enabled, max_seat_limit, course_description, course_duration, credits, created_at) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+2026-03-07 10:07:20,289 INFO sqlalchemy.engine.Engine [cached since 0.009075s ago] ('Cloud Computing', 'IT310', 'Information Technology', 'Dr. Cloud Expert', 50, 0, 40, 0, 1, 200, None, None, 3, datetime.datetime(2026, 3, 7, 4, 37, 20, 289362))
+2026-03-07 10:07:20,290 INFO sqlalchemy.engine.Engine INSERT INTO courses (course_name, course_code, department, faculty_assigned, seat_limit, enrolled_students, remaining_seats, waitlist_count, auto_expand_enabled, max_seat_limit, course_description, course_duration, credits, created_at) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+2026-03-07 10:07:20,290 INFO sqlalchemy.engine.Engine [cached since 0.009896s ago] ('Information Security', 'IS220', 'Information Science and Engineering', 'Dr. Information Expert', 40, 0, 40, 0, 1, 200, None, None, 3, datetime.datetime(2026, 3, 7, 4, 37, 20, 290183))
+2026-03-07 10:07:20,290 INFO sqlalchemy.engine.Engine INSERT INTO courses (course_name, course_code, department, faculty_assigned, seat_limit, enrolled_students, remaining_seats, waitlist_count, auto_expand_enabled, max_seat_limit, course_description, course_duration, credits, created_at) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+2026-03-07 10:07:20,291 INFO sqlalchemy.engine.Engine [cached since 0.01068s ago] ('Deep Learning', 'AI410', 'Artificial Intelligence and Data Science', 'Dr. Deep Expert', 40, 0, 40, 0, 1, 200, None, None, 3, datetime.datetime(2026, 3, 7, 4, 37, 20, 290976))
+2026-03-07 10:07:20,291 INFO sqlalchemy.engine.Engine INSERT INTO courses (course_name, course_code, department, faculty_assigned, seat_limit, enrolled_students, remaining_seats, waitlist_count, auto_expand_enabled, max_seat_limit, course_description, course_duration, credits, created_at) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+2026-03-07 10:07:20,291 INFO sqlalchemy.engine.Engine [cached since 0.01149s ago] ('Data Analytics', 'DS420', 'Artificial Intelligence and Data Science', 'Dr. Data Expert', 60, 0, 40, 0, 1, 200, None, None, 3, datetime.datetime(2026, 3, 7, 4, 37, 20, 291795))
+2026-03-07 10:07:20,292 INFO sqlalchemy.engine.Engine COMMIT
+2026-03-07 10:07:20,297 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-03-07 10:07:20,300 INFO sqlalchemy.engine.Engine SELECT courses.course_id, courses.course_name, courses.course_code, courses.department, courses.faculty_assigned, courses.seat_limit, courses.enrolled_students, courses.remaining_seats, courses.waitlist_count, courses.auto_expand_enabled, courses.max_seat_limit, courses.course_description, courses.course_duration, courses.credits, courses.created_at 
+FROM courses 
+WHERE courses.course_id = %s
+2026-03-07 10:07:20,300 INFO sqlalchemy.engine.Engine [generated in 0.00023s] (1,)
+2026-03-07 10:07:20,302 INFO sqlalchemy.engine.Engine SELECT courses.course_id, courses.course_name, courses.course_code, courses.department, courses.faculty_assigned, courses.seat_limit, courses.enrolled_students, courses.remaining_seats, courses.waitlist_count, courses.auto_expand_enabled, courses.max_seat_limit, courses.course_description, courses.course_duration, courses.credits, courses.created_at 
+FROM courses 
+WHERE courses.course_id = %s
+2026-03-07 10:07:20,302 INFO sqlalchemy.engine.Engine [cached since 0.002541s ago] (2,)
+2026-03-07 10:07:20,304 INFO sqlalchemy.engine.Engine SELECT courses.course_id, courses.course_name, courses.course_code, courses.department, courses.faculty_assigned, courses.seat_limit, courses.enrolled_students, courses.remaining_seats, courses.waitlist_count, courses.auto_expand_enabled, courses.max_seat_limit, courses.course_description, courses.course_duration, courses.credits, courses.created_at 
+FROM courses 
+WHERE courses.course_id = %s
+2026-03-07 10:07:20,304 INFO sqlalchemy.engine.Engine [cached since 0.004422s ago] (3,)
+2026-03-07 10:07:20,306 INFO sqlalchemy.engine.Engine SELECT courses.course_id, courses.course_name, courses.course_code, courses.department, courses.faculty_assigned, courses.seat_limit, courses.enrolled_students, courses.remaining_seats, courses.waitlist_count, courses.auto_expand_enabled, courses.max_seat_limit, courses.course_description, courses.course_duration, courses.credits, courses.created_at 
+FROM courses 
+WHERE courses.course_id = %s
+2026-03-07 10:07:20,306 INFO sqlalchemy.engine.Engine [cached since 0.00627s ago] (4,)
+2026-03-07 10:07:20,307 INFO sqlalchemy.engine.Engine SELECT courses.course_id, courses.course_name, courses.course_code, courses.department, courses.faculty_assigned, courses.seat_limit, courses.enrolled_students, courses.remaining_seats, courses.waitlist_count, courses.auto_expand_enabled, courses.max_seat_limit, courses.course_description, courses.course_duration, courses.credits, courses.created_at 
+FROM courses 
+WHERE courses.course_id = %s
+2026-03-07 10:07:20,307 INFO sqlalchemy.engine.Engine [cached since 0.007902s ago] (5,)
+2026-03-07 10:07:20,309 INFO sqlalchemy.engine.Engine SELECT courses.course_id, courses.course_name, courses.course_code, courses.department, courses.faculty_assigned, courses.seat_limit, courses.enrolled_students, courses.remaining_seats, courses.waitlist_count, courses.auto_expand_enabled, courses.max_seat_limit, courses.course_description, courses.course_duration, courses.credits, courses.created_at 
+FROM courses 
+WHERE courses.course_id = %s
+2026-03-07 10:07:20,309 INFO sqlalchemy.engine.Engine [cached since 0.009529s ago] (6,)
+2026-03-07 10:07:20,310 INFO sqlalchemy.engine.Engine SELECT courses.course_id, courses.course_name, courses.course_code, courses.department, courses.faculty_assigned, courses.seat_limit, courses.enrolled_students, courses.remaining_seats, courses.waitlist_count, courses.auto_expand_enabled, courses.max_seat_limit, courses.course_description, courses.course_duration, courses.credits, courses.created_at 
+FROM courses 
+WHERE courses.course_id = %s
+2026-03-07 10:07:20,311 INFO sqlalchemy.engine.Engine [cached since 0.01108s ago] (7,)
+2026-03-07 10:07:20,312 INFO sqlalchemy.engine.Engine SELECT courses.course_id, courses.course_name, courses.course_code, courses.department, courses.faculty_assigned, courses.seat_limit, courses.enrolled_students, courses.remaining_seats, courses.waitlist_count, courses.auto_expand_enabled, courses.max_seat_limit, courses.course_description, courses.course_duration, courses.credits, courses.created_at 
+FROM courses 
+WHERE courses.course_id = %s
+2026-03-07 10:07:20,312 INFO sqlalchemy.engine.Engine [cached since 0.01264s ago] (8,)
+2026-03-07 10:07:20,313 INFO sqlalchemy.engine.Engine SELECT courses.course_id, courses.course_name, courses.course_code, courses.department, courses.faculty_assigned, courses.seat_limit, courses.enrolled_students, courses.remaining_seats, courses.waitlist_count, courses.auto_expand_enabled, courses.max_seat_limit, courses.course_description, courses.course_duration, courses.credits, courses.created_at 
+FROM courses 
+WHERE courses.course_id = %s
+2026-03-07 10:07:20,314 INFO sqlalchemy.engine.Engine [cached since 0.01415s ago] (9,)
+2026-03-07 10:07:20,315 INFO sqlalchemy.engine.Engine SELECT courses.course_id, courses.course_name, courses.course_code, courses.department, courses.faculty_assigned, courses.seat_limit, courses.enrolled_students, courses.remaining_seats, courses.waitlist_count, courses.auto_expand_enabled, courses.max_seat_limit, courses.course_description, courses.course_duration, courses.credits, courses.created_at 
+FROM courses 
+WHERE courses.course_id = %s
+2026-03-07 10:07:20,315 INFO sqlalchemy.engine.Engine [cached since 0.01586s ago] (10,)
+Inserting Faculty...
+2026-03-07 10:07:21,250 INFO sqlalchemy.engine.Engine INSERT INTO users (name, email, password, `role`, phone, profile_photo, department, year) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+2026-03-07 10:07:21,250 INFO sqlalchemy.engine.Engine [generated in 0.00021s] ('Dr. Kumar', 'kumar@faculty.com', '$2b$12$zAR8IKNuB6IAA.EyUzrcWOh5zIgpo.UH4B5/rlNpTYxWk93EJZozm', 'faculty', None, None, 'Computer Science and Engineering', None)
+2026-03-07 10:07:21,318 INFO sqlalchemy.engine.Engine INSERT INTO users (name, email, password, `role`, phone, profile_photo, department, year) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+2026-03-07 10:07:21,318 INFO sqlalchemy.engine.Engine [cached since 0.06861s ago] ('Dr. Mehta', 'mehta@faculty.com', '$2b$12$iIMsQ3FqTLyJtQnOfmDJxeHD6olAs/OnQn9GDjlEaoYKpykhBUvia', 'faculty', None, None, 'Information Technology', None)
+2026-03-07 10:07:21,320 INFO sqlalchemy.engine.Engine INSERT INTO users (name, email, password, `role`, phone, profile_photo, department, year) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+2026-03-07 10:07:21,320 INFO sqlalchemy.engine.Engine [cached since 0.07018s ago] ('Dr. Sharma', 'sharma@faculty.com', '$2b$12$jJur5wbDdzmkpSHhh8.X5uEMw9q9feXhpPgdz0YYpXGuTHeyV4Y/q', 'faculty', None, None, 'Artificial Intelligence and Data Science', None)
+2026-03-07 10:07:21,321 INFO sqlalchemy.engine.Engine INSERT INTO users (name, email, password, `role`, phone, profile_photo, department, year) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+2026-03-07 10:07:21,321 INFO sqlalchemy.engine.Engine [cached since 0.07145s ago] ('Institutional Admin', 'admin@example.com', '$2b$12$J/F4CJXHmnumDAlsAOnAYuelI53dQ7xAcwcUSUzGclCh1pWz7OhFu', 'admin', None, None, 'Administration', None)
+2026-03-07 10:07:21,323 INFO sqlalchemy.engine.Engine COMMIT
+Inserting Students...
+2026-03-07 10:07:52,851 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-03-07 10:07:52,853 INFO sqlalchemy.engine.Engine INSERT INTO users (name, email, password, `role`, phone, profile_photo, department, year) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+2026-03-07 10:07:52,854 INFO sqlalchemy.engine.Engine [cached since 31.6s ago] ('Rahul Kumar', 'rahul@demo.com', '$2b$12$5eLZQ0nIX8hwZ13ba3qTSem5HrQ8YT1sXuIui9BrYwaNSKhyfEfLa', 'student', None, None, 'Computer Science and Engineering', None)
+2026-03-07 10:07:52,858 INFO sqlalchemy.engine.Engine INSERT INTO users (name, email, password, `role`, phone, profile_photo, department, year) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+2026-03-07 10:07:52,858 INFO sqlalchemy.engine.Engine [cached since 31.61s ago] ('Priya Sharma', 'priya@demo.com', '$2b$12$BODRYdHTPSwd8k3o5dyFmuchR96rwXoQK3qMe/fB8zgea8wtWRrdu', 'student', None, None, 'Information Technology', None)
+2026-03-07 10:07:52,860 INFO sqlalchemy.engine.Engine INSERT INTO users (name, email, password, `role`, phone, profile_photo, department, year) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+2026-03-07 10:07:52,860 INFO sqlalchemy.engine.Engine [cached since 31.61s ago] ('Arjun Patel', 'arjun@demo.com', '$2b$12$5mDl2SIEjogZpihY04L.UO9TbUghpQ36ZU6D9kNvx4kTGiXhEj9C.', 'student', None, None, 'Artificial Intelligence and Data Science', None)
+2026-03-07 10:07:52,863 INFO sqlalchemy.engine.Engine INSERT INTO users (name, email, password, `role`, phone, profile_photo, department, year) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+2026-03-07 10:07:52,863 INFO sqlalchemy.engine.Engine [cached since 31.61s ago] ('Sneha Reddy', 'sneha@demo.com', '$2b$12$YVjoOVw9K8.y9rCAmliwru7K4Neg3Pb8XptJGiacDW06HSDVY0CH6', 'student', None, None, 'Information Science and Engineering', None)
+2026-03-07 10:07:52,864 INFO sqlalchemy.engine.Engine INSERT INTO users (name, email, password, `role`, phone, profile_photo, department, year) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+2026-03-07 10:07:52,865 INFO sqlalchemy.engine.Engine [cached since 31.61s ago] ('Vikram Singh', 'vikram@demo.com', '$2b$12$eCNiLMHG4VN0j0p09DoG5ubf3FFa5SUyV4gnpZlUz8VtEsbo.Oszu', 'student', None, None, 'Computer Science and Engineering', None)
+2026-03-07 10:07:52,866 INFO sqlalchemy.engine.Engine INSERT INTO users (name, email, password, `role`, phone, profile_photo, department, year) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+2026-03-07 10:07:52,866 INFO sqlalchemy.engine.Engine [cached since 31.62s ago] ('Anjali Gupta', 'anjali@demo.com', '$2b$12$AHPeXI7WpUxxtizwA0dEzeNtYjrGoqI1GpZs3gvYa2U5EN7Sx0kF6', 'student', None, None, 'Information Technology', None)
+2026-03-07 10:07:52,867 INFO sqlalchemy.engine.Engine INSERT INTO users (name, email, password, `role`, phone, profile_photo, department, year) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+2026-03-07 10:07:52,867 INFO sqlalchemy.engine.Engine [cached since 31.62s ago] ('Kiran Nair', 'kiran@demo.com', '$2b$12$ilb.85dc3EhnbPGOlvRPs.B48a6sfAyffYgjVVikpI.Aswfatgrba', 'student', None, None, 'Artificial Intelligence and Data Science', None)
+2026-03-07 10:07:52,868 INFO sqlalchemy.engine.Engine INSERT INTO users (name, email, password, `role`, phone, profile_photo, department, year) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+2026-03-07 10:07:52,868 INFO sqlalchemy.engine.Engine [cached since 31.62s ago] ('Ravi Verma', 'ravi@demo.com', '$2b$12$tSEH1LcIPU6DQ.yziwqSLOemiRGLb5PkT4IZG5gqUPTQTp3nuqzSe', 'student', None, None, 'Electronics and Communication Engineering', None)
+2026-03-07 10:07:52,870 INFO sqlalchemy.engine.Engine INSERT INTO users (name, email, password, `role`, phone, profile_photo, department, year) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+2026-03-07 10:07:52,870 INFO sqlalchemy.engine.Engine [cached since 31.62s ago] ('Meera Iyer', 'meera@demo.com', '$2b$12$XSoYkP3darxzlfYueEtZQ.aRnmENA4yTnp7NIwkg1lEdFv1dONbJO', 'student', None, None, 'Information Science and Engineering', None)
+2026-03-07 10:07:52,871 INFO sqlalchemy.engine.Engine INSERT INTO users (name, email, password, `role`, phone, profile_photo, department, year) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+2026-03-07 10:07:52,872 INFO sqlalchemy.engine.Engine [cached since 31.62s ago] ('Aditya Das', 'aditya@demo.com', '$2b$12$dnkibw4pzMvtQ7FDj.kIiOL/WDdxudjSQTpfKz/8wi4xCw66K9XTW', 'student', None, None, 'Computer Science and Engineering', None)
+2026-03-07 10:07:52,874 INFO sqlalchemy.engine.Engine INSERT INTO users (name, email, password, `role`, phone, profile_photo, department, year) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+2026-03-07 10:07:52,874 INFO sqlalchemy.engine.Engine [cached since 31.62s ago] ('Sunita Iyer', 'sunita.iyer10@demo.edu', '$2b$12$noujzGHVXVCG/IHuGZFFdOwyKArKNGWMUF4MIzclUZMjWYkkm2T0K', 'student', None, None, 'Information Technology', None)
+2026-03-07 10:07:52,877 INFO sqlalchemy.engine.Engine INSERT INTO users (name, email, password, `role`, phone, profile_photo, department, year) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+2026-03-07 10:07:52,877 INFO sqlalchemy.engine.Engine [cached since 31.63s ago] ('Rohan Patel', 'rohan.patel11@demo.edu', '$2b$12$Ar4AbfICEz64Qm0BTikMMuSrnmX5KklsXDBmyqMNE6OASnAH.fu4u', 'student', None, None, 'Artificial Intelligence and Data Science', None)
+2026-03-07 10:07:52,879 INFO sqlalchemy.engine.Engine INSERT INTO users (name, email, password, `role`, phone, profile_photo, department, year) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+2026-03-07 10:07:52,879 INFO sqlalchemy.engine.Engine [cached since 31.63s ago] ('Amit Gupta', 'amit.gupta12@demo.edu', '$2b$12$OF2BAk/.c3UuWUapOPFJN.0bmuSjK047n/rcB7.Mgk9Nvm9RwSSBm', 'student', None, None, 'Artificial Intelligence and Data Science', None)
+2026-03-07 10:07:52,880 INFO sqlalchemy.engine.Engine INSERT INTO users (name, email, password, `role`, phone, profile_photo, department, year) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+2026-03-07 10:07:52,881 INFO sqlalchemy.engine.Engine [cached since 31.63s ago] ('Suresh Patel', 'suresh.patel13@demo.edu', '$2b$12$LYhrdVX9icFfdywHcHcQou6OlFmV0hhkxA0RUUD.iGehPLG5OUR3G', 'student', None, None, 'Computer Science and Engineering', None)
+2026-03-07 10:07:52,882 INFO sqlalchemy.engine.Engine INSERT INTO users (name, email, password, `role`, phone, profile_photo, department, year) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+2026-03-07 10:07:52,883 INFO sqlalchemy.engine.Engine [cached since 31.63s ago] ('Nehal Verma', 'nehal.verma14@demo.edu', '$2b$12$3YoeUxFnFS3HyiMV.5fvUeflfAkt875xjzLhGXqvofiXzNu45LzPu', 'student', None, None, 'Electronics and Communication Engineering', None)
+2026-03-07 10:07:52,884 INFO sqlalchemy.engine.Engine INSERT INTO users (name, email, password, `role`, phone, profile_photo, department, year) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+2026-03-07 10:07:52,884 INFO sqlalchemy.engine.Engine [cached since 31.63s ago] ('Pooja Reddy', 'pooja.reddy15@demo.edu', '$2b$12$zmivGp9VES/G2iqPb9zvn.YCxoUVUswqtnEn/OGiWQOHo1yqEy3PO', 'student', None, None, 'Electronics and Communication Engineering', None)
+2026-03-07 10:07:52,885 INFO sqlalchemy.engine.Engine INSERT INTO users (name, email, password, `role`, phone, profile_photo, department, year) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+2026-03-07 10:07:52,885 INFO sqlalchemy.engine.Engine [cached since 31.64s ago] ('Amit Kumar', 'amit.kumar16@demo.edu', '$2b$12$DoN2ffMiQibHb0lWSWjA5OfzC463TZcE2y2wrIYK9.T37uijdBtr.', 'student', None, None, 'Information Science and Engineering', None)
+2026-03-07 10:07:52,887 INFO sqlalchemy.engine.Engine INSERT INTO users (name, email, password, `role`, phone, profile_photo, department, year) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+2026-03-07 10:07:52,887 INFO sqlalchemy.engine.Engine [cached since 31.64s ago] ('Deepak Mehta', 'deepak.mehta17@demo.edu', '$2b$12$70Z4h02Fo342qY3NjcDSL.IRlwjrozjMAfWmAgkBqarN9A1XxR7pu', 'student', None, None, 'Electronics and Communication Engineering', None)
+2026-03-07 10:07:52,889 INFO sqlalchemy.engine.Engine INSERT INTO users (name, email, password, `role`, phone, profile_photo, department, year) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+2026-03-07 10:07:52,889 INFO sqlalchemy.engine.Engine [cached since 31.64s ago] ('Pooja Das', 'pooja.das18@demo.edu', '$2b$12$ic5uMu2/7dvv5UGqk8gTh.VRUTSyNIwmb14L2NT5eR34jikXBvSqm', 'student', None, None, 'Artificial Intelligence and Data Science', None)
+2026-03-07 10:07:52,891 INFO sqlalchemy.engine.Engine INSERT INTO users (name, email, password, `role`, phone, profile_photo, department, year) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+2026-03-07 10:07:52,891 INFO sqlalchemy.engine.Engine [cached since 31.64s ago] ('Sunita Reddy', 'sunita.reddy19@demo.edu', '$2b$12$BrhsNy4uhJm7tAiQgguYXekOnEL..7L5pf5iW9Lg.0kHhelCxw/Me', 'student', None, None, 'Artificial Intelligence and Data Science', None)
+2026-03-07 10:07:52,894 INFO sqlalchemy.engine.Engine INSERT INTO users (name, email, password, `role`, phone, profile_photo, department, year) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+2026-03-07 10:07:52,894 INFO sqlalchemy.engine.Engine [cached since 31.64s ago] ('Suresh Mehta', 'suresh.mehta20@demo.edu', '$2b$12$v47g9PsmgN0sHz83ELjdx.Km016GNCBDdzToa1wVjimzje6s7AVpy', 'student', None, None, 'Computer Science and Engineering', None)
+2026-03-07 10:07:52,896 INFO sqlalchemy.engine.Engine INSERT INTO users (name, email, password, `role`, phone, profile_photo, department, year) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+2026-03-07 10:07:52,896 INFO sqlalchemy.engine.Engine [cached since 31.65s ago] ('Karan Singh', 'karan.singh21@demo.edu', '$2b$12$mfp/pz/PAN77xp33Yuc/refndZDa.R6Lga3MeTLOa9fwtJHFI2X1y', 'student', None, None, 'Computer Science and Engineering', None)
+2026-03-07 10:07:52,897 INFO sqlalchemy.engine.Engine INSERT INTO users (name, email, password, `role`, phone, profile_photo, department, year) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+2026-03-07 10:07:52,897 INFO sqlalchemy.engine.Engine [cached since 31.65s ago] ('Sunita Verma', 'sunita.verma22@demo.edu', '$2b$12$7yMBNG4XpcMvz07AtMGTWuCU5lpyw2.U/sWdY0zQAzfZ5JDyFQR0K', 'student', None, None, 'Information Science and Engineering', None)
+2026-03-07 10:07:52,898 INFO sqlalchemy.engine.Engine INSERT INTO users (name, email, password, `role`, phone, profile_photo, department, year) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+2026-03-07 10:07:52,899 INFO sqlalchemy.engine.Engine [cached since 31.65s ago] ('Nehal Nair', 'nehal.nair23@demo.edu', '$2b$12$tU41HdtDigz0AMzRW3KLy.iAAQ5X9lM5i3IMIfmhSAkBjj89RzHyi', 'student', None, None, 'Artificial Intelligence and Data Science', None)
+2026-03-07 10:07:52,899 INFO sqlalchemy.engine.Engine INSERT INTO users (name, email, password, `role`, phone, profile_photo, department, year) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+2026-03-07 10:07:52,900 INFO sqlalchemy.engine.Engine [cached since 31.65s ago] ('Nehal Patel', 'nehal.patel24@demo.edu', '$2b$12$S.wZD3tMwyIDRjNq41GfduohGLa95gncmM95ADb6jGz/PmzHhehRy', 'student', None, None, 'Information Technology', None)
+2026-03-07 10:07:52,900 INFO sqlalchemy.engine.Engine INSERT INTO users (name, email, password, `role`, phone, profile_photo, department, year) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+2026-03-07 10:07:52,901 INFO sqlalchemy.engine.Engine [cached since 31.65s ago] ('Anita Singh', 'anita.singh25@demo.edu', '$2b$12$0GyqtlTE1AFQLD1X4bRzd.WkxsMBHOCFlo3iOMbQ6VuYezJqKQK5q', 'student', None, None, 'Information Technology', None)
+2026-03-07 10:07:52,901 INFO sqlalchemy.engine.Engine INSERT INTO users (name, email, password, `role`, phone, profile_photo, department, year) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+2026-03-07 10:07:52,902 INFO sqlalchemy.engine.Engine [cached since 31.65s ago] ('Sunita Reddy', 'sunita.reddy26@demo.edu', '$2b$12$wWKiRdDimEE5DoXEFeXdFOkmLGt2JsV0QK0Q3/KNPNzSwQ4UafUYO', 'student', None, None, 'Electronics and Communication Engineering', None)
+2026-03-07 10:07:52,903 INFO sqlalchemy.engine.Engine INSERT INTO users (name, email, password, `role`, phone, profile_photo, department, year) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+2026-03-07 10:07:52,903 INFO sqlalchemy.engine.Engine [cached since 31.65s ago] ('Anita Gupta', 'anita.gupta27@demo.edu', '$2b$12$lzGs3yncsJeEDjq2IdcnSOPCXTm617xlLK.d2HKI6WTcN8fau0RTi', 'student', None, None, 'Electronics and Communication Engineering', None)
+2026-03-07 10:07:52,905 INFO sqlalchemy.engine.Engine INSERT INTO users (name, email, password, `role`, phone, profile_photo, department, year) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+2026-03-07 10:07:52,905 INFO sqlalchemy.engine.Engine [cached since 31.66s ago] ('Rohan Singh', 'rohan.singh28@demo.edu', '$2b$12$AkbOwTmDhoCYxaZQyB5OLO1etiEQ62oKWM6VMu.zmq3BDgrOynLBy', 'student', None, None, 'Electronics and Communication Engineering', None)
+2026-03-07 10:07:52,907 INFO sqlalchemy.engine.Engine INSERT INTO users (name, email, password, `role`, phone, profile_photo, department, year) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+2026-03-07 10:07:52,907 INFO sqlalchemy.engine.Engine [cached since 31.66s ago] ('Anita Das', 'anita.das29@demo.edu', '$2b$12$WM8iF5xhsxFnn6jEwcVCeOrLhqKNBN7SA3mipRafFZ4qIRzoMFMN.', 'student', None, None, 'Artificial Intelligence and Data Science', None)
+2026-03-07 10:07:52,909 INFO sqlalchemy.engine.Engine INSERT INTO users (name, email, password, `role`, phone, profile_photo, department, year) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+2026-03-07 10:07:52,910 INFO sqlalchemy.engine.Engine [cached since 31.66s ago] ('Sunita Mehta', 'sunita.mehta30@demo.edu', '$2b$12$vDROUAxuot18WLrtn8C43.jOntWQNdvOe7CdmVJGEY.OJZYHo79KS', 'student', None, None, 'Information Technology', None)
+2026-03-07 10:07:52,911 INFO sqlalchemy.engine.Engine INSERT INTO users (name, email, password, `role`, phone, profile_photo, department, year) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+2026-03-07 10:07:52,911 INFO sqlalchemy.engine.Engine [cached since 31.66s ago] ('Pooja Kumar', 'pooja.kumar31@demo.edu', '$2b$12$kewrfigegdMBv0Txn/g6XOcDzMtkoN.mGNXop1gKDfhE/6n5KbPLe', 'student', None, None, 'Electronics and Communication Engineering', None)
+2026-03-07 10:07:52,912 INFO sqlalchemy.engine.Engine INSERT INTO users (name, email, password, `role`, phone, profile_photo, department, year) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+2026-03-07 10:07:52,912 INFO sqlalchemy.engine.Engine [cached since 31.66s ago] ('Rohan Gupta', 'rohan.gupta32@demo.edu', '$2b$12$4SLCKGYW/nPXb8wJeiGinuXX/YgvK4VBFVjyqhMV1EMEcs/LOBs7u', 'student', None, None, 'Computer Science and Engineering', None)
+2026-03-07 10:07:52,913 INFO sqlalchemy.engine.Engine INSERT INTO users (name, email, password, `role`, phone, profile_photo, department, year) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+2026-03-07 10:07:52,913 INFO sqlalchemy.engine.Engine [cached since 31.66s ago] ('Anita Nair', 'anita.nair33@demo.edu', '$2b$12$/Obsju5W/NCtKv1AdV67U.6udWYDxrucesLEWl/wcPT1Y1/0kqivu', 'student', None, None, 'Artificial Intelligence and Data Science', None)
+2026-03-07 10:07:52,914 INFO sqlalchemy.engine.Engine INSERT INTO users (name, email, password, `role`, phone, profile_photo, department, year) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+2026-03-07 10:07:52,914 INFO sqlalchemy.engine.Engine [cached since 31.66s ago] ('Amit Reddy', 'amit.reddy34@demo.edu', '$2b$12$Qyp033cdiDlB54YrltBsaeGLsaPY1vPkolD56jMLxXIHuYv.SyHci', 'student', None, None, 'Artificial Intelligence and Data Science', None)
+2026-03-07 10:07:52,916 INFO sqlalchemy.engine.Engine INSERT INTO users (name, email, password, `role`, phone, profile_photo, department, year) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+2026-03-07 10:07:52,916 INFO sqlalchemy.engine.Engine [cached since 31.67s ago] ('Anita Mehta', 'anita.mehta35@demo.edu', '$2b$12$3aQXQEaUGveYMWyae3B/ruW256tk1n7lD7iR7sgEp1m6cAviiNtIS', 'student', None, None, 'Electronics and Communication Engineering', None)
+2026-03-07 10:07:52,917 INFO sqlalchemy.engine.Engine INSERT INTO users (name, email, password, `role`, phone, profile_photo, department, year) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+2026-03-07 10:07:52,917 INFO sqlalchemy.engine.Engine [cached since 31.67s ago] ('Karan Reddy', 'karan.reddy36@demo.edu', '$2b$12$51KYlt82.Z1im8AWOShB6Ov6m9a2wuE4DHetO94z04P7QgoD7Q91q', 'student', None, None, 'Artificial Intelligence and Data Science', None)
+2026-03-07 10:07:52,918 INFO sqlalchemy.engine.Engine INSERT INTO users (name, email, password, `role`, phone, profile_photo, department, year) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+2026-03-07 10:07:52,918 INFO sqlalchemy.engine.Engine [cached since 31.67s ago] ('Deepak Singh', 'deepak.singh37@demo.edu', '$2b$12$/pTM8Cno/FfG1RHsZBY0JO.PA1CzJDyhP9zcLr9UgfFRsCnMaxe9.', 'student', None, None, 'Electronics and Communication Engineering', None)
+2026-03-07 10:07:52,919 INFO sqlalchemy.engine.Engine INSERT INTO users (name, email, password, `role`, phone, profile_photo, department, year) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+2026-03-07 10:07:52,919 INFO sqlalchemy.engine.Engine [cached since 31.67s ago] ('Deepak Reddy', 'deepak.reddy38@demo.edu', '$2b$12$cAXXucmLhEIMaWgr2vY4/OXm7bOipjgfvAOvcRZupz4gWGYQnq2gS', 'student', None, None, 'Computer Science and Engineering', None)
+2026-03-07 10:07:52,920 INFO sqlalchemy.engine.Engine INSERT INTO users (name, email, password, `role`, phone, profile_photo, department, year) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+2026-03-07 10:07:52,920 INFO sqlalchemy.engine.Engine [cached since 31.67s ago] ('Deepak Gupta', 'deepak.gupta39@demo.edu', '$2b$12$26K5Mp7fEwwb3WILC5lZ1.rWmBBKXvDgKLdPU2GjmUCpwNMfwHngi', 'student', None, None, 'Computer Science and Engineering', None)
+2026-03-07 10:07:52,922 INFO sqlalchemy.engine.Engine INSERT INTO users (name, email, password, `role`, phone, profile_photo, department, year) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+2026-03-07 10:07:52,922 INFO sqlalchemy.engine.Engine [cached since 31.67s ago] ('Nehal Verma', 'nehal.verma40@demo.edu', '$2b$12$V/2Hrnw76Y.vAuBzRPXR6ec4SLdfU37yaRzsq9KJj8icIGkcSdLVu', 'student', None, None, 'Artificial Intelligence and Data Science', None)
+2026-03-07 10:07:52,924 INFO sqlalchemy.engine.Engine INSERT INTO users (name, email, password, `role`, phone, profile_photo, department, year) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+2026-03-07 10:07:52,924 INFO sqlalchemy.engine.Engine [cached since 31.67s ago] ('Deepak Gupta', 'deepak.gupta41@demo.edu', '$2b$12$BiT/mQ2cHIM/RstGPUTHVeFZNzVWmWlI2GsjrxC6/mNX39rqpUxX2', 'student', None, None, 'Computer Science and Engineering', None)
+2026-03-07 10:07:52,927 INFO sqlalchemy.engine.Engine INSERT INTO users (name, email, password, `role`, phone, profile_photo, department, year) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+2026-03-07 10:07:52,927 INFO sqlalchemy.engine.Engine [cached since 31.68s ago] ('Anita Iyer', 'anita.iyer42@demo.edu', '$2b$12$KD7Grqg7RUZerXNY3h3Rn.vPIkfJJ3RWrepsEiiBamwQVdNm9eozG', 'student', None, None, 'Computer Science and Engineering', None)
+2026-03-07 10:07:52,928 INFO sqlalchemy.engine.Engine INSERT INTO users (name, email, password, `role`, phone, profile_photo, department, year) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+2026-03-07 10:07:52,928 INFO sqlalchemy.engine.Engine [cached since 31.68s ago] ('Rohan Singh', 'rohan.singh43@demo.edu', '$2b$12$MlySU////7nM9yFAGpiIleruXVgLYaO2R0JWyQ0ZOiGqbfIfr9iaC', 'student', None, None, 'Electronics and Communication Engineering', None)
+2026-03-07 10:07:52,929 INFO sqlalchemy.engine.Engine INSERT INTO users (name, email, password, `role`, phone, profile_photo, department, year) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+2026-03-07 10:07:52,929 INFO sqlalchemy.engine.Engine [cached since 31.68s ago] ('Pooja Das', 'pooja.das44@demo.edu', '$2b$12$9TqiQWjH9EpsTVQLlhvbMOMeDm62c3x35WC/r6qxYdEPyagOtiP7e', 'student', None, None, 'Artificial Intelligence and Data Science', None)
+2026-03-07 10:07:52,930 INFO sqlalchemy.engine.Engine INSERT INTO users (name, email, password, `role`, phone, profile_photo, department, year) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+2026-03-07 10:07:52,930 INFO sqlalchemy.engine.Engine [cached since 31.68s ago] ('Rohan Kumar', 'rohan.kumar45@demo.edu', '$2b$12$fhCEOvBZRv1aPGVtiFMmOOz5U9RtoGdu69AgigeS7B.qgkz8LBhri', 'student', None, None, 'Information Science and Engineering', None)
+2026-03-07 10:07:52,931 INFO sqlalchemy.engine.Engine INSERT INTO users (name, email, password, `role`, phone, profile_photo, department, year) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+2026-03-07 10:07:52,931 INFO sqlalchemy.engine.Engine [cached since 31.68s ago] ('Pooja Reddy', 'pooja.reddy46@demo.edu', '$2b$12$pcHYgWdCNofxph7FlGRzEOQU2YiSs6uLgYGKUn4DPIZb1aQGRw9km', 'student', None, None, 'Information Science and Engineering', None)
+2026-03-07 10:07:52,932 INFO sqlalchemy.engine.Engine INSERT INTO users (name, email, password, `role`, phone, profile_photo, department, year) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+2026-03-07 10:07:52,932 INFO sqlalchemy.engine.Engine [cached since 31.68s ago] ('Anita Gupta', 'anita.gupta47@demo.edu', '$2b$12$XPdthiPo.TztLpVRb2xZGu1fS7NtPUAjGo.E/NG05LhCG3y.tGMc6', 'student', None, None, 'Information Science and Engineering', None)
+2026-03-07 10:07:52,932 INFO sqlalchemy.engine.Engine INSERT INTO users (name, email, password, `role`, phone, profile_photo, department, year) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+2026-03-07 10:07:52,933 INFO sqlalchemy.engine.Engine [cached since 31.68s ago] ('Amit Iyer', 'amit.iyer48@demo.edu', '$2b$12$71o2gq8BpM.KVerLiDyhHuJk4XKcIFzuYRj4M88C1MTdpksrmR/PC', 'student', None, None, 'Artificial Intelligence and Data Science', None)
+2026-03-07 10:07:52,933 INFO sqlalchemy.engine.Engine INSERT INTO users (name, email, password, `role`, phone, profile_photo, department, year) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+2026-03-07 10:07:52,933 INFO sqlalchemy.engine.Engine [cached since 31.68s ago] ('Deepak Verma', 'deepak.verma49@demo.edu', '$2b$12$y2msqbWYnj4mDPz9pWkClutqvEBgkiXVmEkLRK68jIyKak/lhwls2', 'student', None, None, 'Electronics and Communication Engineering', None)
+2026-03-07 10:07:52,934 INFO sqlalchemy.engine.Engine INSERT INTO users (name, email, password, `role`, phone, profile_photo, department, year) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+2026-03-07 10:07:52,934 INFO sqlalchemy.engine.Engine [cached since 31.68s ago] ('Amit Verma', 'amit.verma50@demo.edu', '$2b$12$/xr8mqc5SqHUmwzlpxmpyeSDZNPP8JyqMCLmxMeB7XFXeD/VUCq5m', 'student', None, None, 'Computer Science and Engineering', None)
+2026-03-07 10:07:52,935 INFO sqlalchemy.engine.Engine INSERT INTO users (name, email, password, `role`, phone, profile_photo, department, year) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+2026-03-07 10:07:52,935 INFO sqlalchemy.engine.Engine [cached since 31.69s ago] ('Rohan Nair', 'rohan.nair51@demo.edu', '$2b$12$T37zgwjZzJOlfXVA0UPIBOqMvwj5KD0YX/LqiNLaorrty0C04RkoK', 'student', None, None, 'Information Technology', None)
+2026-03-07 10:07:52,936 INFO sqlalchemy.engine.Engine INSERT INTO users (name, email, password, `role`, phone, profile_photo, department, year) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+2026-03-07 10:07:52,936 INFO sqlalchemy.engine.Engine [cached since 31.69s ago] ('Karan Nair', 'karan.nair52@demo.edu', '$2b$12$TUDqDwNCOvfHka4SSOO.3Oi9bdkPsqKQ7R9NCMiJGGRaa8ncE1Zyq', 'student', None, None, 'Information Technology', None)
+2026-03-07 10:07:52,938 INFO sqlalchemy.engine.Engine INSERT INTO users (name, email, password, `role`, phone, profile_photo, department, year) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+2026-03-07 10:07:52,938 INFO sqlalchemy.engine.Engine [cached since 31.69s ago] ('Nehal Mehta', 'nehal.mehta53@demo.edu', '$2b$12$pmLz9Ff/4c555FpqZDcaR.xltcJAC4GWhOq.WG7z4LSKCKpManQqa', 'student', None, None, 'Electronics and Communication Engineering', None)
+2026-03-07 10:07:52,940 INFO sqlalchemy.engine.Engine INSERT INTO users (name, email, password, `role`, phone, profile_photo, department, year) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+2026-03-07 10:07:52,940 INFO sqlalchemy.engine.Engine [cached since 31.69s ago] ('Amit Mehta', 'amit.mehta54@demo.edu', '$2b$12$vVdx2LafEuzGbirgeYQhd.YKhNgy.mFU5RypmNPdV9GrvjppLSkVm', 'student', None, None, 'Information Technology', None)
+2026-03-07 10:07:52,942 INFO sqlalchemy.engine.Engine INSERT INTO users (name, email, password, `role`, phone, profile_photo, department, year) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+2026-03-07 10:07:52,942 INFO sqlalchemy.engine.Engine [cached since 31.69s ago] ('Nehal Mehta', 'nehal.mehta55@demo.edu', '$2b$12$RrlYHDTVKHbmYv4m3eRuZeD0fD38K49Wrc2cDYg8YLDK7ftGEbzWa', 'student', None, None, 'Electronics and Communication Engineering', None)
+2026-03-07 10:07:52,944 INFO sqlalchemy.engine.Engine INSERT INTO users (name, email, password, `role`, phone, profile_photo, department, year) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+2026-03-07 10:07:52,944 INFO sqlalchemy.engine.Engine [cached since 31.69s ago] ('Karan Kumar', 'karan.kumar56@demo.edu', '$2b$12$OAg02CE6FXgepkcA60rxjO8SeehH8ynUq24w/6nhAw61eIcGqGZoq', 'student', None, None, 'Electronics and Communication Engineering', None)
+2026-03-07 10:07:52,945 INFO sqlalchemy.engine.Engine INSERT INTO users (name, email, password, `role`, phone, profile_photo, department, year) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+2026-03-07 10:07:52,945 INFO sqlalchemy.engine.Engine [cached since 31.7s ago] ('Karan Verma', 'karan.verma57@demo.edu', '$2b$12$kvlIA4ocC05EkG44hY6W8OC3darNOwElrxjU33IPaxby0nvXKhsvq', 'student', None, None, 'Computer Science and Engineering', None)
+2026-03-07 10:07:52,946 INFO sqlalchemy.engine.Engine INSERT INTO users (name, email, password, `role`, phone, profile_photo, department, year) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+2026-03-07 10:07:52,946 INFO sqlalchemy.engine.Engine [cached since 31.7s ago] ('Deepak Iyer', 'deepak.iyer58@demo.edu', '$2b$12$nEn1E6wxhJT75WoVOyR8sOzLkv2BWTH719SkG95yssgehiTU2U5ye', 'student', None, None, 'Computer Science and Engineering', None)
+2026-03-07 10:07:52,947 INFO sqlalchemy.engine.Engine INSERT INTO users (name, email, password, `role`, phone, profile_photo, department, year) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+2026-03-07 10:07:52,947 INFO sqlalchemy.engine.Engine [cached since 31.7s ago] ('Nehal Verma', 'nehal.verma59@demo.edu', '$2b$12$ue/hgFL.IztjLRnU12oti.S7JKl0hR8ZbHKX39vKxSayfC5e.9nlq', 'student', None, None, 'Artificial Intelligence and Data Science', None)
+2026-03-07 10:07:52,948 INFO sqlalchemy.engine.Engine COMMIT
+2026-03-07 10:07:54,178 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-03-07 10:07:54,182 INFO sqlalchemy.engine.Engine SELECT users.id, users.name, users.email, users.password, users.`role`, users.phone, users.profile_photo, users.department, users.year 
+FROM users 
+WHERE users.id = %s
+2026-03-07 10:07:54,183 INFO sqlalchemy.engine.Engine [generated in 0.00075s] (5,)
+2026-03-07 10:07:54,187 INFO sqlalchemy.engine.Engine SELECT users.id, users.name, users.email, users.password, users.`role`, users.phone, users.profile_photo, users.department, users.year 
+FROM users 
+WHERE users.id = %s
+2026-03-07 10:07:54,188 INFO sqlalchemy.engine.Engine [cached since 0.005846s ago] (6,)
+2026-03-07 10:07:54,192 INFO sqlalchemy.engine.Engine SELECT users.id, users.name, users.email, users.password, users.`role`, users.phone, users.profile_photo, users.department, users.year 
+FROM users 
+WHERE users.id = %s
+2026-03-07 10:07:54,192 INFO sqlalchemy.engine.Engine [cached since 0.01018s ago] (7,)
+2026-03-07 10:07:54,195 INFO sqlalchemy.engine.Engine SELECT users.id, users.name, users.email, users.password, users.`role`, users.phone, users.profile_photo, users.department, users.year 
+FROM users 
+WHERE users.id = %s
+2026-03-07 10:07:54,196 INFO sqlalchemy.engine.Engine [cached since 0.01389s ago] (8,)
+2026-03-07 10:07:54,199 INFO sqlalchemy.engine.Engine SELECT users.id, users.name, users.email, users.password, users.`role`, users.phone, users.profile_photo, users.department, users.year 
+FROM users 
+WHERE users.id = %s
+2026-03-07 10:07:54,199 INFO sqlalchemy.engine.Engine [cached since 0.01745s ago] (9,)
+2026-03-07 10:07:54,202 INFO sqlalchemy.engine.Engine SELECT users.id, users.name, users.email, users.password, users.`role`, users.phone, users.profile_photo, users.department, users.year 
+FROM users 
+WHERE users.id = %s
+2026-03-07 10:07:54,202 INFO sqlalchemy.engine.Engine [cached since 0.02057s ago] (10,)
+2026-03-07 10:07:54,206 INFO sqlalchemy.engine.Engine SELECT users.id, users.name, users.email, users.password, users.`role`, users.phone, users.profile_photo, users.department, users.year 
+FROM users 
+WHERE users.id = %s
+2026-03-07 10:07:54,206 INFO sqlalchemy.engine.Engine [cached since 0.02437s ago] (11,)
+2026-03-07 10:07:54,210 INFO sqlalchemy.engine.Engine SELECT users.id, users.name, users.email, users.password, users.`role`, users.phone, users.profile_photo, users.department, users.year 
+FROM users 
+WHERE users.id = %s
+2026-03-07 10:07:54,210 INFO sqlalchemy.engine.Engine [cached since 0.02821s ago] (12,)
+2026-03-07 10:07:54,213 INFO sqlalchemy.engine.Engine SELECT users.id, users.name, users.email, users.password, users.`role`, users.phone, users.profile_photo, users.department, users.year 
+FROM users 
+WHERE users.id = %s
+2026-03-07 10:07:54,214 INFO sqlalchemy.engine.Engine [cached since 0.03178s ago] (13,)
+2026-03-07 10:07:54,216 INFO sqlalchemy.engine.Engine SELECT users.id, users.name, users.email, users.password, users.`role`, users.phone, users.profile_photo, users.department, users.year 
+FROM users 
+WHERE users.id = %s
+2026-03-07 10:07:54,216 INFO sqlalchemy.engine.Engine [cached since 0.03394s ago] (14,)
+2026-03-07 10:07:54,217 INFO sqlalchemy.engine.Engine SELECT users.id, users.name, users.email, users.password, users.`role`, users.phone, users.profile_photo, users.department, users.year 
+FROM users 
+WHERE users.id = %s
+2026-03-07 10:07:54,217 INFO sqlalchemy.engine.Engine [cached since 0.03549s ago] (15,)
+2026-03-07 10:07:54,220 INFO sqlalchemy.engine.Engine SELECT users.id, users.name, users.email, users.password, users.`role`, users.phone, users.profile_photo, users.department, users.year 
+FROM users 
+WHERE users.id = %s
+2026-03-07 10:07:54,221 INFO sqlalchemy.engine.Engine [cached since 0.03897s ago] (16,)
+2026-03-07 10:07:54,225 INFO sqlalchemy.engine.Engine SELECT users.id, users.name, users.email, users.password, users.`role`, users.phone, users.profile_photo, users.department, users.year 
+FROM users 
+WHERE users.id = %s
+2026-03-07 10:07:54,225 INFO sqlalchemy.engine.Engine [cached since 0.04286s ago] (17,)
+2026-03-07 10:07:54,227 INFO sqlalchemy.engine.Engine SELECT users.id, users.name, users.email, users.password, users.`role`, users.phone, users.profile_photo, users.department, users.year 
+FROM users 
+WHERE users.id = %s
+2026-03-07 10:07:54,227 INFO sqlalchemy.engine.Engine [cached since 0.04524s ago] (18,)
+2026-03-07 10:07:54,229 INFO sqlalchemy.engine.Engine SELECT users.id, users.name, users.email, users.password, users.`role`, users.phone, users.profile_photo, users.department, users.year 
+FROM users 
+WHERE users.id = %s
+2026-03-07 10:07:54,230 INFO sqlalchemy.engine.Engine [cached since 0.04784s ago] (19,)
+2026-03-07 10:07:54,231 INFO sqlalchemy.engine.Engine SELECT users.id, users.name, users.email, users.password, users.`role`, users.phone, users.profile_photo, users.department, users.year 
+FROM users 
+WHERE users.id = %s
+2026-03-07 10:07:54,231 INFO sqlalchemy.engine.Engine [cached since 0.04968s ago] (20,)
+2026-03-07 10:07:54,233 INFO sqlalchemy.engine.Engine SELECT users.id, users.name, users.email, users.password, users.`role`, users.phone, users.profile_photo, users.department, users.year 
+FROM users 
+WHERE users.id = %s
+2026-03-07 10:07:54,233 INFO sqlalchemy.engine.Engine [cached since 0.05146s ago] (21,)
+2026-03-07 10:07:54,235 INFO sqlalchemy.engine.Engine SELECT users.id, users.name, users.email, users.password, users.`role`, users.phone, users.profile_photo, users.department, users.year 
+FROM users 
+WHERE users.id = %s
+2026-03-07 10:07:54,236 INFO sqlalchemy.engine.Engine [cached since 0.05375s ago] (22,)
+2026-03-07 10:07:54,239 INFO sqlalchemy.engine.Engine SELECT users.id, users.name, users.email, users.password, users.`role`, users.phone, users.profile_photo, users.department, users.year 
+FROM users 
+WHERE users.id = %s
+2026-03-07 10:07:54,239 INFO sqlalchemy.engine.Engine [cached since 0.05695s ago] (23,)
+2026-03-07 10:07:54,241 INFO sqlalchemy.engine.Engine SELECT users.id, users.name, users.email, users.password, users.`role`, users.phone, users.profile_photo, users.department, users.year 
+FROM users 
+WHERE users.id = %s
+2026-03-07 10:07:54,241 INFO sqlalchemy.engine.Engine [cached since 0.05908s ago] (24,)
+2026-03-07 10:07:54,242 INFO sqlalchemy.engine.Engine SELECT users.id, users.name, users.email, users.password, users.`role`, users.phone, users.profile_photo, users.department, users.year 
+FROM users 
+WHERE users.id = %s
+2026-03-07 10:07:54,243 INFO sqlalchemy.engine.Engine [cached since 0.06078s ago] (25,)
+2026-03-07 10:07:54,244 INFO sqlalchemy.engine.Engine SELECT users.id, users.name, users.email, users.password, users.`role`, users.phone, users.profile_photo, users.department, users.year 
+FROM users 
+WHERE users.id = %s
+2026-03-07 10:07:54,244 INFO sqlalchemy.engine.Engine [cached since 0.06269s ago] (26,)
+2026-03-07 10:07:54,247 INFO sqlalchemy.engine.Engine SELECT users.id, users.name, users.email, users.password, users.`role`, users.phone, users.profile_photo, users.department, users.year 
+FROM users 
+WHERE users.id = %s
+2026-03-07 10:07:54,247 INFO sqlalchemy.engine.Engine [cached since 0.06509s ago] (27,)
+2026-03-07 10:07:54,249 INFO sqlalchemy.engine.Engine SELECT users.id, users.name, users.email, users.password, users.`role`, users.phone, users.profile_photo, users.department, users.year 
+FROM users 
+WHERE users.id = %s
+2026-03-07 10:07:54,249 INFO sqlalchemy.engine.Engine [cached since 0.06745s ago] (28,)
+2026-03-07 10:07:54,252 INFO sqlalchemy.engine.Engine SELECT users.id, users.name, users.email, users.password, users.`role`, users.phone, users.profile_photo, users.department, users.year 
+FROM users 
+WHERE users.id = %s
+2026-03-07 10:07:54,252 INFO sqlalchemy.engine.Engine [cached since 0.06992s ago] (29,)
+2026-03-07 10:07:54,254 INFO sqlalchemy.engine.Engine SELECT users.id, users.name, users.email, users.password, users.`role`, users.phone, users.profile_photo, users.department, users.year 
+FROM users 
+WHERE users.id = %s
+2026-03-07 10:07:54,255 INFO sqlalchemy.engine.Engine [cached since 0.07273s ago] (30,)
+2026-03-07 10:07:54,256 INFO sqlalchemy.engine.Engine SELECT users.id, users.name, users.email, users.password, users.`role`, users.phone, users.profile_photo, users.department, users.year 
+FROM users 
+WHERE users.id = %s
+2026-03-07 10:07:54,256 INFO sqlalchemy.engine.Engine [cached since 0.07432s ago] (31,)
+2026-03-07 10:07:54,258 INFO sqlalchemy.engine.Engine SELECT users.id, users.name, users.email, users.password, users.`role`, users.phone, users.profile_photo, users.department, users.year 
+FROM users 
+WHERE users.id = %s
+2026-03-07 10:07:54,258 INFO sqlalchemy.engine.Engine [cached since 0.0762s ago] (32,)
+2026-03-07 10:07:54,260 INFO sqlalchemy.engine.Engine SELECT users.id, users.name, users.email, users.password, users.`role`, users.phone, users.profile_photo, users.department, users.year 
+FROM users 
+WHERE users.id = %s
+2026-03-07 10:07:54,260 INFO sqlalchemy.engine.Engine [cached since 0.07812s ago] (33,)
+2026-03-07 10:07:54,262 INFO sqlalchemy.engine.Engine SELECT users.id, users.name, users.email, users.password, users.`role`, users.phone, users.profile_photo, users.department, users.year 
+FROM users 
+WHERE users.id = %s
+2026-03-07 10:07:54,262 INFO sqlalchemy.engine.Engine [cached since 0.07997s ago] (34,)
+2026-03-07 10:07:54,264 INFO sqlalchemy.engine.Engine SELECT users.id, users.name, users.email, users.password, users.`role`, users.phone, users.profile_photo, users.department, users.year 
+FROM users 
+WHERE users.id = %s
+2026-03-07 10:07:54,264 INFO sqlalchemy.engine.Engine [cached since 0.08202s ago] (35,)
+2026-03-07 10:07:54,266 INFO sqlalchemy.engine.Engine SELECT users.id, users.name, users.email, users.password, users.`role`, users.phone, users.profile_photo, users.department, users.year 
+FROM users 
+WHERE users.id = %s
+2026-03-07 10:07:54,266 INFO sqlalchemy.engine.Engine [cached since 0.0845s ago] (36,)
+2026-03-07 10:07:54,269 INFO sqlalchemy.engine.Engine SELECT users.id, users.name, users.email, users.password, users.`role`, users.phone, users.profile_photo, users.department, users.year 
+FROM users 
+WHERE users.id = %s
+2026-03-07 10:07:54,269 INFO sqlalchemy.engine.Engine [cached since 0.08757s ago] (37,)
+2026-03-07 10:07:54,273 INFO sqlalchemy.engine.Engine SELECT users.id, users.name, users.email, users.password, users.`role`, users.phone, users.profile_photo, users.department, users.year 
+FROM users 
+WHERE users.id = %s
+2026-03-07 10:07:54,273 INFO sqlalchemy.engine.Engine [cached since 0.09167s ago] (38,)
+2026-03-07 10:07:54,276 INFO sqlalchemy.engine.Engine SELECT users.id, users.name, users.email, users.password, users.`role`, users.phone, users.profile_photo, users.department, users.year 
+FROM users 
+WHERE users.id = %s
+2026-03-07 10:07:54,277 INFO sqlalchemy.engine.Engine [cached since 0.09477s ago] (39,)
+2026-03-07 10:07:54,279 INFO sqlalchemy.engine.Engine SELECT users.id, users.name, users.email, users.password, users.`role`, users.phone, users.profile_photo, users.department, users.year 
+FROM users 
+WHERE users.id = %s
+2026-03-07 10:07:54,279 INFO sqlalchemy.engine.Engine [cached since 0.0977s ago] (40,)
+2026-03-07 10:07:54,282 INFO sqlalchemy.engine.Engine SELECT users.id, users.name, users.email, users.password, users.`role`, users.phone, users.profile_photo, users.department, users.year 
+FROM users 
+WHERE users.id = %s
+2026-03-07 10:07:54,282 INFO sqlalchemy.engine.Engine [cached since 0.09999s ago] (41,)
+2026-03-07 10:07:54,284 INFO sqlalchemy.engine.Engine SELECT users.id, users.name, users.email, users.password, users.`role`, users.phone, users.profile_photo, users.department, users.year 
+FROM users 
+WHERE users.id = %s
+2026-03-07 10:07:54,284 INFO sqlalchemy.engine.Engine [cached since 0.1025s ago] (42,)
+2026-03-07 10:07:54,288 INFO sqlalchemy.engine.Engine SELECT users.id, users.name, users.email, users.password, users.`role`, users.phone, users.profile_photo, users.department, users.year 
+FROM users 
+WHERE users.id = %s
+2026-03-07 10:07:54,288 INFO sqlalchemy.engine.Engine [cached since 0.1065s ago] (43,)
+2026-03-07 10:07:54,292 INFO sqlalchemy.engine.Engine SELECT users.id, users.name, users.email, users.password, users.`role`, users.phone, users.profile_photo, users.department, users.year 
+FROM users 
+WHERE users.id = %s
+2026-03-07 10:07:54,292 INFO sqlalchemy.engine.Engine [cached since 0.11s ago] (44,)
+2026-03-07 10:07:54,294 INFO sqlalchemy.engine.Engine SELECT users.id, users.name, users.email, users.password, users.`role`, users.phone, users.profile_photo, users.department, users.year 
+FROM users 
+WHERE users.id = %s
+2026-03-07 10:07:54,295 INFO sqlalchemy.engine.Engine [cached since 0.1128s ago] (45,)
+2026-03-07 10:07:54,297 INFO sqlalchemy.engine.Engine SELECT users.id, users.name, users.email, users.password, users.`role`, users.phone, users.profile_photo, users.department, users.year 
+FROM users 
+WHERE users.id = %s
+2026-03-07 10:07:54,297 INFO sqlalchemy.engine.Engine [cached since 0.1156s ago] (46,)
+2026-03-07 10:07:54,300 INFO sqlalchemy.engine.Engine SELECT users.id, users.name, users.email, users.password, users.`role`, users.phone, users.profile_photo, users.department, users.year 
+FROM users 
+WHERE users.id = %s
+2026-03-07 10:07:54,300 INFO sqlalchemy.engine.Engine [cached since 0.1182s ago] (47,)
+2026-03-07 10:07:54,302 INFO sqlalchemy.engine.Engine SELECT users.id, users.name, users.email, users.password, users.`role`, users.phone, users.profile_photo, users.department, users.year 
+FROM users 
+WHERE users.id = %s
+2026-03-07 10:07:54,303 INFO sqlalchemy.engine.Engine [cached since 0.1209s ago] (48,)
+2026-03-07 10:07:54,307 INFO sqlalchemy.engine.Engine SELECT users.id, users.name, users.email, users.password, users.`role`, users.phone, users.profile_photo, users.department, users.year 
+FROM users 
+WHERE users.id = %s
+2026-03-07 10:07:54,307 INFO sqlalchemy.engine.Engine [cached since 0.1257s ago] (49,)
+2026-03-07 10:07:54,310 INFO sqlalchemy.engine.Engine SELECT users.id, users.name, users.email, users.password, users.`role`, users.phone, users.profile_photo, users.department, users.year 
+FROM users 
+WHERE users.id = %s
+2026-03-07 10:07:54,310 INFO sqlalchemy.engine.Engine [cached since 0.1281s ago] (50,)
+2026-03-07 10:07:54,312 INFO sqlalchemy.engine.Engine SELECT users.id, users.name, users.email, users.password, users.`role`, users.phone, users.profile_photo, users.department, users.year 
+FROM users 
+WHERE users.id = %s
+2026-03-07 10:07:54,312 INFO sqlalchemy.engine.Engine [cached since 0.1305s ago] (51,)
+2026-03-07 10:07:54,314 INFO sqlalchemy.engine.Engine SELECT users.id, users.name, users.email, users.password, users.`role`, users.phone, users.profile_photo, users.department, users.year 
+FROM users 
+WHERE users.id = %s
+2026-03-07 10:07:54,314 INFO sqlalchemy.engine.Engine [cached since 0.1326s ago] (52,)
+2026-03-07 10:07:54,316 INFO sqlalchemy.engine.Engine SELECT users.id, users.name, users.email, users.password, users.`role`, users.phone, users.profile_photo, users.department, users.year 
+FROM users 
+WHERE users.id = %s
+2026-03-07 10:07:54,317 INFO sqlalchemy.engine.Engine [cached since 0.1348s ago] (53,)
+2026-03-07 10:07:54,319 INFO sqlalchemy.engine.Engine SELECT users.id, users.name, users.email, users.password, users.`role`, users.phone, users.profile_photo, users.department, users.year 
+FROM users 
+WHERE users.id = %s
+2026-03-07 10:07:54,319 INFO sqlalchemy.engine.Engine [cached since 0.1373s ago] (54,)
+2026-03-07 10:07:54,324 INFO sqlalchemy.engine.Engine SELECT users.id, users.name, users.email, users.password, users.`role`, users.phone, users.profile_photo, users.department, users.year 
+FROM users 
+WHERE users.id = %s
+2026-03-07 10:07:54,324 INFO sqlalchemy.engine.Engine [cached since 0.1419s ago] (55,)
+2026-03-07 10:07:54,326 INFO sqlalchemy.engine.Engine SELECT users.id, users.name, users.email, users.password, users.`role`, users.phone, users.profile_photo, users.department, users.year 
+FROM users 
+WHERE users.id = %s
+2026-03-07 10:07:54,326 INFO sqlalchemy.engine.Engine [cached since 0.1442s ago] (56,)
+2026-03-07 10:07:54,328 INFO sqlalchemy.engine.Engine SELECT users.id, users.name, users.email, users.password, users.`role`, users.phone, users.profile_photo, users.department, users.year 
+FROM users 
+WHERE users.id = %s
+2026-03-07 10:07:54,328 INFO sqlalchemy.engine.Engine [cached since 0.1467s ago] (57,)
+2026-03-07 10:07:54,331 INFO sqlalchemy.engine.Engine SELECT users.id, users.name, users.email, users.password, users.`role`, users.phone, users.profile_photo, users.department, users.year 
+FROM users 
+WHERE users.id = %s
+2026-03-07 10:07:54,331 INFO sqlalchemy.engine.Engine [cached since 0.1495s ago] (58,)
+2026-03-07 10:07:54,334 INFO sqlalchemy.engine.Engine SELECT users.id, users.name, users.email, users.password, users.`role`, users.phone, users.profile_photo, users.department, users.year 
+FROM users 
+WHERE users.id = %s
+2026-03-07 10:07:54,334 INFO sqlalchemy.engine.Engine [cached since 0.152s ago] (59,)
+2026-03-07 10:07:54,336 INFO sqlalchemy.engine.Engine SELECT users.id, users.name, users.email, users.password, users.`role`, users.phone, users.profile_photo, users.department, users.year 
+FROM users 
+WHERE users.id = %s
+2026-03-07 10:07:54,337 INFO sqlalchemy.engine.Engine [cached since 0.1548s ago] (60,)
+2026-03-07 10:07:54,339 INFO sqlalchemy.engine.Engine SELECT users.id, users.name, users.email, users.password, users.`role`, users.phone, users.profile_photo, users.department, users.year 
+FROM users 
+WHERE users.id = %s
+2026-03-07 10:07:54,340 INFO sqlalchemy.engine.Engine [cached since 0.1579s ago] (61,)
+2026-03-07 10:07:54,342 INFO sqlalchemy.engine.Engine SELECT users.id, users.name, users.email, users.password, users.`role`, users.phone, users.profile_photo, users.department, users.year 
+FROM users 
+WHERE users.id = %s
+2026-03-07 10:07:54,342 INFO sqlalchemy.engine.Engine [cached since 0.1599s ago] (62,)
+2026-03-07 10:07:54,343 INFO sqlalchemy.engine.Engine SELECT users.id, users.name, users.email, users.password, users.`role`, users.phone, users.profile_photo, users.department, users.year 
+FROM users 
+WHERE users.id = %s
+2026-03-07 10:07:54,343 INFO sqlalchemy.engine.Engine [cached since 0.1614s ago] (63,)
+2026-03-07 10:07:54,345 INFO sqlalchemy.engine.Engine SELECT users.id, users.name, users.email, users.password, users.`role`, users.phone, users.profile_photo, users.department, users.year 
+FROM users 
+WHERE users.id = %s
+2026-03-07 10:07:54,345 INFO sqlalchemy.engine.Engine [cached since 0.1635s ago] (64,)
+C:\Users\preet\OneDrive\Desktop\Mn\course-enrollment-analytics\backend\seed_demo_data_v2.py:170: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+  enrollment = Enrollment(student_id=s.id, course_id=c.id, enrollment_date=datetime.utcnow() - timedelta(days=random.randint(1, 30)))
+C:\Users\preet\OneDrive\Desktop\Mn\course-enrollment-analytics\backend\seed_demo_data_v2.py:185: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+  enrollment = Enrollment(student_id=s.id, course_id=c.id, enrollment_date=datetime.utcnow() - timedelta(days=random.randint(1, 30)))
+Inserting Enrollments...
+2026-03-07 10:07:54,361 INFO sqlalchemy.engine.Engine INSERT INTO enrollments (student_id, course_id, enrollment_date) VALUES (%s, %s, %s)
+2026-03-07 10:07:54,362 INFO sqlalchemy.engine.Engine [generated in 0.00044s] (5, 1, datetime.datetime(2026, 2, 9, 4, 37, 54, 348123))
+2026-03-07 10:07:54,365 INFO sqlalchemy.engine.Engine INSERT INTO enrollments (student_id, course_id, enrollment_date) VALUES (%s, %s, %s)
+2026-03-07 10:07:54,365 INFO sqlalchemy.engine.Engine [cached since 0.003722s ago] (5, 3, datetime.datetime(2026, 2, 7, 4, 37, 54, 348369))
+2026-03-07 10:07:54,366 INFO sqlalchemy.engine.Engine INSERT INTO enrollments (student_id, course_id, enrollment_date) VALUES (%s, %s, %s)
+2026-03-07 10:07:54,366 INFO sqlalchemy.engine.Engine [cached since 0.004834s ago] (6, 6, datetime.datetime(2026, 2, 25, 4, 37, 54, 348445))
+2026-03-07 10:07:54,367 INFO sqlalchemy.engine.Engine INSERT INTO enrollments (student_id, course_id, enrollment_date) VALUES (%s, %s, %s)
+2026-03-07 10:07:54,367 INFO sqlalchemy.engine.Engine [cached since 0.006112s ago] (6, 7, datetime.datetime(2026, 2, 8, 4, 37, 54, 348494))
+2026-03-07 10:07:54,369 INFO sqlalchemy.engine.Engine INSERT INTO enrollments (student_id, course_id, enrollment_date) VALUES (%s, %s, %s)
+2026-03-07 10:07:54,369 INFO sqlalchemy.engine.Engine [cached since 0.008022s ago] (7, 3, datetime.datetime(2026, 2, 16, 4, 37, 54, 348537))
+2026-03-07 10:07:54,371 INFO sqlalchemy.engine.Engine INSERT INTO enrollments (student_id, course_id, enrollment_date) VALUES (%s, %s, %s)
+2026-03-07 10:07:54,371 INFO sqlalchemy.engine.Engine [cached since 0.009775s ago] (7, 9, datetime.datetime(2026, 2, 18, 4, 37, 54, 348577))
+2026-03-07 10:07:54,372 INFO sqlalchemy.engine.Engine INSERT INTO enrollments (student_id, course_id, enrollment_date) VALUES (%s, %s, %s)
+2026-03-07 10:07:54,372 INFO sqlalchemy.engine.Engine [cached since 0.01119s ago] (8, 8, datetime.datetime(2026, 3, 2, 4, 37, 54, 348614))
+2026-03-07 10:07:54,373 INFO sqlalchemy.engine.Engine INSERT INTO enrollments (student_id, course_id, enrollment_date) VALUES (%s, %s, %s)
+2026-03-07 10:07:54,374 INFO sqlalchemy.engine.Engine [cached since 0.0124s ago] (9, 1, datetime.datetime(2026, 3, 6, 4, 37, 54, 348651))
+2026-03-07 10:07:54,374 INFO sqlalchemy.engine.Engine INSERT INTO enrollments (student_id, course_id, enrollment_date) VALUES (%s, %s, %s)
+2026-03-07 10:07:54,374 INFO sqlalchemy.engine.Engine [cached since 0.01321s ago] (9, 2, datetime.datetime(2026, 2, 22, 4, 37, 54, 348689))
+2026-03-07 10:07:54,375 INFO sqlalchemy.engine.Engine INSERT INTO enrollments (student_id, course_id, enrollment_date) VALUES (%s, %s, %s)
+2026-03-07 10:07:54,375 INFO sqlalchemy.engine.Engine [cached since 0.01409s ago] (10, 6, datetime.datetime(2026, 2, 17, 4, 37, 54, 348725))
+2026-03-07 10:07:54,376 INFO sqlalchemy.engine.Engine INSERT INTO enrollments (student_id, course_id, enrollment_date) VALUES (%s, %s, %s)
+2026-03-07 10:07:54,376 INFO sqlalchemy.engine.Engine [cached since 0.01493s ago] (11, 3, datetime.datetime(2026, 2, 7, 4, 37, 54, 348761))
+2026-03-07 10:07:54,377 INFO sqlalchemy.engine.Engine INSERT INTO enrollments (student_id, course_id, enrollment_date) VALUES (%s, %s, %s)
+2026-03-07 10:07:54,377 INFO sqlalchemy.engine.Engine [cached since 0.01569s ago] (11, 10, datetime.datetime(2026, 2, 15, 4, 37, 54, 348798))
+2026-03-07 10:07:54,378 INFO sqlalchemy.engine.Engine INSERT INTO enrollments (student_id, course_id, enrollment_date) VALUES (%s, %s, %s)
+2026-03-07 10:07:54,378 INFO sqlalchemy.engine.Engine [cached since 0.0168s ago] (12, 4, datetime.datetime(2026, 2, 21, 4, 37, 54, 348831))
+2026-03-07 10:07:54,380 INFO sqlalchemy.engine.Engine INSERT INTO enrollments (student_id, course_id, enrollment_date) VALUES (%s, %s, %s)
+2026-03-07 10:07:54,380 INFO sqlalchemy.engine.Engine [cached since 0.01858s ago] (13, 8, datetime.datetime(2026, 3, 3, 4, 37, 54, 348863))
+2026-03-07 10:07:54,381 INFO sqlalchemy.engine.Engine INSERT INTO enrollments (student_id, course_id, enrollment_date) VALUES (%s, %s, %s)
+2026-03-07 10:07:54,382 INFO sqlalchemy.engine.Engine [cached since 0.02062s ago] (14, 1, datetime.datetime(2026, 2, 6, 4, 37, 54, 349052))
+2026-03-07 10:07:54,383 INFO sqlalchemy.engine.Engine INSERT INTO enrollments (student_id, course_id, enrollment_date) VALUES (%s, %s, %s)
+2026-03-07 10:07:54,384 INFO sqlalchemy.engine.Engine [cached since 0.0224s ago] (56, 3, datetime.datetime(2026, 2, 8, 4, 37, 54, 349260))
+2026-03-07 10:07:54,385 INFO sqlalchemy.engine.Engine INSERT INTO enrollments (student_id, course_id, enrollment_date) VALUES (%s, %s, %s)
+2026-03-07 10:07:54,385 INFO sqlalchemy.engine.Engine [cached since 0.02425s ago] (14, 3, datetime.datetime(2026, 2, 11, 4, 37, 54, 349346))
+2026-03-07 10:07:54,388 INFO sqlalchemy.engine.Engine INSERT INTO enrollments (student_id, course_id, enrollment_date) VALUES (%s, %s, %s)
+2026-03-07 10:07:54,388 INFO sqlalchemy.engine.Engine [cached since 0.02691s ago] (61, 1, datetime.datetime(2026, 2, 10, 4, 37, 54, 349397))
+2026-03-07 10:07:54,390 INFO sqlalchemy.engine.Engine INSERT INTO enrollments (student_id, course_id, enrollment_date) VALUES (%s, %s, %s)
+2026-03-07 10:07:54,390 INFO sqlalchemy.engine.Engine [cached since 0.0287s ago] (38, 3, datetime.datetime(2026, 2, 7, 4, 37, 54, 349448))
+2026-03-07 10:07:54,391 INFO sqlalchemy.engine.Engine INSERT INTO enrollments (student_id, course_id, enrollment_date) VALUES (%s, %s, %s)
+2026-03-07 10:07:54,391 INFO sqlalchemy.engine.Engine [cached since 0.03005s ago] (45, 2, datetime.datetime(2026, 2, 17, 4, 37, 54, 349517))
+2026-03-07 10:07:54,392 INFO sqlalchemy.engine.Engine INSERT INTO enrollments (student_id, course_id, enrollment_date) VALUES (%s, %s, %s)
+2026-03-07 10:07:54,393 INFO sqlalchemy.engine.Engine [cached since 0.03137s ago] (59, 3, datetime.datetime(2026, 2, 18, 4, 37, 54, 349566))
+2026-03-07 10:07:54,394 INFO sqlalchemy.engine.Engine INSERT INTO enrollments (student_id, course_id, enrollment_date) VALUES (%s, %s, %s)
+2026-03-07 10:07:54,394 INFO sqlalchemy.engine.Engine [cached since 0.0328s ago] (21, 3, datetime.datetime(2026, 3, 5, 4, 37, 54, 349618))
+2026-03-07 10:07:54,395 INFO sqlalchemy.engine.Engine INSERT INTO enrollments (student_id, course_id, enrollment_date) VALUES (%s, %s, %s)
+2026-03-07 10:07:54,395 INFO sqlalchemy.engine.Engine [cached since 0.03428s ago] (42, 3, datetime.datetime(2026, 2, 14, 4, 37, 54, 349660))
+2026-03-07 10:07:54,397 INFO sqlalchemy.engine.Engine INSERT INTO enrollments (student_id, course_id, enrollment_date) VALUES (%s, %s, %s)
+2026-03-07 10:07:54,397 INFO sqlalchemy.engine.Engine [cached since 0.03555s ago] (29, 10, datetime.datetime(2026, 2, 25, 4, 37, 54, 349704))
+2026-03-07 10:07:54,398 INFO sqlalchemy.engine.Engine INSERT INTO enrollments (student_id, course_id, enrollment_date) VALUES (%s, %s, %s)
+2026-03-07 10:07:54,398 INFO sqlalchemy.engine.Engine [cached since 0.03672s ago] (33, 3, datetime.datetime(2026, 2, 6, 4, 37, 54, 349749))
+2026-03-07 10:07:54,399 INFO sqlalchemy.engine.Engine INSERT INTO enrollments (student_id, course_id, enrollment_date) VALUES (%s, %s, %s)
+2026-03-07 10:07:54,399 INFO sqlalchemy.engine.Engine [cached since 0.03786s ago] (28, 3, datetime.datetime(2026, 2, 20, 4, 37, 54, 349792))
+2026-03-07 10:07:54,400 INFO sqlalchemy.engine.Engine INSERT INTO enrollments (student_id, course_id, enrollment_date) VALUES (%s, %s, %s)
+2026-03-07 10:07:54,400 INFO sqlalchemy.engine.Engine [cached since 0.03903s ago] (50, 5, datetime.datetime(2026, 2, 7, 4, 37, 54, 349834))
+2026-03-07 10:07:54,401 INFO sqlalchemy.engine.Engine INSERT INTO enrollments (student_id, course_id, enrollment_date) VALUES (%s, %s, %s)
+2026-03-07 10:07:54,401 INFO sqlalchemy.engine.Engine [cached since 0.04025s ago] (6, 3, datetime.datetime(2026, 2, 23, 4, 37, 54, 349875))
+2026-03-07 10:07:54,403 INFO sqlalchemy.engine.Engine INSERT INTO enrollments (student_id, course_id, enrollment_date) VALUES (%s, %s, %s)
+2026-03-07 10:07:54,403 INFO sqlalchemy.engine.Engine [cached since 0.04152s ago] (25, 3, datetime.datetime(2026, 2, 15, 4, 37, 54, 349918))
+2026-03-07 10:07:54,404 INFO sqlalchemy.engine.Engine INSERT INTO enrollments (student_id, course_id, enrollment_date) VALUES (%s, %s, %s)
+2026-03-07 10:07:54,404 INFO sqlalchemy.engine.Engine [cached since 0.0428s ago] (41, 3, datetime.datetime(2026, 2, 22, 4, 37, 54, 349961))
+2026-03-07 10:07:54,405 INFO sqlalchemy.engine.Engine INSERT INTO enrollments (student_id, course_id, enrollment_date) VALUES (%s, %s, %s)
+2026-03-07 10:07:54,405 INFO sqlalchemy.engine.Engine [cached since 0.04378s ago] (9, 9, datetime.datetime(2026, 2, 19, 4, 37, 54, 350010))
+2026-03-07 10:07:54,406 INFO sqlalchemy.engine.Engine INSERT INTO enrollments (student_id, course_id, enrollment_date) VALUES (%s, %s, %s)
+2026-03-07 10:07:54,406 INFO sqlalchemy.engine.Engine [cached since 0.04476s ago] (20, 3, datetime.datetime(2026, 2, 10, 4, 37, 54, 350051))
+2026-03-07 10:07:54,407 INFO sqlalchemy.engine.Engine INSERT INTO enrollments (student_id, course_id, enrollment_date) VALUES (%s, %s, %s)
+2026-03-07 10:07:54,407 INFO sqlalchemy.engine.Engine [cached since 0.04589s ago] (19, 5, datetime.datetime(2026, 3, 4, 4, 37, 54, 350093))
+2026-03-07 10:07:54,408 INFO sqlalchemy.engine.Engine INSERT INTO enrollments (student_id, course_id, enrollment_date) VALUES (%s, %s, %s)
+2026-03-07 10:07:54,408 INFO sqlalchemy.engine.Engine [cached since 0.04712s ago] (46, 3, datetime.datetime(2026, 2, 16, 4, 37, 54, 350136))
+2026-03-07 10:07:54,410 INFO sqlalchemy.engine.Engine INSERT INTO enrollments (student_id, course_id, enrollment_date) VALUES (%s, %s, %s)
+2026-03-07 10:07:54,410 INFO sqlalchemy.engine.Engine [cached since 0.04851s ago] (63, 3, datetime.datetime(2026, 2, 25, 4, 37, 54, 350183))
+2026-03-07 10:07:54,411 INFO sqlalchemy.engine.Engine INSERT INTO enrollments (student_id, course_id, enrollment_date) VALUES (%s, %s, %s)
+2026-03-07 10:07:54,411 INFO sqlalchemy.engine.Engine [cached since 0.04975s ago] (24, 3, datetime.datetime(2026, 3, 2, 4, 37, 54, 350247))
+2026-03-07 10:07:54,412 INFO sqlalchemy.engine.Engine INSERT INTO enrollments (student_id, course_id, enrollment_date) VALUES (%s, %s, %s)
+2026-03-07 10:07:54,413 INFO sqlalchemy.engine.Engine [cached since 0.05146s ago] (58, 3, datetime.datetime(2026, 2, 5, 4, 37, 54, 350298))
+2026-03-07 10:07:54,414 INFO sqlalchemy.engine.Engine INSERT INTO enrollments (student_id, course_id, enrollment_date) VALUES (%s, %s, %s)
+2026-03-07 10:07:54,414 INFO sqlalchemy.engine.Engine [cached since 0.05283s ago] (39, 6, datetime.datetime(2026, 3, 1, 4, 37, 54, 350343))
+2026-03-07 10:07:54,415 INFO sqlalchemy.engine.Engine INSERT INTO enrollments (student_id, course_id, enrollment_date) VALUES (%s, %s, %s)
+2026-03-07 10:07:54,415 INFO sqlalchemy.engine.Engine [cached since 0.05397s ago] (10, 3, datetime.datetime(2026, 2, 15, 4, 37, 54, 350384))
+2026-03-07 10:07:54,416 INFO sqlalchemy.engine.Engine INSERT INTO enrollments (student_id, course_id, enrollment_date) VALUES (%s, %s, %s)
+2026-03-07 10:07:54,416 INFO sqlalchemy.engine.Engine [cached since 0.055s ago] (61, 3, datetime.datetime(2026, 2, 7, 4, 37, 54, 350427))
+2026-03-07 10:07:54,417 INFO sqlalchemy.engine.Engine INSERT INTO enrollments (student_id, course_id, enrollment_date) VALUES (%s, %s, %s)
+2026-03-07 10:07:54,417 INFO sqlalchemy.engine.Engine [cached since 0.05624s ago] (51, 3, datetime.datetime(2026, 2, 14, 4, 37, 54, 350472))
+2026-03-07 10:07:54,419 INFO sqlalchemy.engine.Engine INSERT INTO enrollments (student_id, course_id, enrollment_date) VALUES (%s, %s, %s)
+2026-03-07 10:07:54,419 INFO sqlalchemy.engine.Engine [cached since 0.05807s ago] (50, 3, datetime.datetime(2026, 2, 17, 4, 37, 54, 350514))
+2026-03-07 10:07:54,421 INFO sqlalchemy.engine.Engine INSERT INTO enrollments (student_id, course_id, enrollment_date) VALUES (%s, %s, %s)
+2026-03-07 10:07:54,421 INFO sqlalchemy.engine.Engine [cached since 0.06002s ago] (37, 3, datetime.datetime(2026, 2, 28, 4, 37, 54, 350558))
+2026-03-07 10:07:54,423 INFO sqlalchemy.engine.Engine INSERT INTO enrollments (student_id, course_id, enrollment_date) VALUES (%s, %s, %s)
+2026-03-07 10:07:54,424 INFO sqlalchemy.engine.Engine [cached since 0.0624s ago] (54, 3, datetime.datetime(2026, 2, 24, 4, 37, 54, 350599))
+2026-03-07 10:07:54,425 INFO sqlalchemy.engine.Engine INSERT INTO enrollments (student_id, course_id, enrollment_date) VALUES (%s, %s, %s)
+2026-03-07 10:07:54,425 INFO sqlalchemy.engine.Engine [cached since 0.06398s ago] (30, 3, datetime.datetime(2026, 2, 27, 4, 37, 54, 350646))
+2026-03-07 10:07:54,426 INFO sqlalchemy.engine.Engine INSERT INTO enrollments (student_id, course_id, enrollment_date) VALUES (%s, %s, %s)
+2026-03-07 10:07:54,426 INFO sqlalchemy.engine.Engine [cached since 0.06513s ago] (13, 3, datetime.datetime(2026, 2, 19, 4, 37, 54, 350692))
+2026-03-07 10:07:54,427 INFO sqlalchemy.engine.Engine INSERT INTO enrollments (student_id, course_id, enrollment_date) VALUES (%s, %s, %s)
+2026-03-07 10:07:54,427 INFO sqlalchemy.engine.Engine [cached since 0.06629s ago] (7, 5, datetime.datetime(2026, 2, 15, 4, 37, 54, 350735))
+2026-03-07 10:07:54,428 INFO sqlalchemy.engine.Engine INSERT INTO enrollments (student_id, course_id, enrollment_date) VALUES (%s, %s, %s)
+2026-03-07 10:07:54,428 INFO sqlalchemy.engine.Engine [cached since 0.0672s ago] (39, 3, datetime.datetime(2026, 2, 13, 4, 37, 54, 350784))
+2026-03-07 10:07:54,429 INFO sqlalchemy.engine.Engine INSERT INTO enrollments (student_id, course_id, enrollment_date) VALUES (%s, %s, %s)
+2026-03-07 10:07:54,429 INFO sqlalchemy.engine.Engine [cached since 0.06798s ago] (18, 3, datetime.datetime(2026, 2, 10, 4, 37, 54, 350826))
+2026-03-07 10:07:54,430 INFO sqlalchemy.engine.Engine INSERT INTO enrollments (student_id, course_id, enrollment_date) VALUES (%s, %s, %s)
+2026-03-07 10:07:54,430 INFO sqlalchemy.engine.Engine [cached since 0.06873s ago] (40, 3, datetime.datetime(2026, 3, 4, 4, 37, 54, 350867))
+2026-03-07 10:07:54,431 INFO sqlalchemy.engine.Engine INSERT INTO enrollments (student_id, course_id, enrollment_date) VALUES (%s, %s, %s)
+2026-03-07 10:07:54,431 INFO sqlalchemy.engine.Engine [cached since 0.06945s ago] (15, 3, datetime.datetime(2026, 3, 2, 4, 37, 54, 350905))
+2026-03-07 10:07:54,431 INFO sqlalchemy.engine.Engine INSERT INTO enrollments (student_id, course_id, enrollment_date) VALUES (%s, %s, %s)
+2026-03-07 10:07:54,431 INFO sqlalchemy.engine.Engine [cached since 0.07017s ago] (9, 3, datetime.datetime(2026, 3, 3, 4, 37, 54, 350952))
+2026-03-07 10:07:54,432 INFO sqlalchemy.engine.Engine INSERT INTO enrollments (student_id, course_id, enrollment_date) VALUES (%s, %s, %s)
+2026-03-07 10:07:54,432 INFO sqlalchemy.engine.Engine [cached since 0.0709s ago] (35, 3, datetime.datetime(2026, 2, 19, 4, 37, 54, 350998))
+2026-03-07 10:07:54,433 INFO sqlalchemy.engine.Engine INSERT INTO enrollments (student_id, course_id, enrollment_date) VALUES (%s, %s, %s)
+2026-03-07 10:07:54,433 INFO sqlalchemy.engine.Engine [cached since 0.0716s ago] (60, 3, datetime.datetime(2026, 2, 9, 4, 37, 54, 351041))
+2026-03-07 10:07:54,433 INFO sqlalchemy.engine.Engine INSERT INTO enrollments (student_id, course_id, enrollment_date) VALUES (%s, %s, %s)
+2026-03-07 10:07:54,433 INFO sqlalchemy.engine.Engine [cached since 0.07227s ago] (8, 3, datetime.datetime(2026, 2, 10, 4, 37, 54, 351089))
+2026-03-07 10:07:54,434 INFO sqlalchemy.engine.Engine INSERT INTO enrollments (student_id, course_id, enrollment_date) VALUES (%s, %s, %s)
+2026-03-07 10:07:54,434 INFO sqlalchemy.engine.Engine [cached since 0.07304s ago] (36, 3, datetime.datetime(2026, 2, 27, 4, 37, 54, 351131))
+2026-03-07 10:07:54,438 INFO sqlalchemy.engine.Engine INSERT INTO enrollments (student_id, course_id, enrollment_date) VALUES (%s, %s, %s)
+2026-03-07 10:07:54,438 INFO sqlalchemy.engine.Engine [cached since 0.07732s ago] (44, 3, datetime.datetime(2026, 2, 14, 4, 37, 54, 351172))
+2026-03-07 10:07:54,440 INFO sqlalchemy.engine.Engine INSERT INTO enrollments (student_id, course_id, enrollment_date) VALUES (%s, %s, %s)
+2026-03-07 10:07:54,440 INFO sqlalchemy.engine.Engine [cached since 0.07879s ago] (31, 3, datetime.datetime(2026, 3, 2, 4, 37, 54, 351214))
+2026-03-07 10:07:54,442 INFO sqlalchemy.engine.Engine INSERT INTO enrollments (student_id, course_id, enrollment_date) VALUES (%s, %s, %s)
+2026-03-07 10:07:54,442 INFO sqlalchemy.engine.Engine [cached since 0.08055s ago] (29, 6, datetime.datetime(2026, 2, 21, 4, 37, 54, 351265))
+2026-03-07 10:07:54,443 INFO sqlalchemy.engine.Engine INSERT INTO enrollments (student_id, course_id, enrollment_date) VALUES (%s, %s, %s)
+2026-03-07 10:07:54,443 INFO sqlalchemy.engine.Engine [cached since 0.08166s ago] (15, 5, datetime.datetime(2026, 3, 1, 4, 37, 54, 351311))
+2026-03-07 10:07:54,444 INFO sqlalchemy.engine.Engine INSERT INTO enrollments (student_id, course_id, enrollment_date) VALUES (%s, %s, %s)
+2026-03-07 10:07:54,444 INFO sqlalchemy.engine.Engine [cached since 0.08303s ago] (12, 9, datetime.datetime(2026, 2, 15, 4, 37, 54, 351355))
+2026-03-07 10:07:54,445 INFO sqlalchemy.engine.Engine INSERT INTO enrollments (student_id, course_id, enrollment_date) VALUES (%s, %s, %s)
+2026-03-07 10:07:54,446 INFO sqlalchemy.engine.Engine [cached since 0.08435s ago] (61, 6, datetime.datetime(2026, 2, 28, 4, 37, 54, 351407))
+2026-03-07 10:07:54,447 INFO sqlalchemy.engine.Engine INSERT INTO enrollments (student_id, course_id, enrollment_date) VALUES (%s, %s, %s)
+2026-03-07 10:07:54,447 INFO sqlalchemy.engine.Engine [cached since 0.08548s ago] (47, 3, datetime.datetime(2026, 2, 7, 4, 37, 54, 351455))
+2026-03-07 10:07:54,447 INFO sqlalchemy.engine.Engine INSERT INTO enrollments (student_id, course_id, enrollment_date) VALUES (%s, %s, %s)
+2026-03-07 10:07:54,447 INFO sqlalchemy.engine.Engine [cached since 0.08623s ago] (45, 3, datetime.datetime(2026, 2, 10, 4, 37, 54, 351646))
+2026-03-07 10:07:54,448 INFO sqlalchemy.engine.Engine INSERT INTO enrollments (student_id, course_id, enrollment_date) VALUES (%s, %s, %s)
+2026-03-07 10:07:54,448 INFO sqlalchemy.engine.Engine [cached since 0.08686s ago] (48, 7, datetime.datetime(2026, 3, 1, 4, 37, 54, 351691))
+2026-03-07 10:07:54,449 INFO sqlalchemy.engine.Engine INSERT INTO enrollments (student_id, course_id, enrollment_date) VALUES (%s, %s, %s)
+2026-03-07 10:07:54,449 INFO sqlalchemy.engine.Engine [cached since 0.0875s ago] (55, 3, datetime.datetime(2026, 2, 22, 4, 37, 54, 351729))
+2026-03-07 10:07:54,450 INFO sqlalchemy.engine.Engine INSERT INTO enrollments (student_id, course_id, enrollment_date) VALUES (%s, %s, %s)
+2026-03-07 10:07:54,450 INFO sqlalchemy.engine.Engine [cached since 0.08848s ago] (17, 9, datetime.datetime(2026, 2, 16, 4, 37, 54, 351768))
+2026-03-07 10:07:54,451 INFO sqlalchemy.engine.Engine INSERT INTO enrollments (student_id, course_id, enrollment_date) VALUES (%s, %s, %s)
+2026-03-07 10:07:54,451 INFO sqlalchemy.engine.Engine [cached since 0.0897s ago] (37, 10, datetime.datetime(2026, 3, 5, 4, 37, 54, 351807))
+2026-03-07 10:07:54,452 INFO sqlalchemy.engine.Engine INSERT INTO enrollments (student_id, course_id, enrollment_date) VALUES (%s, %s, %s)
+2026-03-07 10:07:54,452 INFO sqlalchemy.engine.Engine [cached since 0.09116s ago] (34, 3, datetime.datetime(2026, 2, 19, 4, 37, 54, 351850))
+2026-03-07 10:07:54,455 INFO sqlalchemy.engine.Engine INSERT INTO enrollments (student_id, course_id, enrollment_date) VALUES (%s, %s, %s)
+2026-03-07 10:07:54,455 INFO sqlalchemy.engine.Engine [cached since 0.09363s ago] (38, 10, datetime.datetime(2026, 2, 22, 4, 37, 54, 351888))
+2026-03-07 10:07:54,457 INFO sqlalchemy.engine.Engine INSERT INTO enrollments (student_id, course_id, enrollment_date) VALUES (%s, %s, %s)
+2026-03-07 10:07:54,457 INFO sqlalchemy.engine.Engine [cached since 0.09548s ago] (19, 3, datetime.datetime(2026, 2, 28, 4, 37, 54, 351927))
+2026-03-07 10:07:54,458 INFO sqlalchemy.engine.Engine INSERT INTO enrollments (student_id, course_id, enrollment_date) VALUES (%s, %s, %s)
+2026-03-07 10:07:54,458 INFO sqlalchemy.engine.Engine [cached since 0.0968s ago] (62, 3, datetime.datetime(2026, 3, 3, 4, 37, 54, 351964))
+2026-03-07 10:07:54,459 INFO sqlalchemy.engine.Engine INSERT INTO enrollments (student_id, course_id, enrollment_date) VALUES (%s, %s, %s)
+2026-03-07 10:07:54,459 INFO sqlalchemy.engine.Engine [cached since 0.0982s ago] (43, 3, datetime.datetime(2026, 2, 15, 4, 37, 54, 352003))
+2026-03-07 10:07:54,461 INFO sqlalchemy.engine.Engine INSERT INTO enrollments (student_id, course_id, enrollment_date) VALUES (%s, %s, %s)
+2026-03-07 10:07:54,461 INFO sqlalchemy.engine.Engine [cached since 0.09962s ago] (48, 3, datetime.datetime(2026, 3, 6, 4, 37, 54, 352037))
+2026-03-07 10:07:54,462 INFO sqlalchemy.engine.Engine INSERT INTO enrollments (student_id, course_id, enrollment_date) VALUES (%s, %s, %s)
+2026-03-07 10:07:54,462 INFO sqlalchemy.engine.Engine [cached since 0.1008s ago] (37, 2, datetime.datetime(2026, 2, 14, 4, 37, 54, 352070))
+2026-03-07 10:07:54,463 INFO sqlalchemy.engine.Engine INSERT INTO enrollments (student_id, course_id, enrollment_date) VALUES (%s, %s, %s)
+2026-03-07 10:07:54,463 INFO sqlalchemy.engine.Engine [cached since 0.1018s ago] (9, 10, datetime.datetime(2026, 3, 1, 4, 37, 54, 352106))
+2026-03-07 10:07:54,464 INFO sqlalchemy.engine.Engine INSERT INTO enrollments (student_id, course_id, enrollment_date) VALUES (%s, %s, %s)
+2026-03-07 10:07:54,464 INFO sqlalchemy.engine.Engine [cached since 0.1026s ago] (59, 6, datetime.datetime(2026, 2, 22, 4, 37, 54, 352139))
+2026-03-07 10:07:54,465 INFO sqlalchemy.engine.Engine INSERT INTO enrollments (student_id, course_id, enrollment_date) VALUES (%s, %s, %s)
+2026-03-07 10:07:54,465 INFO sqlalchemy.engine.Engine [cached since 0.1034s ago] (23, 3, datetime.datetime(2026, 2, 17, 4, 37, 54, 352182))
+2026-03-07 10:07:54,465 INFO sqlalchemy.engine.Engine INSERT INTO enrollments (student_id, course_id, enrollment_date) VALUES (%s, %s, %s)
+2026-03-07 10:07:54,465 INFO sqlalchemy.engine.Engine [cached since 0.1041s ago] (31, 5, datetime.datetime(2026, 2, 18, 4, 37, 54, 352242))
+2026-03-07 10:07:54,466 INFO sqlalchemy.engine.Engine INSERT INTO enrollments (student_id, course_id, enrollment_date) VALUES (%s, %s, %s)
+2026-03-07 10:07:54,466 INFO sqlalchemy.engine.Engine [cached since 0.1049s ago] (26, 3, datetime.datetime(2026, 2, 21, 4, 37, 54, 352288))
+2026-03-07 10:07:54,467 INFO sqlalchemy.engine.Engine INSERT INTO enrollments (student_id, course_id, enrollment_date) VALUES (%s, %s, %s)
+2026-03-07 10:07:54,467 INFO sqlalchemy.engine.Engine [cached since 0.1057s ago] (12, 3, datetime.datetime(2026, 2, 13, 4, 37, 54, 352332))
+2026-03-07 10:07:54,468 INFO sqlalchemy.engine.Engine INSERT INTO enrollments (student_id, course_id, enrollment_date) VALUES (%s, %s, %s)
+2026-03-07 10:07:54,468 INFO sqlalchemy.engine.Engine [cached since 0.1067s ago] (36, 9, datetime.datetime(2026, 2, 23, 4, 37, 54, 352370))
+2026-03-07 10:07:54,469 INFO sqlalchemy.engine.Engine INSERT INTO enrollments (student_id, course_id, enrollment_date) VALUES (%s, %s, %s)
+2026-03-07 10:07:54,470 INFO sqlalchemy.engine.Engine [cached since 0.1084s ago] (49, 3, datetime.datetime(2026, 2, 27, 4, 37, 54, 352573))
+2026-03-07 10:07:54,472 INFO sqlalchemy.engine.Engine INSERT INTO enrollments (student_id, course_id, enrollment_date) VALUES (%s, %s, %s)
+2026-03-07 10:07:54,472 INFO sqlalchemy.engine.Engine [cached since 0.111s ago] (15, 10, datetime.datetime(2026, 2, 12, 4, 37, 54, 352636))
+2026-03-07 10:07:54,473 INFO sqlalchemy.engine.Engine INSERT INTO enrollments (student_id, course_id, enrollment_date) VALUES (%s, %s, %s)
+2026-03-07 10:07:54,474 INFO sqlalchemy.engine.Engine [cached since 0.1125s ago] (42, 6, datetime.datetime(2026, 3, 2, 4, 37, 54, 352691))
+2026-03-07 10:07:54,475 INFO sqlalchemy.engine.Engine INSERT INTO enrollments (student_id, course_id, enrollment_date) VALUES (%s, %s, %s)
+2026-03-07 10:07:54,475 INFO sqlalchemy.engine.Engine [cached since 0.1137s ago] (12, 1, datetime.datetime(2026, 2, 12, 4, 37, 54, 352731))
+2026-03-07 10:07:54,476 INFO sqlalchemy.engine.Engine INSERT INTO enrollments (student_id, course_id, enrollment_date) VALUES (%s, %s, %s)
+2026-03-07 10:07:54,476 INFO sqlalchemy.engine.Engine [cached since 0.115s ago] (42, 10, datetime.datetime(2026, 2, 21, 4, 37, 54, 352784))
+2026-03-07 10:07:54,477 INFO sqlalchemy.engine.Engine INSERT INTO enrollments (student_id, course_id, enrollment_date) VALUES (%s, %s, %s)
+2026-03-07 10:07:54,478 INFO sqlalchemy.engine.Engine [cached since 0.1164s ago] (22, 3, datetime.datetime(2026, 3, 3, 4, 37, 54, 352822))
+2026-03-07 10:07:54,479 INFO sqlalchemy.engine.Engine INSERT INTO enrollments (student_id, course_id, enrollment_date) VALUES (%s, %s, %s)
+2026-03-07 10:07:54,479 INFO sqlalchemy.engine.Engine [cached since 0.1175s ago] (29, 3, datetime.datetime(2026, 2, 23, 4, 37, 54, 352858))
+2026-03-07 10:07:54,480 INFO sqlalchemy.engine.Engine INSERT INTO enrollments (student_id, course_id, enrollment_date) VALUES (%s, %s, %s)
+2026-03-07 10:07:54,480 INFO sqlalchemy.engine.Engine [cached since 0.1185s ago] (52, 3, datetime.datetime(2026, 3, 5, 4, 37, 54, 352911))
+2026-03-07 10:07:54,480 INFO sqlalchemy.engine.Engine INSERT INTO enrollments (student_id, course_id, enrollment_date) VALUES (%s, %s, %s)
+2026-03-07 10:07:54,480 INFO sqlalchemy.engine.Engine [cached since 0.1193s ago] (53, 3, datetime.datetime(2026, 2, 19, 4, 37, 54, 352954))
+2026-03-07 10:07:54,481 INFO sqlalchemy.engine.Engine INSERT INTO enrollments (student_id, course_id, enrollment_date) VALUES (%s, %s, %s)
+2026-03-07 10:07:54,481 INFO sqlalchemy.engine.Engine [cached since 0.1199s ago] (33, 9, datetime.datetime(2026, 2, 10, 4, 37, 54, 352993))
+2026-03-07 10:07:54,482 INFO sqlalchemy.engine.Engine INSERT INTO enrollments (student_id, course_id, enrollment_date) VALUES (%s, %s, %s)
+2026-03-07 10:07:54,482 INFO sqlalchemy.engine.Engine [cached since 0.1206s ago] (16, 3, datetime.datetime(2026, 2, 7, 4, 37, 54, 353027))
+2026-03-07 10:07:54,483 INFO sqlalchemy.engine.Engine INSERT INTO enrollments (student_id, course_id, enrollment_date) VALUES (%s, %s, %s)
+2026-03-07 10:07:54,483 INFO sqlalchemy.engine.Engine [cached since 0.1216s ago] (59, 4, datetime.datetime(2026, 3, 6, 4, 37, 54, 353073))
+2026-03-07 10:07:54,484 INFO sqlalchemy.engine.Engine INSERT INTO enrollments (student_id, course_id, enrollment_date) VALUES (%s, %s, %s)
+2026-03-07 10:07:54,484 INFO sqlalchemy.engine.Engine [cached since 0.1227s ago] (53, 8, datetime.datetime(2026, 2, 25, 4, 37, 54, 353120))
+2026-03-07 10:07:54,485 INFO sqlalchemy.engine.Engine INSERT INTO enrollments (student_id, course_id, enrollment_date) VALUES (%s, %s, %s)
+2026-03-07 10:07:54,485 INFO sqlalchemy.engine.Engine [cached since 0.1239s ago] (18, 2, datetime.datetime(2026, 3, 3, 4, 37, 54, 353155))
+2026-03-07 10:07:54,487 INFO sqlalchemy.engine.Engine INSERT INTO enrollments (student_id, course_id, enrollment_date) VALUES (%s, %s, %s)
+2026-03-07 10:07:54,487 INFO sqlalchemy.engine.Engine [cached since 0.1255s ago] (19, 6, datetime.datetime(2026, 2, 22, 4, 37, 54, 353197))
+2026-03-07 10:07:54,489 INFO sqlalchemy.engine.Engine INSERT INTO enrollments (student_id, course_id, enrollment_date) VALUES (%s, %s, %s)
+2026-03-07 10:07:54,489 INFO sqlalchemy.engine.Engine [cached since 0.1277s ago] (11, 2, datetime.datetime(2026, 2, 14, 4, 37, 54, 353232))
+2026-03-07 10:07:54,490 INFO sqlalchemy.engine.Engine INSERT INTO enrollments (student_id, course_id, enrollment_date) VALUES (%s, %s, %s)
+2026-03-07 10:07:54,490 INFO sqlalchemy.engine.Engine [cached since 0.1292s ago] (24, 6, datetime.datetime(2026, 2, 11, 4, 37, 54, 353267))
+2026-03-07 10:07:54,491 INFO sqlalchemy.engine.Engine INSERT INTO enrollments (student_id, course_id, enrollment_date) VALUES (%s, %s, %s)
+2026-03-07 10:07:54,492 INFO sqlalchemy.engine.Engine [cached since 0.1304s ago] (49, 5, datetime.datetime(2026, 2, 11, 4, 37, 54, 353312))
+2026-03-07 10:07:54,493 INFO sqlalchemy.engine.Engine INSERT INTO enrollments (student_id, course_id, enrollment_date) VALUES (%s, %s, %s)
+2026-03-07 10:07:54,493 INFO sqlalchemy.engine.Engine [cached since 0.1316s ago] (57, 3, datetime.datetime(2026, 3, 5, 4, 37, 54, 353355))
+2026-03-07 10:07:54,494 INFO sqlalchemy.engine.Engine INSERT INTO enrollments (student_id, course_id, enrollment_date) VALUES (%s, %s, %s)
+2026-03-07 10:07:54,494 INFO sqlalchemy.engine.Engine [cached since 0.1327s ago] (57, 7, datetime.datetime(2026, 3, 1, 4, 37, 54, 353391))
+2026-03-07 10:07:54,495 INFO sqlalchemy.engine.Engine INSERT INTO enrollments (student_id, course_id, enrollment_date) VALUES (%s, %s, %s)
+2026-03-07 10:07:54,495 INFO sqlalchemy.engine.Engine [cached since 0.1337s ago] (16, 8, datetime.datetime(2026, 2, 5, 4, 37, 54, 353424))
+2026-03-07 10:07:54,496 INFO sqlalchemy.engine.Engine INSERT INTO enrollments (student_id, course_id, enrollment_date) VALUES (%s, %s, %s)
+2026-03-07 10:07:54,496 INFO sqlalchemy.engine.Engine [cached since 0.1347s ago] (22, 1, datetime.datetime(2026, 3, 4, 4, 37, 54, 353462))
+2026-03-07 10:07:54,497 INFO sqlalchemy.engine.Engine INSERT INTO enrollments (student_id, course_id, enrollment_date) VALUES (%s, %s, %s)
+2026-03-07 10:07:54,497 INFO sqlalchemy.engine.Engine [cached since 0.1357s ago] (31, 1, datetime.datetime(2026, 2, 7, 4, 37, 54, 353500))
+2026-03-07 10:07:54,498 INFO sqlalchemy.engine.Engine INSERT INTO enrollments (student_id, course_id, enrollment_date) VALUES (%s, %s, %s)
+2026-03-07 10:07:54,498 INFO sqlalchemy.engine.Engine [cached since 0.137s ago] (51, 6, datetime.datetime(2026, 2, 23, 4, 37, 54, 353541))
+2026-03-07 10:07:54,499 INFO sqlalchemy.engine.Engine INSERT INTO enrollments (student_id, course_id, enrollment_date) VALUES (%s, %s, %s)
+2026-03-07 10:07:54,499 INFO sqlalchemy.engine.Engine [cached since 0.1382s ago] (44, 9, datetime.datetime(2026, 3, 1, 4, 37, 54, 353584))
+2026-03-07 10:07:54,500 INFO sqlalchemy.engine.Engine INSERT INTO enrollments (student_id, course_id, enrollment_date) VALUES (%s, %s, %s)
+2026-03-07 10:07:54,501 INFO sqlalchemy.engine.Engine [cached since 0.1394s ago] (64, 10, datetime.datetime(2026, 2, 27, 4, 37, 54, 353629))
+2026-03-07 10:07:54,502 INFO sqlalchemy.engine.Engine INSERT INTO enrollments (student_id, course_id, enrollment_date) VALUES (%s, %s, %s)
+2026-03-07 10:07:54,502 INFO sqlalchemy.engine.Engine [cached since 0.1411s ago] (22, 10, datetime.datetime(2026, 2, 27, 4, 37, 54, 353676))
+2026-03-07 10:07:54,504 INFO sqlalchemy.engine.Engine INSERT INTO enrollments (student_id, course_id, enrollment_date) VALUES (%s, %s, %s)
+2026-03-07 10:07:54,504 INFO sqlalchemy.engine.Engine [cached since 0.1427s ago] (64, 3, datetime.datetime(2026, 2, 22, 4, 37, 54, 353719))
+2026-03-07 10:07:54,505 INFO sqlalchemy.engine.Engine INSERT INTO enrollments (student_id, course_id, enrollment_date) VALUES (%s, %s, %s)
+2026-03-07 10:07:54,505 INFO sqlalchemy.engine.Engine [cached since 0.1438s ago] (46, 9, datetime.datetime(2026, 3, 6, 4, 37, 54, 353764))
+2026-03-07 10:07:54,506 INFO sqlalchemy.engine.Engine INSERT INTO enrollments (student_id, course_id, enrollment_date) VALUES (%s, %s, %s)
+2026-03-07 10:07:54,506 INFO sqlalchemy.engine.Engine [cached since 0.1448s ago] (10, 10, datetime.datetime(2026, 3, 4, 4, 37, 54, 353823))
+2026-03-07 10:07:54,508 INFO sqlalchemy.engine.Engine INSERT INTO enrollments (student_id, course_id, enrollment_date) VALUES (%s, %s, %s)
+2026-03-07 10:07:54,508 INFO sqlalchemy.engine.Engine [cached since 0.147s ago] (19, 4, datetime.datetime(2026, 2, 8, 4, 37, 54, 353890))
+2026-03-07 10:07:54,509 INFO sqlalchemy.engine.Engine INSERT INTO enrollments (student_id, course_id, enrollment_date) VALUES (%s, %s, %s)
+2026-03-07 10:07:54,509 INFO sqlalchemy.engine.Engine [cached since 0.1479s ago] (23, 10, datetime.datetime(2026, 3, 6, 4, 37, 54, 353949))
+2026-03-07 10:07:54,510 INFO sqlalchemy.engine.Engine INSERT INTO enrollments (student_id, course_id, enrollment_date) VALUES (%s, %s, %s)
+2026-03-07 10:07:54,510 INFO sqlalchemy.engine.Engine [cached since 0.1486s ago] (17, 3, datetime.datetime(2026, 2, 12, 4, 37, 54, 354023))
+2026-03-07 10:07:54,510 INFO sqlalchemy.engine.Engine INSERT INTO enrollments (student_id, course_id, enrollment_date) VALUES (%s, %s, %s)
+2026-03-07 10:07:54,510 INFO sqlalchemy.engine.Engine [cached since 0.1492s ago] (43, 1, datetime.datetime(2026, 2, 24, 4, 37, 54, 354090))
+2026-03-07 10:07:54,511 INFO sqlalchemy.engine.Engine INSERT INTO enrollments (student_id, course_id, enrollment_date) VALUES (%s, %s, %s)
+2026-03-07 10:07:54,511 INFO sqlalchemy.engine.Engine [cached since 0.1498s ago] (64, 8, datetime.datetime(2026, 2, 16, 4, 37, 54, 354572))
+2026-03-07 10:07:54,511 INFO sqlalchemy.engine.Engine INSERT INTO enrollments (student_id, course_id, enrollment_date) VALUES (%s, %s, %s)
+2026-03-07 10:07:54,511 INFO sqlalchemy.engine.Engine [cached since 0.1503s ago] (60, 2, datetime.datetime(2026, 2, 12, 4, 37, 54, 354681))
+2026-03-07 10:07:54,512 INFO sqlalchemy.engine.Engine INSERT INTO enrollments (student_id, course_id, enrollment_date) VALUES (%s, %s, %s)
+2026-03-07 10:07:54,512 INFO sqlalchemy.engine.Engine [cached since 0.1509s ago] (5, 2, datetime.datetime(2026, 2, 10, 4, 37, 54, 354765))
+2026-03-07 10:07:54,513 INFO sqlalchemy.engine.Engine INSERT INTO enrollments (student_id, course_id, enrollment_date) VALUES (%s, %s, %s)
+2026-03-07 10:07:54,513 INFO sqlalchemy.engine.Engine [cached since 0.1515s ago] (38, 9, datetime.datetime(2026, 2, 14, 4, 37, 54, 354838))
+2026-03-07 10:07:54,513 INFO sqlalchemy.engine.Engine INSERT INTO enrollments (student_id, course_id, enrollment_date) VALUES (%s, %s, %s)
+2026-03-07 10:07:54,513 INFO sqlalchemy.engine.Engine [cached since 0.152s ago] (45, 4, datetime.datetime(2026, 2, 24, 4, 37, 54, 354898))
+2026-03-07 10:07:54,514 INFO sqlalchemy.engine.Engine INSERT INTO enrollments (student_id, course_id, enrollment_date) VALUES (%s, %s, %s)
+2026-03-07 10:07:54,514 INFO sqlalchemy.engine.Engine [cached since 0.1525s ago] (40, 5, datetime.datetime(2026, 2, 20, 4, 37, 54, 354941))
+2026-03-07 10:07:54,514 INFO sqlalchemy.engine.Engine INSERT INTO enrollments (student_id, course_id, enrollment_date) VALUES (%s, %s, %s)
+2026-03-07 10:07:54,514 INFO sqlalchemy.engine.Engine [cached since 0.153s ago] (58, 2, datetime.datetime(2026, 2, 14, 4, 37, 54, 355007))
+2026-03-07 10:07:54,515 INFO sqlalchemy.engine.Engine INSERT INTO enrollments (student_id, course_id, enrollment_date) VALUES (%s, %s, %s)
+2026-03-07 10:07:54,515 INFO sqlalchemy.engine.Engine [cached since 0.1536s ago] (56, 2, datetime.datetime(2026, 2, 8, 4, 37, 54, 355053))
+2026-03-07 10:07:54,515 INFO sqlalchemy.engine.Engine INSERT INTO enrollments (student_id, course_id, enrollment_date) VALUES (%s, %s, %s)
+2026-03-07 10:07:54,515 INFO sqlalchemy.engine.Engine [cached since 0.1541s ago] (35, 8, datetime.datetime(2026, 2, 16, 4, 37, 54, 355092))
+2026-03-07 10:07:54,516 INFO sqlalchemy.engine.Engine INSERT INTO enrollments (student_id, course_id, enrollment_date) VALUES (%s, %s, %s)
+2026-03-07 10:07:54,516 INFO sqlalchemy.engine.Engine [cached since 0.1546s ago] (54, 10, datetime.datetime(2026, 2, 27, 4, 37, 54, 355127))
+2026-03-07 10:07:54,516 INFO sqlalchemy.engine.Engine INSERT INTO enrollments (student_id, course_id, enrollment_date) VALUES (%s, %s, %s)
+2026-03-07 10:07:54,517 INFO sqlalchemy.engine.Engine [cached since 0.1554s ago] (39, 5, datetime.datetime(2026, 2, 21, 4, 37, 54, 355169))
+2026-03-07 10:07:54,517 INFO sqlalchemy.engine.Engine INSERT INTO enrollments (student_id, course_id, enrollment_date) VALUES (%s, %s, %s)
+2026-03-07 10:07:54,517 INFO sqlalchemy.engine.Engine [cached since 0.1562s ago] (62, 5, datetime.datetime(2026, 2, 10, 4, 37, 54, 355203))
+2026-03-07 10:07:54,518 INFO sqlalchemy.engine.Engine INSERT INTO enrollments (student_id, course_id, enrollment_date) VALUES (%s, %s, %s)
+2026-03-07 10:07:54,518 INFO sqlalchemy.engine.Engine [cached since 0.1572s ago] (32, 3, datetime.datetime(2026, 2, 26, 4, 37, 54, 355256))
+2026-03-07 10:07:54,520 INFO sqlalchemy.engine.Engine INSERT INTO enrollments (student_id, course_id, enrollment_date) VALUES (%s, %s, %s)
+2026-03-07 10:07:54,520 INFO sqlalchemy.engine.Engine [cached since 0.1585s ago] (14, 8, datetime.datetime(2026, 3, 6, 4, 37, 54, 355298))
+2026-03-07 10:07:54,521 INFO sqlalchemy.engine.Engine INSERT INTO enrollments (student_id, course_id, enrollment_date) VALUES (%s, %s, %s)
+2026-03-07 10:07:54,521 INFO sqlalchemy.engine.Engine [cached since 0.1599s ago] (64, 5, datetime.datetime(2026, 2, 15, 4, 37, 54, 355355))
+2026-03-07 10:07:54,522 INFO sqlalchemy.engine.Engine INSERT INTO enrollments (student_id, course_id, enrollment_date) VALUES (%s, %s, %s)
+2026-03-07 10:07:54,522 INFO sqlalchemy.engine.Engine [cached since 0.161s ago] (21, 1, datetime.datetime(2026, 2, 14, 4, 37, 54, 355402))
+2026-03-07 10:07:54,523 INFO sqlalchemy.engine.Engine INSERT INTO enrollments (student_id, course_id, enrollment_date) VALUES (%s, %s, %s)
+2026-03-07 10:07:54,523 INFO sqlalchemy.engine.Engine [cached since 0.1622s ago] (42, 2, datetime.datetime(2026, 2, 9, 4, 37, 54, 355455))
+2026-03-07 10:07:54,524 INFO sqlalchemy.engine.Engine INSERT INTO enrollments (student_id, course_id, enrollment_date) VALUES (%s, %s, %s)
+2026-03-07 10:07:54,524 INFO sqlalchemy.engine.Engine [cached since 0.1633s ago] (51, 2, datetime.datetime(2026, 2, 19, 4, 37, 54, 355522))
+2026-03-07 10:07:54,525 INFO sqlalchemy.engine.Engine INSERT INTO enrollments (student_id, course_id, enrollment_date) VALUES (%s, %s, %s)
+2026-03-07 10:07:54,525 INFO sqlalchemy.engine.Engine [cached since 0.1641s ago] (27, 3, datetime.datetime(2026, 2, 17, 4, 37, 54, 355573))
+2026-03-07 10:07:54,526 INFO sqlalchemy.engine.Engine INSERT INTO enrollments (student_id, course_id, enrollment_date) VALUES (%s, %s, %s)
+2026-03-07 10:07:54,526 INFO sqlalchemy.engine.Engine [cached since 0.1647s ago] (6, 1, datetime.datetime(2026, 3, 3, 4, 37, 54, 355638))
+2026-03-07 10:07:54,526 INFO sqlalchemy.engine.Engine INSERT INTO enrollments (student_id, course_id, enrollment_date) VALUES (%s, %s, %s)
+2026-03-07 10:07:54,526 INFO sqlalchemy.engine.Engine [cached since 0.1653s ago] (41, 7, datetime.datetime(2026, 3, 1, 4, 37, 54, 355709))
+2026-03-07 10:07:54,527 INFO sqlalchemy.engine.Engine INSERT INTO enrollments (student_id, course_id, enrollment_date) VALUES (%s, %s, %s)
+2026-03-07 10:07:54,527 INFO sqlalchemy.engine.Engine [cached since 0.1659s ago] (13, 6, datetime.datetime(2026, 2, 23, 4, 37, 54, 355788))
+2026-03-07 10:07:54,528 INFO sqlalchemy.engine.Engine INSERT INTO enrollments (student_id, course_id, enrollment_date) VALUES (%s, %s, %s)
+2026-03-07 10:07:54,528 INFO sqlalchemy.engine.Engine [cached since 0.1665s ago] (32, 9, datetime.datetime(2026, 2, 27, 4, 37, 54, 355850))
+2026-03-07 10:07:54,528 INFO sqlalchemy.engine.Engine INSERT INTO enrollments (student_id, course_id, enrollment_date) VALUES (%s, %s, %s)
+2026-03-07 10:07:54,529 INFO sqlalchemy.engine.Engine [cached since 0.1674s ago] (61, 8, datetime.datetime(2026, 2, 26, 4, 37, 54, 355928))
+2026-03-07 10:07:54,530 INFO sqlalchemy.engine.Engine INSERT INTO enrollments (student_id, course_id, enrollment_date) VALUES (%s, %s, %s)
+2026-03-07 10:07:54,530 INFO sqlalchemy.engine.Engine [cached since 0.1686s ago] (15, 7, datetime.datetime(2026, 2, 13, 4, 37, 54, 355996))
+2026-03-07 10:07:54,531 INFO sqlalchemy.engine.Engine INSERT INTO enrollments (student_id, course_id, enrollment_date) VALUES (%s, %s, %s)
+2026-03-07 10:07:54,531 INFO sqlalchemy.engine.Engine [cached since 0.1698s ago] (64, 7, datetime.datetime(2026, 2, 7, 4, 37, 54, 356174))
+2026-03-07 10:07:54,532 INFO sqlalchemy.engine.Engine INSERT INTO enrollments (student_id, course_id, enrollment_date) VALUES (%s, %s, %s)
+2026-03-07 10:07:54,532 INFO sqlalchemy.engine.Engine [cached since 0.171s ago] (32, 1, datetime.datetime(2026, 2, 13, 4, 37, 54, 356290))
+2026-03-07 10:07:54,533 INFO sqlalchemy.engine.Engine INSERT INTO enrollments (student_id, course_id, enrollment_date) VALUES (%s, %s, %s)
+2026-03-07 10:07:54,533 INFO sqlalchemy.engine.Engine [cached since 0.1721s ago] (17, 8, datetime.datetime(2026, 3, 2, 4, 37, 54, 356390))
+2026-03-07 10:07:54,534 INFO sqlalchemy.engine.Engine INSERT INTO enrollments (student_id, course_id, enrollment_date) VALUES (%s, %s, %s)
+2026-03-07 10:07:54,534 INFO sqlalchemy.engine.Engine [cached since 0.173s ago] (31, 6, datetime.datetime(2026, 2, 8, 4, 37, 54, 356456))
+2026-03-07 10:07:54,535 INFO sqlalchemy.engine.Engine INSERT INTO enrollments (student_id, course_id, enrollment_date) VALUES (%s, %s, %s)
+2026-03-07 10:07:54,535 INFO sqlalchemy.engine.Engine [cached since 0.1742s ago] (62, 9, datetime.datetime(2026, 2, 18, 4, 37, 54, 356506))
+2026-03-07 10:07:54,537 INFO sqlalchemy.engine.Engine INSERT INTO enrollments (student_id, course_id, enrollment_date) VALUES (%s, %s, %s)
+2026-03-07 10:07:54,537 INFO sqlalchemy.engine.Engine [cached since 0.1755s ago] (54, 2, datetime.datetime(2026, 2, 13, 4, 37, 54, 356565))
+2026-03-07 10:07:54,538 INFO sqlalchemy.engine.Engine INSERT INTO enrollments (student_id, course_id, enrollment_date) VALUES (%s, %s, %s)
+2026-03-07 10:07:54,538 INFO sqlalchemy.engine.Engine [cached since 0.1766s ago] (53, 4, datetime.datetime(2026, 2, 7, 4, 37, 54, 356614))
+2026-03-07 10:07:54,539 INFO sqlalchemy.engine.Engine INSERT INTO enrollments (student_id, course_id, enrollment_date) VALUES (%s, %s, %s)
+2026-03-07 10:07:54,539 INFO sqlalchemy.engine.Engine [cached since 0.1777s ago] (29, 7, datetime.datetime(2026, 2, 18, 4, 37, 54, 356655))
+2026-03-07 10:07:54,540 INFO sqlalchemy.engine.Engine INSERT INTO enrollments (student_id, course_id, enrollment_date) VALUES (%s, %s, %s)
+2026-03-07 10:07:54,540 INFO sqlalchemy.engine.Engine [cached since 0.1787s ago] (33, 2, datetime.datetime(2026, 2, 16, 4, 37, 54, 356699))
+2026-03-07 10:07:54,542 INFO sqlalchemy.engine.Engine COMMIT
+Updating course statistics...
+2026-03-07 10:07:54,548 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-03-07 10:07:54,548 INFO sqlalchemy.engine.Engine SELECT COUNT(*) FROM enrollments WHERE course_id = %s
+2026-03-07 10:07:54,548 INFO sqlalchemy.engine.Engine [generated in 0.00025s] (1,)
+2026-03-07 10:07:54,550 INFO sqlalchemy.engine.Engine SELECT COUNT(*) FROM enrollments WHERE course_id = %s
+2026-03-07 10:07:54,550 INFO sqlalchemy.engine.Engine [cached since 0.001787s ago] (2,)
+2026-03-07 10:07:54,551 INFO sqlalchemy.engine.Engine SELECT COUNT(*) FROM enrollments WHERE course_id = %s
+2026-03-07 10:07:54,551 INFO sqlalchemy.engine.Engine [cached since 0.003332s ago] (3,)
+2026-03-07 10:07:54,554 INFO sqlalchemy.engine.Engine SELECT COUNT(*) FROM enrollments WHERE course_id = %s
+2026-03-07 10:07:54,554 INFO sqlalchemy.engine.Engine [cached since 0.00565s ago] (4,)
+2026-03-07 10:07:54,555 INFO sqlalchemy.engine.Engine SELECT COUNT(*) FROM enrollments WHERE course_id = %s
+2026-03-07 10:07:54,555 INFO sqlalchemy.engine.Engine [cached since 0.007185s ago] (5,)
+2026-03-07 10:07:54,557 INFO sqlalchemy.engine.Engine SELECT COUNT(*) FROM enrollments WHERE course_id = %s
+2026-03-07 10:07:54,557 INFO sqlalchemy.engine.Engine [cached since 0.008961s ago] (6,)
+2026-03-07 10:07:54,558 INFO sqlalchemy.engine.Engine SELECT COUNT(*) FROM enrollments WHERE course_id = %s
+2026-03-07 10:07:54,558 INFO sqlalchemy.engine.Engine [cached since 0.01007s ago] (7,)
+2026-03-07 10:07:54,559 INFO sqlalchemy.engine.Engine SELECT COUNT(*) FROM enrollments WHERE course_id = %s
+2026-03-07 10:07:54,559 INFO sqlalchemy.engine.Engine [cached since 0.01131s ago] (8,)
+2026-03-07 10:07:54,560 INFO sqlalchemy.engine.Engine SELECT COUNT(*) FROM enrollments WHERE course_id = %s
+2026-03-07 10:07:54,560 INFO sqlalchemy.engine.Engine [cached since 0.01226s ago] (9,)
+2026-03-07 10:07:54,561 INFO sqlalchemy.engine.Engine SELECT COUNT(*) FROM enrollments WHERE course_id = %s
+2026-03-07 10:07:54,561 INFO sqlalchemy.engine.Engine [cached since 0.01311s ago] (10,)
+2026-03-07 10:07:54,563 INFO sqlalchemy.engine.Engine UPDATE courses SET enrolled_students=%s, remaining_seats=%s WHERE courses.course_id = %s
+2026-03-07 10:07:54,563 INFO sqlalchemy.engine.Engine [generated in 0.00016s] [(11, 49, 1), (13, 47, 2), (60, 0, 3), (5, 45, 4)]
+2026-03-07 10:07:54,567 INFO sqlalchemy.engine.Engine UPDATE courses SET enrolled_students=%s WHERE courses.course_id = %s
+2026-03-07 10:07:54,568 INFO sqlalchemy.engine.Engine [generated in 0.00016s] (10, 5)
+2026-03-07 10:07:54,569 INFO sqlalchemy.engine.Engine UPDATE courses SET enrolled_students=%s, remaining_seats=%s WHERE courses.course_id = %s
+2026-03-07 10:07:54,569 INFO sqlalchemy.engine.Engine [cached since 0.005668s ago] [(12, 48, 6), (7, 43, 7), (9, 31, 8), (11, 29, 9), (12, 48, 10)]
+2026-03-07 10:07:54,573 INFO sqlalchemy.engine.Engine COMMIT
+Seeding analytics records...
+2026-03-07 10:07:54,580 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-03-07 10:07:54,581 INFO sqlalchemy.engine.Engine INSERT INTO analytics (course_id, demand_score, growth_rate, forecast, historical_enrollments) VALUES (%s, %s, %s, %s, %s)
+2026-03-07 10:07:54,581 INFO sqlalchemy.engine.Engine [generated in 0.00021s] (1, 53, '8%', 'Predicted +10% next intake', '[{"month": "Jan", "enrollments": 3}, {"month": "Feb", "enrollments": 2}, {"month": "Mar", "enrollments": 0}]')
+2026-03-07 10:07:54,585 INFO sqlalchemy.engine.Engine INSERT INTO analytics (course_id, demand_score, growth_rate, forecast, historical_enrollments) VALUES (%s, %s, %s, %s, %s)
+2026-03-07 10:07:54,585 INFO sqlalchemy.engine.Engine [cached since 0.004064s ago] (2, 64, '7%', 'Predicted +20% next intake', '[{"month": "Jan", "enrollments": 2}, {"month": "Feb", "enrollments": 3}, {"month": "Mar", "enrollments": 3}]')
+2026-03-07 10:07:54,586 INFO sqlalchemy.engine.Engine INSERT INTO analytics (course_id, demand_score, growth_rate, forecast, historical_enrollments) VALUES (%s, %s, %s, %s, %s)
+2026-03-07 10:07:54,587 INFO sqlalchemy.engine.Engine [cached since 0.005584s ago] (3, 84, '10%', 'Predicted +15% next intake', '[{"month": "Jan", "enrollments": 16}, {"month": "Feb", "enrollments": 27}, {"month": "Mar", "enrollments": 13}]')
+2026-03-07 10:07:54,588 INFO sqlalchemy.engine.Engine INSERT INTO analytics (course_id, demand_score, growth_rate, forecast, historical_enrollments) VALUES (%s, %s, %s, %s, %s)
+2026-03-07 10:07:54,588 INFO sqlalchemy.engine.Engine [cached since 0.006648s ago] (4, 40, '7%', 'Predicted +15% next intake', '[{"month": "Jan", "enrollments": 1}, {"month": "Feb", "enrollments": 0}, {"month": "Mar", "enrollments": 5}]')
+2026-03-07 10:07:54,588 INFO sqlalchemy.engine.Engine INSERT INTO analytics (course_id, demand_score, growth_rate, forecast, historical_enrollments) VALUES (%s, %s, %s, %s, %s)
+2026-03-07 10:07:54,588 INFO sqlalchemy.engine.Engine [cached since 0.007441s ago] (5, 63, '12%', 'Predicted +15% next intake', '[{"month": "Jan", "enrollments": 0}, {"month": "Feb", "enrollments": 4}, {"month": "Mar", "enrollments": 8}]')
+2026-03-07 10:07:54,589 INFO sqlalchemy.engine.Engine INSERT INTO analytics (course_id, demand_score, growth_rate, forecast, historical_enrollments) VALUES (%s, %s, %s, %s, %s)
+2026-03-07 10:07:54,589 INFO sqlalchemy.engine.Engine [cached since 0.008093s ago] (6, 43, '8%', 'Predicted +12% next intake', '[{"month": "Jan", "enrollments": 2}, {"month": "Feb", "enrollments": 4}, {"month": "Mar", "enrollments": 4}]')
+2026-03-07 10:07:54,590 INFO sqlalchemy.engine.Engine INSERT INTO analytics (course_id, demand_score, growth_rate, forecast, historical_enrollments) VALUES (%s, %s, %s, %s, %s)
+2026-03-07 10:07:54,590 INFO sqlalchemy.engine.Engine [cached since 0.00868s ago] (7, 43, '11%', 'Predicted +17% next intake', '[{"month": "Jan", "enrollments": 2}, {"month": "Feb", "enrollments": 0}, {"month": "Mar", "enrollments": 7}]')
+2026-03-07 10:07:54,591 INFO sqlalchemy.engine.Engine INSERT INTO analytics (course_id, demand_score, growth_rate, forecast, historical_enrollments) VALUES (%s, %s, %s, %s, %s)
+2026-03-07 10:07:54,591 INFO sqlalchemy.engine.Engine [cached since 0.009671s ago] (8, 72, '7%', 'Predicted +18% next intake', '[{"month": "Jan", "enrollments": 0}, {"month": "Feb", "enrollments": 2}, {"month": "Mar", "enrollments": 9}]')
+2026-03-07 10:07:54,592 INFO sqlalchemy.engine.Engine INSERT INTO analytics (course_id, demand_score, growth_rate, forecast, historical_enrollments) VALUES (%s, %s, %s, %s, %s)
+2026-03-07 10:07:54,592 INFO sqlalchemy.engine.Engine [cached since 0.01063s ago] (9, 41, '11%', 'Predicted +17% next intake', '[{"month": "Jan", "enrollments": 1}, {"month": "Feb", "enrollments": 2}, {"month": "Mar", "enrollments": 9}]')
+2026-03-07 10:07:54,592 INFO sqlalchemy.engine.Engine INSERT INTO analytics (course_id, demand_score, growth_rate, forecast, historical_enrollments) VALUES (%s, %s, %s, %s, %s)
+2026-03-07 10:07:54,592 INFO sqlalchemy.engine.Engine [cached since 0.01143s ago] (10, 46, '10%', 'Predicted +13% next intake', '[{"month": "Jan", "enrollments": 0}, {"month": "Feb", "enrollments": 6}, {"month": "Mar", "enrollments": 3}]')
+2026-03-07 10:07:54,593 INFO sqlalchemy.engine.Engine COMMIT
+Seeding Complete!
+   - Departments: 5
+   - Courses: 10
+   - Users: 64 (60 Students, 3 Faculty, 1 Admin)
+   - Enrollments: 150
+   - Popular Course: Machine Learning (60 enrollments)
+Exception ignored while calling deallocator <function Connection.__del__ at 0x000002B39C6309E0>:
+Traceback (most recent call last):
+  File "C:\Users\preet\OneDrive\Desktop\Mn\course-enrollment-analytics\backend\venv\Lib\site-packages\aiomysql\connection.py", line 1131, in __del__
+  File "C:\Users\preet\OneDrive\Desktop\Mn\course-enrollment-analytics\backend\venv\Lib\site-packages\aiomysql\connection.py", line 339, in close
+  File "C:\Users\preet\AppData\Local\Programs\Python\Python314\Lib\asyncio\proactor_events.py", line 109, in close
+  File "C:\Users\preet\AppData\Local\Programs\Python\Python314\Lib\asyncio\base_events.py", line 827, in call_soon
+  File "C:\Users\preet\AppData\Local\Programs\Python\Python314\Lib\asyncio\base_events.py", line 550, in _check_closed
+RuntimeError: Event loop is closed

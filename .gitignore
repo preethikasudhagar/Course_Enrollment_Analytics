@@ -1,0 +1,36 @@
+# dependencies
+node_modules/
+dist/
+build/
+
+# env files
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# VS Code
+.vscode/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.env
+.vh/
+.venv/
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/

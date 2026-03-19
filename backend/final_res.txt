@@ -1,0 +1,31 @@
+2026-03-07 09:59:01,959 INFO sqlalchemy.engine.Engine SELECT DATABASE()
+2026-03-07 09:59:01,959 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-03-07 09:59:01,960 INFO sqlalchemy.engine.Engine SELECT @@sql_mode
+2026-03-07 09:59:01,960 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-03-07 09:59:01,960 INFO sqlalchemy.engine.Engine SELECT @@lower_case_table_names
+2026-03-07 09:59:01,960 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-03-07 09:59:01,961 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-03-07 09:59:01,961 INFO sqlalchemy.engine.Engine select count(*) from users
+2026-03-07 09:59:01,961 INFO sqlalchemy.engine.Engine [generated in 0.00012s] ()
+2026-03-07 09:59:01,962 INFO sqlalchemy.engine.Engine select count(*) from courses
+2026-03-07 09:59:01,962 INFO sqlalchemy.engine.Engine [generated in 0.00011s] ()
+2026-03-07 09:59:01,964 INFO sqlalchemy.engine.Engine select count(*) from enrollments
+2026-03-07 09:59:01,965 INFO sqlalchemy.engine.Engine [generated in 0.00012s] ()
+2026-03-07 09:59:01,965 INFO sqlalchemy.engine.Engine SELECT count(*) FROM information_schema.tables WHERE table_schema='course_analytics_db' AND table_name='departments'
+2026-03-07 09:59:01,965 INFO sqlalchemy.engine.Engine [generated in 0.00011s] ()
+Users: 64
+Courses: 10
+Enrollments: 120
+Departments Table Exists: True
+2026-03-07 09:59:01,969 INFO sqlalchemy.engine.Engine select count(*) from departments
+2026-03-07 09:59:01,969 INFO sqlalchemy.engine.Engine [generated in 0.00011s] ()
+Departments: 5
+2026-03-07 09:59:01,969 INFO sqlalchemy.engine.Engine ROLLBACK
+Exception ignored while calling deallocator <function Connection.__del__ at 0x0000024EDEC64930>:
+Traceback (most recent call last):
+  File "C:\Users\preet\OneDrive\Desktop\Mn\course-enrollment-analytics\backend\venv\Lib\site-packages\aiomysql\connection.py", line 1131, in __del__
+  File "C:\Users\preet\OneDrive\Desktop\Mn\course-enrollment-analytics\backend\venv\Lib\site-packages\aiomysql\connection.py", line 339, in close
+  File "C:\Users\preet\AppData\Local\Programs\Python\Python314\Lib\asyncio\proactor_events.py", line 109, in close
+  File "C:\Users\preet\AppData\Local\Programs\Python\Python314\Lib\asyncio\base_events.py", line 827, in call_soon
+  File "C:\Users\preet\AppData\Local\Programs\Python\Python314\Lib\asyncio\base_events.py", line 550, in _check_closed
+RuntimeError: Event loop is closed

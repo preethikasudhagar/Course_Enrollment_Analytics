@@ -1,0 +1,39 @@
+2026-03-06 23:22:45,636 INFO sqlalchemy.engine.Engine SELECT DATABASE()
+2026-03-06 23:22:45,636 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-03-06 23:22:45,637 INFO sqlalchemy.engine.Engine SELECT @@sql_mode
+2026-03-06 23:22:45,637 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-03-06 23:22:45,638 INFO sqlalchemy.engine.Engine SELECT @@lower_case_table_names
+2026-03-06 23:22:45,638 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-03-06 23:22:45,639 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-03-06 23:22:45,648 INFO sqlalchemy.engine.Engine SELECT users.id, users.name, users.email, users.password, users.`role`, users.phone, users.profile_photo, users.department, users.year 
+FROM users
+2026-03-06 23:22:45,649 INFO sqlalchemy.engine.Engine [generated in 0.00018s] ()
+Creating dynamic test scenarios...
+2026-03-06 23:22:45,652 INFO sqlalchemy.engine.Engine INSERT INTO courses (course_name, course_code, department, faculty_assigned, seat_limit, enrolled_students, remaining_seats, waitlist_count, auto_expand_enabled, max_seat_limit, course_description, course_duration, credits, created_at) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+2026-03-06 23:22:45,652 INFO sqlalchemy.engine.Engine [generated in 0.00024s] ('Advanced Neural Networks', 'AI-500', 'Computer Science', None, 30, 28, 2, 0, 1, 200, None, None, 3, datetime.datetime(2026, 3, 6, 17, 52, 45, 652740))
+2026-03-06 23:22:45,715 INFO sqlalchemy.engine.Engine ROLLBACK
+Traceback (most recent call last):
+  File "C:\Users\preet\OneDrive\Desktop\Mn\course-enrollment-analytics\backend\generate_scenarios.py", line 151, in <module>
+    asyncio.run(test_scenarios())
+    ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "C:\Users\preet\AppData\Local\Programs\Python\Python314\Lib\asyncio\runners.py", line 204, in run
+    return runner.run(main)
+           ~~~~~~~~~~^^^^^^
+  File "C:\Users\preet\AppData\Local\Programs\Python\Python314\Lib\asyncio\runners.py", line 127, in run
+    return self._loop.run_until_complete(task)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "C:\Users\preet\AppData\Local\Programs\Python\Python314\Lib\asyncio\base_events.py", line 719, in run_until_complete
+    return future.result()
+           ~~~~~~~~~~~~~^^
+  File "C:\Users\preet\OneDrive\Desktop\Mn\course-enrollment-analytics\backend\generate_scenarios.py", line 49, in test_scenarios
+    course_id=c1.course_id,
+              ^^^^^^^^^^^^
+AttributeError: 'Course' object has no attribute 'course_id'. Did you mean: 'course_code'?
+Exception ignored while calling deallocator <function Connection.__del__ at 0x000001771B21CCA0>:
+Traceback (most recent call last):
+  File "C:\Users\preet\OneDrive\Desktop\Mn\course-enrollment-analytics\backend\venv\Lib\site-packages\aiomysql\connection.py", line 1131, in __del__
+  File "C:\Users\preet\OneDrive\Desktop\Mn\course-enrollment-analytics\backend\venv\Lib\site-packages\aiomysql\connection.py", line 339, in close
+  File "C:\Users\preet\AppData\Local\Programs\Python\Python314\Lib\asyncio\proactor_events.py", line 109, in close
+  File "C:\Users\preet\AppData\Local\Programs\Python\Python314\Lib\asyncio\base_events.py", line 827, in call_soon
+  File "C:\Users\preet\AppData\Local\Programs\Python\Python314\Lib\asyncio\base_events.py", line 550, in _check_closed
+RuntimeError: Event loop is closed
