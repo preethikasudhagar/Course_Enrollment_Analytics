@@ -13,7 +13,7 @@ services:
         value: 8000
 
   # Frontend Static Site
-  - type: static
+  - type: static_site
     name: course-analytics-frontend
     env: static
     buildCommand: npm install && npm run build
