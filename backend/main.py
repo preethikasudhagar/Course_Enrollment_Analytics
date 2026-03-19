@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from fastapi import Depends
 from fastapi import HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.staticfiles import StaticFiles
 import os
 from sqlalchemy import select, or_
@@ -32,6 +33,8 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+app.add_middleware(GZipMiddleware, minimum_size=1000)
 
 @app.on_event("startup")
 async def on_startup():
