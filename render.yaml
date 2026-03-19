@@ -20,10 +20,9 @@ services:
     staticPublishPath: frontend/dist
     envVars:
       - key: VITE_API_URL
-        fromService:
-          type: web
-          name: course-analytics-backend
-          property: host
+        value: https://course-analytics-backend.onrender.com
+      - key: SKIP_PREFLIGHT_CHECK
+        value: "true"
     # For Vite apps on Render, we need to handle routing for SPA
     routes:
       - type: rewrite
