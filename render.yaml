@@ -13,8 +13,9 @@ services:
         value: 8000
 
   # Frontend Static Site
-  - type: static
+  - type: web
     name: course-analytics-frontend
+    runtime: static
     buildCommand: npm install && npm run build
     staticPublishPath: frontend/dist
     plan: free
