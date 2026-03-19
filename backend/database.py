@@ -8,7 +8,12 @@ import os
 password = quote_plus("Preethika_13#")
 MYSQL_URL = os.getenv("DATABASE_URL", f"mysql+aiomysql://root:{password}@localhost:3306/course_analytics_db")
 
-engine = create_async_engine(MYSQL_URL, echo=True)
+# Engine configuration with SSL support for cloud providers
+connect_args = {}
+if "aivencloud.com" in MYSQL_URL:
+    connect_args["ssl"] = True
+
+engine = create_async_engine(MYSQL_URL, echo=True, connect_args=connect_args)
 AsyncSessionLocal = async_sessionmaker(engine, expire_on_commit=False, class_=AsyncSession)
 
 class Base(DeclarativeBase):
