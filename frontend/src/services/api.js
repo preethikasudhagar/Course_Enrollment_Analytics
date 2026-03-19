@@ -135,7 +135,8 @@ export const analyticsService = {
         responseType: 'blob'
     }),
     getSeatExpansionLogs: async () => await api.get('/seat-expansion-logs'),
-    getAdminVitals: async () => await api.get('/analytics/admin-vitals')
+    getAdminVitals: async () => await api.get('/analytics/admin-vitals'),
+    getFacultyVitals: async () => await api.get('/analytics/faculty-vitals')
 };
 
 export const enrollmentService = {

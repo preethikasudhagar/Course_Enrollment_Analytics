@@ -475,3 +475,52 @@ async def get_admin_vitals(
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+@router.get("/faculty-vitals")
+async def get_faculty_vitals(
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    try:
+        # 1. Summary
+        summary_res = await get_dashboard_summary(db)
+        summary = summary_res.get("data", {})
+
+        # 2. Performance Stats
+        perf_res = await get_faculty_stats(db)
+        performance = perf_res.get("data", [])
+
+        # 3. Enrollment Chart Data
+        chart_res = await get_course_enrollments_chart(db)
+        enrollment_data = chart_res.get("data", [])
+
+        # 4. Courses (all courses for simplicity)
+        course_query = select(
+            Course.id, Course.course_code, Course.course_name, Course.department,
+            Course.seat_limit
+        ).order_by(Course.course_name)
+        
+        course_objs = (await db.execute(course_query)).all()
+        final_courses = []
+        for r in course_objs:
+            count = await db.scalar(select(func.count(Enrollment.id)).where(Enrollment.course_id == r[0]))
+            final_courses.append({
+                "id": r[0],
+                "course_code": r[1],
+                "course_name": r[2],
+                "department": r[3],
+                "seat_limit": r[4],
+                "enrolled_students": count or 0
+            })
+
+        return {
+            "status": "success",
+            "data": {
+                "summary": summary,
+                "performance": performance,
+                "enrollmentData": enrollment_data,
+                "courses": final_courses
+            }
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+

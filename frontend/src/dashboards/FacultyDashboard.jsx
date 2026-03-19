@@ -33,22 +33,16 @@ const FacultyDashboard = () => {
         try {
             setLoading(true);
             setError(null);
-            const safeFetch = async (promise, fallback) => {
-                try {
-                    const res = await promise;
-                    return res || fallback;
-                } catch (e) {
-                    console.warn("Safe fetch failed:", e);
-                    return fallback;
-                }
-            };
+            
+            const data = await analyticsService.getFacultyVitals();
+            if (!data) throw new Error("No data received");
 
-            const [sRes, pRes, eRes, cRes] = await Promise.all([
-                safeFetch(analyticsService.getSummary(), { total_courses: 0, total_enrollments: 0, top_course: 'N/A' }),
-                safeFetch(analyticsService.getFacultyStats(), []),
-                safeFetch(analyticsService.getEnrollmentsChart(), []),
-                safeFetch(courseService.getAll(), [])
-            ]);
+            const { 
+                summary: sRes, 
+                performance: pRes, 
+                enrollmentData: eRes, 
+                courses: cRes 
+            } = data;
 
             setSummary(sRes || { total_courses: 0, total_enrollments: 0, top_course: 'N/A' });
             setPerformance(Array.isArray(pRes) ? pRes : []);
