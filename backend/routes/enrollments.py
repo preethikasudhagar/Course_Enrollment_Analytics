@@ -11,9 +11,11 @@ from models.models import (
     Notification,
     SystemActivity,
     SystemSetting,
+    SystemSetting,
     User,
     UserRole,
     Waitlist,
+    SeatExpansionLog,
 )
 from utils.auth import get_current_user
 
@@ -167,6 +169,14 @@ async def _enroll_target_student(course_id: int, target_student_id: int, db: Asy
                 print("Increasing seat limit by 10")
                 new_limit = min((course.seat_limit or 0) + seat_increase, max_seat_limit)
                 expanded_by = new_limit - (course.seat_limit or 0)
+                
+                db.add(SeatExpansionLog(
+                    course_id=course.id,
+                    old_limit=course.seat_limit,
+                    new_limit=new_limit,
+                    increment_by=expanded_by
+                ))
+                
                 course.seat_limit = new_limit
                 expansion_triggered = True
                 

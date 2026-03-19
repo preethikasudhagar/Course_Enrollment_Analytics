@@ -97,8 +97,10 @@ async def get_course_popularity(
     current_user: User = Depends(get_current_user)
 ):
     result = await db.execute(
-        select(Course.course_name, Course.enrolled_students)
-        .order_by(Course.enrolled_students.desc())
+        select(Course.course_name, func.count(Enrollment.id))
+        .join(Enrollment, Enrollment.course_id == Course.id)
+        .group_by(Course.id, Course.course_name)
+        .order_by(func.count(Enrollment.id).desc())
         .limit(5)
     )
     popularity = result.all()
@@ -196,7 +198,8 @@ async def get_department_utilization(
         utilization_data = []
         for dept in departments:
             enroll_sum = await db.scalar(
-                select(func.sum(Course.enrolled_students))
+                select(func.count(Enrollment.id))
+                .join(Course, Course.id == Enrollment.course_id)
                 .where(Course.department == dept)
             )
             seat_sum = await db.scalar(

@@ -20,7 +20,9 @@ def seat_status(remaining_seats: int) -> str:
     return "Open"
 
 async def sync_course_seat_fields(db: AsyncSession, course: Course) -> None:
-    course.remaining_seats = max(0, (course.seat_limit or 0) - (course.enrolled_students or 0))
+    enroll_count = await db.scalar(select(func.count(Enrollment.id)).where(Enrollment.course_id == course.id))
+    course.enrolled_students = enroll_count or 0
+    course.remaining_seats = max(0, (course.seat_limit or 0) - course.enrolled_students)
     wait_count = await db.scalar(select(func.count(Waitlist.id)).where(Waitlist.course_id == course.id))
     course.waitlist_count = wait_count or 0
 
@@ -171,3 +173,25 @@ async def delete_course(course_id: int, db: AsyncSession = Depends(get_db), admi
     await db.delete(db_course)
     await db.commit()
     return {"message": "Course deleted"}
+
+@router.get("/{course_id}/students")
+async def get_course_students(course_id: int, db: AsyncSession = Depends(get_db), current_user = Depends(get_current_user)):
+    result = await db.execute(select(Course).where(Course.id == course_id))
+    course = result.scalars().first()
+    if not course:
+        raise HTTPException(status_code=404, detail="Course not found")
+        
+    query = select(User, Enrollment.enrollment_date).join(Enrollment, Enrollment.student_id == User.id).where(Enrollment.course_id == course_id)
+    students_res = await db.execute(query)
+    
+    data = []
+    for user, enroll_date in students_res.all():
+        data.append({
+            "id": user.id,
+            "name": user.name,
+            "email": user.email,
+            "department": user.department,
+            "enrollment_date": enroll_date
+        })
+        
+    return {"status": "success", "data": data}

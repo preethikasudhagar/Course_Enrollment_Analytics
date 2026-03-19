@@ -1,0 +1,21 @@
+4d9eab6 Feat: Add tailored high-enrollment data to debug-seed
+8eb7d5f Feat: Auto-seed institutional data at startup if no students exist
+3e11e3d Debug: Add sync /debug-seed endpoint to surface errors
+5565338 Fix: Inline seeding logic to avoid fragile import in background task
+9ba8424 Fix: Use BackgroundTasks for seed endpoint to avoid timeout
+3c6c73a Temp: Add seeding endpoint for data restoration
+3b4e95c Fix: Restore render.yaml and add FRONTEND_URL
+952a021 Fix: Add FRONTEND_URL to backend env vars for CORS
+1e3951b Fix: Ensure API_URL is absolute with https protocol to fix login error
+c9e06ed Fix: Pin bcrypt==3.2.0 to resolve passlib 72-byte password error on startup
+ac3afc4 Fix: Enhance database connection to support SSL for Aiven MySQL
+d0d2a11 Fix deployment: Add missing requirements.txt and correct backend dockerContext
+ebaedb7 Attempt 4: Remove plan field from static site definition in render.yaml
+bfa2ab8 Final fix for Render Blueprint: use type: web with runtime: static for static sites
+d2d7f49 Correct render.yaml syntax for static sites (type: static, staticPublishPath)
+9aea6da Fix Render Blueprint service type (static -> static_site)
+3451434 Add deployment configuration (Dockerfile, render.yaml) and production-ready code
+4c83aad Update author attribution in README.md
+52a9d79 Update README with professional project details
+3c3d50c Initial commit
+dc9262b Initial commit

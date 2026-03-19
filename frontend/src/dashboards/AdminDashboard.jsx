@@ -52,6 +52,13 @@ const AdminDashboard = () => {
     const [error, setError] = useState(null);
     const [showCreateModal, setShowCreateModal] = useState(false);
     const [successMsg, setSuccessMsg] = useState('');
+    
+    // New States
+    const [expansionLogs, setExpansionLogs] = useState([]);
+    const [courseStudents, setCourseStudents] = useState([]);
+    const [showStudentsModal, setShowStudentsModal] = useState(false);
+    const [loadingStudents, setLoadingStudents] = useState(false);
+
 
     useEffect(() => {
         fetchAdminData();
@@ -71,7 +78,7 @@ const AdminDashboard = () => {
         try {
             setLoading(true);
             setError(null);
-            const [sRes, tRes, uRes, pRes, dRes, cRes, duRes, hmRes] = await Promise.all([
+            const [sRes, tRes, uRes, pRes, dRes, cRes, duRes, hmRes, logsRes] = await Promise.all([
                 safeFetch(analyticsService.getDashboardStats(), null),
                 safeFetch(analyticsService.getEnrollmentTrends(), []),
                 safeFetch(analyticsService.getPopularity(), []),
@@ -79,7 +86,8 @@ const AdminDashboard = () => {
                 safeFetch(analyticsService.getDeptStats(), []),
                 safeFetch(courseService.getAll(), []),
                 safeFetch(analyticsService.getDeptUtilization(), []),
-                safeFetch(analyticsService.getHeatmap(), [])
+                safeFetch(analyticsService.getHeatmap(), []),
+                safeFetch(analyticsService.getSeatExpansionLogs(), [])
             ]);
 
             setSummary(sRes || {
@@ -112,6 +120,7 @@ const AdminDashboard = () => {
             });
             setCourses(Array.isArray(cRes) ? cRes : []);
             setDeptUtilization(Array.isArray(duRes) ? duRes : []);
+            setExpansionLogs(Array.isArray(logsRes) ? logsRes : []);
         } catch (error) {
             console.error("Dashboard fetch error:", error);
             setError(null);
@@ -140,6 +149,20 @@ const AdminDashboard = () => {
         setSuccessMsg('Course created successfully!');
         fetchAdminData();
         setTimeout(() => setSuccessMsg(''), 5000);
+    };
+
+    const handleViewStudents = async (course) => {
+        setShowStudentsModal(true);
+        setLoadingStudents(true);
+        try {
+            const data = await courseService.getStudents(course.id);
+            setCourseStudents(Array.isArray(data) ? data : []);
+        } catch (e) {
+            console.error(e);
+            setCourseStudents([]);
+        } finally {
+            setLoadingStudents(false);
+        }
     };
 
     const metrics = [
@@ -177,6 +200,47 @@ const AdminDashboard = () => {
                 <div className="fixed top-6 right-6 z-[200] bg-emerald-50 border border-emerald-200 text-emerald-800 px-5 py-3 rounded-xl shadow-lg flex items-center gap-3 animate-in slide-in-from-top-4 duration-300">
                     <CheckCircle2 size={18} className="text-emerald-500" />
                     <span className="text-sm font-semibold">{successMsg}</span>
+                </div>
+            )}
+
+            {showStudentsModal && (
+                <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[250] flex items-center justify-center p-4">
+                    <div className="bg-white rounded-2xl shadow-xl w-full max-w-3xl max-h-[85vh] overflow-hidden flex flex-col">
+                        <div className="p-5 border-b border-slate-100 flex items-center justify-between">
+                            <h2 className="text-xl font-bold text-slate-900">Enrolled Students</h2>
+                            <button onClick={() => setShowStudentsModal(false)} className="p-2 hover:bg-slate-100 rounded-xl transition-colors">
+                                <X size={20} className="text-slate-500" />
+                            </button>
+                        </div>
+                        <div className="p-5 overflow-y-auto">
+                            {loadingStudents ? (
+                                <div className="py-12 text-center text-slate-400">Loading students...</div>
+                            ) : courseStudents.length === 0 ? (
+                                <div className="py-12 text-center text-slate-400">No students enrolled.</div>
+                            ) : (
+                                <table className="w-full text-left text-sm">
+                                    <thead className="bg-slate-50 text-slate-500 font-bold uppercase text-[11px]">
+                                        <tr>
+                                            <th className="px-4 py-3 rounded-l-lg">Name</th>
+                                            <th className="px-4 py-3">Email</th>
+                                            <th className="px-4 py-3">Department</th>
+                                            <th className="px-4 py-3 rounded-r-lg">Enrolled Date</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-slate-50">
+                                        {courseStudents.map((s, idx) => (
+                                            <tr key={idx} className="hover:bg-slate-50/50">
+                                                <td className="px-4 py-3 font-medium text-slate-900">{s.name}</td>
+                                                <td className="px-4 py-3 text-slate-500">{s.email}</td>
+                                                <td className="px-4 py-3 text-slate-500">{s.department || '—'}</td>
+                                                <td className="px-4 py-3 text-slate-400">{new Date(s.enrollment_date).toLocaleDateString()}</td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            )}
+                        </div>
+                    </div>
                 </div>
             )}
 
@@ -377,6 +441,13 @@ const AdminDashboard = () => {
                                         <td className="px-6 py-4 text-right">
                                             <div className="flex items-center justify-end gap-1">
                                                 <button
+                                                    title="View Students"
+                                                    onClick={() => handleViewStudents(c)}
+                                                    className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
+                                                >
+                                                    <Users size={15} />
+                                                </button>
+                                                <button
                                                     title="Increase Seats +10"
                                                     onClick={() => handleIncreaseLimit(c)}
                                                     className="p-2 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-all"
@@ -395,6 +466,46 @@ const AdminDashboard = () => {
                                     </tr>
                                 );
                             })}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            {/* Seat Expansion History */}
+            <div className="ui-card overflow-hidden mb-8">
+                <div className="px-6 py-4 border-b border-slate-100 bg-slate-50/50">
+                    <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
+                        <TrendingUp size={16} className="text-emerald-500" />
+                        Seat Expansion History
+                    </h3>
+                </div>
+                <div className="overflow-x-auto">
+                    <table className="w-full text-left text-sm">
+                        <thead className="bg-slate-50/50 text-slate-500 font-bold uppercase text-[11px]">
+                            <tr>
+                                <th className="px-6 py-3.5">Date</th>
+                                <th className="px-6 py-3.5">Course</th>
+                                <th className="px-6 py-3.5">Old Limit</th>
+                                <th className="px-6 py-3.5">New Limit</th>
+                                <th className="px-6 py-3.5">Increment</th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-100">
+                            {expansionLogs.length === 0 ? (
+                                <tr>
+                                    <td colSpan="5" className="px-6 py-8 text-center text-slate-400">
+                                        No automatic seat expansions recorded yet.
+                                    </td>
+                                </tr>
+                            ) : expansionLogs.map((log, i) => (
+                                <tr key={i} className="hover:bg-slate-50/50">
+                                    <td className="px-6 py-3 text-slate-400">{new Date(log.timestamp).toLocaleString()}</td>
+                                    <td className="px-6 py-3 font-semibold text-slate-700">{log.course_name}</td>
+                                    <td className="px-6 py-3 text-slate-500">{log.old_limit}</td>
+                                    <td className="px-6 py-3 font-bold text-emerald-600">{log.new_limit}</td>
+                                    <td className="px-6 py-3 text-slate-500">+{log.increment_by}</td>
+                                </tr>
+                            ))}
                         </tbody>
                     </table>
                 </div>

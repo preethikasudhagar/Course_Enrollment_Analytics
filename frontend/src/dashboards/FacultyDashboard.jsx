@@ -10,7 +10,8 @@ import {
     TrendingUp,
     Activity,
     Award,
-    AlertTriangle
+    AlertTriangle,
+    X
 } from 'lucide-react';
 
 const FacultyDashboard = () => {
@@ -20,6 +21,9 @@ const FacultyDashboard = () => {
     const [performance, setPerformance] = useState([]);
     const [enrollmentData, setEnrollmentData] = useState([]);
     const [courses, setCourses] = useState([]);
+    const [courseStudents, setCourseStudents] = useState([]);
+    const [showStudentsModal, setShowStudentsModal] = useState(false);
+    const [loadingStudents, setLoadingStudents] = useState(false);
 
     useEffect(() => {
         fetchFacultyData();
@@ -99,6 +103,47 @@ const FacultyDashboard = () => {
                 </div>
             </header>
 
+            {showStudentsModal && (
+                <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[250] flex items-center justify-center p-4">
+                    <div className="bg-white rounded-2xl shadow-xl w-full max-w-3xl max-h-[85vh] overflow-hidden flex flex-col">
+                        <div className="p-5 border-b border-slate-100 flex items-center justify-between">
+                            <h2 className="text-xl font-bold text-slate-900">Enrolled Students</h2>
+                            <button onClick={() => setShowStudentsModal(false)} className="p-2 hover:bg-slate-100 rounded-xl transition-colors">
+                                <X size={20} className="text-slate-500" />
+                            </button>
+                        </div>
+                        <div className="p-5 overflow-y-auto">
+                            {loadingStudents ? (
+                                <div className="py-12 text-center text-slate-400">Loading students...</div>
+                            ) : courseStudents.length === 0 ? (
+                                <div className="py-12 text-center text-slate-400">No students enrolled.</div>
+                            ) : (
+                                <table className="w-full text-left text-sm">
+                                    <thead className="bg-slate-50 text-slate-500 font-bold uppercase text-[11px]">
+                                        <tr>
+                                            <th className="px-4 py-3 rounded-l-lg">Name</th>
+                                            <th className="px-4 py-3">Email</th>
+                                            <th className="px-4 py-3">Department</th>
+                                            <th className="px-4 py-3 rounded-r-lg">Enrolled Date</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-slate-50">
+                                        {courseStudents.map((s, idx) => (
+                                            <tr key={idx} className="hover:bg-slate-50/50">
+                                                <td className="px-4 py-3 font-medium text-slate-900">{s.name}</td>
+                                                <td className="px-4 py-3 text-slate-500">{s.email}</td>
+                                                <td className="px-4 py-3 text-slate-500">{s.department || '—'}</td>
+                                                <td className="px-4 py-3 text-slate-400">{new Date(s.enrollment_date).toLocaleDateString()}</td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            )}
+
             {/* Core Metrics */}
             <div className="mb-8">
                 <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">Performance Metrics</h3>
@@ -153,7 +198,9 @@ const FacultyDashboard = () => {
                                 <th className="px-6 py-3.5">Course Code</th>
                                 <th className="px-6 py-3.5">Course Name</th>
                                 <th className="px-6 py-3.5">Department</th>
+                                <th className="px-6 py-3.5">Enrolled</th>
                                 <th className="px-6 py-3.5">Capacity Status</th>
+                                <th className="px-6 py-3.5 text-right">Actions</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-100">
@@ -176,8 +223,29 @@ const FacultyDashboard = () => {
                                                 <div className="font-bold text-slate-900">{c?.course_name || 'Unnamed'}</div>
                                             </td>
                                             <td className="px-6 py-4 text-slate-600 font-medium">{c?.department || 'General'}</td>
+                                            <td className="px-6 py-4 font-bold text-blue-600">{c?.enrolled_students || 0}</td>
                                             <td className="px-6 py-4">
                                                 <StatusBadge enrolled={c?.enrolled_students || 0} limit={c?.seat_limit || 40} className="w-56" />
+                                            </td>
+                                            <td className="px-6 py-4 text-right">
+                                                <button
+                                                    title="View Students"
+                                                    onClick={async () => {
+                                                        setShowStudentsModal(true);
+                                                        setLoadingStudents(true);
+                                                        try {
+                                                            const data = await courseService.getStudents(c.id);
+                                                            setCourseStudents(Array.isArray(data) ? data : []);
+                                                        } catch (e) {
+                                                            setCourseStudents([]);
+                                                        } finally {
+                                                            setLoadingStudents(false);
+                                                        }
+                                                    }}
+                                                    className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
+                                                >
+                                                    <Users size={15} />
+                                                </button>
                                             </td>
                                         </tr>
                                     );

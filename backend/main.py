@@ -5,7 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 import os
 from sqlalchemy import select, or_
-from routes import auth, courses, enrollments, analytics, notifications, users, search, settings, suggestions, activity
+from routes import auth, courses, enrollments, analytics, notifications, users, search, settings, suggestions, activity, seat_expansion
 from database import init_db
 from database import get_db, AsyncSessionLocal
 from utils.auth import get_current_user, check_admin
@@ -192,6 +192,7 @@ app.include_router(search.router)
 app.include_router(settings.router)
 app.include_router(suggestions.router)
 app.include_router(activity.router)
+app.include_router(seat_expansion.router)
 
 @app.post("/enroll")
 async def enroll_alias(

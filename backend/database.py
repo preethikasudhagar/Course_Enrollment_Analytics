@@ -3,6 +3,7 @@ from sqlalchemy.orm import DeclarativeBase
 from sqlalchemy import text
 from urllib.parse import quote_plus
 import os
+import ssl
 
 # MySQL Connection String: mysql+aiomysql://user:password@host:port/dbname
 password = quote_plus("Preethika_13#")
@@ -11,7 +12,11 @@ MYSQL_URL = os.getenv("DATABASE_URL", f"mysql+aiomysql://root:{password}@localho
 # Engine configuration with SSL support for cloud providers
 connect_args = {}
 if "aivencloud.com" in MYSQL_URL:
-    connect_args["ssl"] = True
+    # Use a permissive SSL context for cloud connections to avoid certificate verification issues in different environments
+    ssl_context = ssl.create_default_context()
+    ssl_context.check_hostname = False
+    ssl_context.verify_mode = ssl.CERT_NONE
+    connect_args["ssl"] = ssl_context
 
 engine = create_async_engine(MYSQL_URL, echo=True, connect_args=connect_args)
 AsyncSessionLocal = async_sessionmaker(engine, expire_on_commit=False, class_=AsyncSession)

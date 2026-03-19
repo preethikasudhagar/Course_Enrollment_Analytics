@@ -100,7 +100,8 @@ export const courseService = {
     add: async (courseData) => await api.post('/courses/add', courseData),
     update: async (id, courseData) => await api.put(`/courses/update/${id}`, courseData),
     delete: async (id) => await api.delete(`/courses/delete/${id}`),
-    safeGetAll: async (department = null) => await safeRequest(() => courseService.getAll(department), [])
+    safeGetAll: async (department = null) => await safeRequest(() => courseService.getAll(department), []),
+    getStudents: async (id) => await api.get(`/courses/${id}/students`)
 };
 
 export const analyticsService = {
@@ -132,7 +133,8 @@ export const analyticsService = {
     exportData: async (format, reportType = 'general') => await api.get('/analytics/export', {
         params: { format, report_type: reportType },
         responseType: 'blob'
-    })
+    }),
+    getSeatExpansionLogs: async () => await api.get('/seat-expansion-logs')
 };
 
 export const enrollmentService = {

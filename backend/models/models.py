@@ -125,3 +125,14 @@ class Analytics(Base):
     historical_enrollments = Column(Text, nullable=True) # JSON string of monthly data
     
     course = relationship("Course")
+
+class SeatExpansionLog(Base):
+    __tablename__ = "seat_expansion_logs"
+    id = Column(Integer, primary_key=True, index=True)
+    course_id = Column(Integer, ForeignKey("courses.course_id"), nullable=False)
+    old_limit = Column(Integer, nullable=False)
+    new_limit = Column(Integer, nullable=False)
+    increment_by = Column(Integer, nullable=False)
+    timestamp = Column(DateTime, default=datetime.utcnow)
+    
+    course = relationship("Course")
