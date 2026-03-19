@@ -214,7 +214,30 @@ async def verify_otp(req: VerifyOTPRequest, db: AsyncSession = Depends(get_db)):
         
     return {"message": "OTP verified successfully"}
 
-@router.post("/seed-institutional-data")
+@router.post("/debug-seed")
+async def debug_seed():
+    """Synchronous seed - returns error details directly. For debugging only."""
+    import random, traceback
+    from datetime import datetime
+    from sqlalchemy import text
+    from database import AsyncSessionLocal
+    from models.models import User, Course, UserRole
+    from utils.auth import get_password_hash
+    try:
+        async with AsyncSessionLocal() as db:
+            # Try a simple insert of just the admin user
+            await db.execute(text("SET FOREIGN_KEY_CHECKS = 0;"))
+            await db.execute(text("TRUNCATE TABLE users;"))
+            await db.execute(text("SET FOREIGN_KEY_CHECKS = 1;"))
+            await db.commit()
+            admin = User(name="Admin", email="admin@example.com", password=get_password_hash("admin123"), role=UserRole.ADMIN)
+            db.add(admin)
+            await db.commit()
+            await db.refresh(admin)
+            return {"status": "ok", "admin_id": admin.id}
+    except Exception as e:
+        return {"status": "error", "error": str(e), "trace": traceback.format_exc()}
+
 async def seed_institutional_data_endpoint(background_tasks: BackgroundTasks):
     async def run_seed():
         import random
