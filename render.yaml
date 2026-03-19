@@ -4,7 +4,7 @@ services:
     name: course-analytics-backend
     env: docker
     dockerfilePath: backend/Dockerfile
-    dockerContext: .
+    dockerContext: backend
     plan: free
     envVars:
       - key: DATABASE_URL
