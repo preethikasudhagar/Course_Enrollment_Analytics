@@ -9,6 +9,7 @@ pydantic
 pydantic-settings
 python-jose[cryptography]
 passlib[bcrypt]
+bcrypt==3.2.0
 email-validator
 aiofiles
 jinja2
