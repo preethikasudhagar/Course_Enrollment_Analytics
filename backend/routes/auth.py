@@ -216,27 +216,105 @@ async def verify_otp(req: VerifyOTPRequest, db: AsyncSession = Depends(get_db)):
 
 @router.post("/debug-seed")
 async def debug_seed():
-    """Synchronous seed - returns error details directly. For debugging only."""
+    """Synchronous full wipe and seed to force exact enrollments for specific courses."""
     import random, traceback
     from datetime import datetime
     from sqlalchemy import text
     from database import AsyncSessionLocal
-    from models.models import User, Course, UserRole
+    from models.models import User, Course, Enrollment, Notification, Analytics, UserRole
     from utils.auth import get_password_hash
     try:
         async with AsyncSessionLocal() as db:
-            # Try a simple insert of just the admin user
+            # Full Wipe
             await db.execute(text("SET FOREIGN_KEY_CHECKS = 0;"))
-            await db.execute(text("TRUNCATE TABLE users;"))
+            for table in ["enrollments", "notifications", "analytics", "courses", "users"]:
+                await db.execute(text(f"TRUNCATE TABLE {table};"))
             await db.execute(text("SET FOREIGN_KEY_CHECKS = 1;"))
             await db.commit()
-            admin = User(name="Admin", email="admin@example.com", password=get_password_hash("admin123"), role=UserRole.ADMIN)
-            db.add(admin)
+            
+            # Users
+            admin = User(name="Institutional Admin", email="admin@example.com", password=get_password_hash("admin123"), role=UserRole.ADMIN)
+            faculty = User(name="Lead Faculty", email="faculty@example.com", password=get_password_hash("faculty123"), role=UserRole.FACULTY)
+            db.add_all([admin, faculty])
             await db.commit()
-            await db.refresh(admin)
-            return {"status": "ok", "admin_id": admin.id}
+            
+            first_names = ["Rahul", "Priya", "Arjun", "Sneha", "Kavya", "Nikhil", "Ananya", "Rohit", "Divya", "Aditya"]
+            last_names = ["Sharma", "Patel", "Mehta", "Reddy", "Iyer", "Verma", "Gupta", "Nair", "Menon", "Singh"]
+            students = []
+            for i in range(50):
+                fname = random.choice(first_names)
+                lname = random.choice(last_names)
+                student = User(name=f"{fname} {lname}", email=f"{fname.lower()}.{lname.lower()}{i}@university.edu", password=get_password_hash("student123"), role=UserRole.STUDENT)
+                db.add(student)
+                students.append(student)
+            await db.commit()
+            for s in students: await db.refresh(s)
+            
+            # Courses
+            course_configs = [
+                ("CS201", "Data Structures", "Computer Science", 45),
+                ("CS220", "Web Development", "Information Technology", 50),
+                ("CS210", "Database Systems", "Software Engineering", 40),
+                ("CS305", "Machine Learning", "Artificial Intelligence", 35),
+                ("CS330", "Cloud Computing", "Computer Science", 30),
+                ("CS301", "Operating Systems", "Computer Science", 40),
+                ("CS401", "Artificial Intelligence", "Artificial Intelligence", 30),
+                ("CS320", "Computer Networks", "Information Technology", 35),
+                ("CS350", "Cyber Security", "Information Technology", 25),
+                ("CS360", "Data Analytics", "Data Science", 40),
+                ("CS370", "Software Engineering", "Software Engineering", 45),
+                ("CS450", "Deep Learning", "Artificial Intelligence", 20)
+            ]
+            courses = []
+            for code, name, dept, limit in course_configs:
+                course = Course(course_code=code, course_name=name, department=dept, seat_limit=limit)
+                db.add(course)
+                courses.append(course)
+            await db.commit()
+            for c in courses: await db.refresh(c)
+            
+            course_map = {c.course_name: c for c in courses}
+            
+            # Specific Enrollments target counts
+            target_counts = {
+                "Artificial Intelligence": 29,  # capacity 30
+                "Data Analytics": 39,          # capacity 40
+                "Software Engineering": 44,    # capacity 45
+                "Machine Learning": 33,        # capacity 35
+                "Web Development": 40          # generic mid-high
+            }
+            
+            used_pairs = set()
+            total_enrollments = 0
+            
+            for c_name, target in target_counts.items():
+                if c_name not in course_map: continue
+                c = course_map[c_name]
+                enrolled = 0
+                available_students = list(students)
+                random.shuffle(available_students)
+                for s in available_students:
+                    if enrolled >= target: break
+                    enrollment = Enrollment(student_id=s.id, course_id=c.id, enrollment_date=datetime(2024, random.randint(1, 4), random.randint(1, 28)))
+                    db.add(enrollment)
+                    used_pairs.add((s.id, c.id))
+                    enrolled += 1
+                    total_enrollments += 1
+            
+            # Fill remaining to make total ~100 or so. (already 185 from above, so skip random)
+            await db.commit()
+            
+            # Analytics
+            for c in courses:
+                count = len([e for e in used_pairs if e[1] == c.id])
+                score = (count / c.seat_limit) * 10
+                db.add(Analytics(course_id=c.id, demand_score=score, trend_data=f"Growth index: {random.uniform(1.1, 1.5):.2f}"))
+            await db.commit()
+            
+            return {"status": "ok", "message": f"Seeded with forced counts. Total enrollments: {total_enrollments}"}
     except Exception as e:
         return {"status": "error", "error": str(e), "trace": traceback.format_exc()}
+
 
 async def seed_institutional_data_endpoint(background_tasks: BackgroundTasks):
     async def run_seed():
