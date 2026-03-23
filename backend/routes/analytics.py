@@ -24,25 +24,19 @@ async def refresh_admin_vitals(db: AsyncSession):
         import asyncio
         six_months_ago = datetime.utcnow() - timedelta(days=180)
         
-        # Parallelize independent count and aggregate queries for speed
-        tc_task = db.scalar(select(func.count(Course.id)))
-        ts_task = db.scalar(select(func.count(User.id)).where(User.role == UserRole.STUDENT))
-        te_task = db.scalar(select(func.count(Enrollment.id)))
-        tst_task = db.scalar(select(func.sum(Course.seat_limit)))
-        au_task = db.scalar(select(func.count(func.distinct(Enrollment.student_id))))
+        tc = await db.scalar(select(func.count(Course.id)))
+        ts = await db.scalar(select(func.count(User.id)).where(User.role == UserRole.STUDENT))
+        te = await db.scalar(select(func.count(Enrollment.id)))
+        tst = await db.scalar(select(func.sum(Course.seat_limit)))
+        au = await db.scalar(select(func.count(func.distinct(Enrollment.student_id))))
         
-        top_task = db.execute(select(Course.course_name, func.count(Enrollment.id)).join(Enrollment, Enrollment.course_id == Course.id).group_by(Course.id, Course.course_name).order_by(func.count(Enrollment.id).desc()).limit(1))
-        tr_task = db.execute(select(func.date_format(Enrollment.enrollment_date, '%b').label('m'), func.count(Enrollment.id)).where(Enrollment.enrollment_date >= six_months_ago).group_by('m').order_by(func.min(Enrollment.enrollment_date)))
-        pop_task = db.execute(select(Course.course_name, func.count(Enrollment.id)).join(Enrollment, Enrollment.course_id == Course.id).group_by(Course.id, Course.course_name).order_by(func.count(Enrollment.id).desc()).limit(5))
-        ci_task = db.execute(select(Course.id, Course.course_code, Course.course_name, Course.department, Course.seat_limit, func.count(Enrollment.id)).outerjoin(Enrollment, Enrollment.course_id == Course.id).group_by(Course.id).order_by(Course.course_name).limit(20))
-        du_task = db.execute(select(Course.department, func.count(Enrollment.id), func.sum(Course.seat_limit)).outerjoin(Enrollment, Enrollment.course_id == Course.id).group_by(Course.department))
-        hm_task = db.execute(select(func.date_format(Enrollment.enrollment_date, '%b'), func.date_format(Enrollment.enrollment_date, '%W'), func.count(Enrollment.id)).group_by(func.date_format(Enrollment.enrollment_date, '%b'), func.date_format(Enrollment.enrollment_date, '%W')))
-        sl_task = db.execute(select(SeatExpansionLog, Course).join(Course, Course.id == SeatExpansionLog.course_id).order_by(SeatExpansionLog.timestamp.desc()).limit(15))
-        
-        import asyncio
-        tc, ts, te, tst, au, top, tr, pop, ci, du, hm, sl = await asyncio.gather(
-            tc_task, ts_task, te_task, tst_task, au_task, top_task, tr_task, pop_task, ci_task, du_task, hm_task, sl_task
-        )
+        top = await db.execute(select(Course.course_name, func.count(Enrollment.id)).join(Enrollment, Enrollment.course_id == Course.id).group_by(Course.id, Course.course_name).order_by(func.count(Enrollment.id).desc()).limit(1))
+        tr = await db.execute(select(func.date_format(Enrollment.enrollment_date, '%b').label('m'), func.count(Enrollment.id)).where(Enrollment.enrollment_date >= six_months_ago).group_by('m').order_by(func.min(Enrollment.enrollment_date)))
+        pop = await db.execute(select(Course.course_name, func.count(Enrollment.id)).join(Enrollment, Enrollment.course_id == Course.id).group_by(Course.id, Course.course_name).order_by(func.count(Enrollment.id).desc()).limit(5))
+        ci = await db.execute(select(Course.id, Course.course_code, Course.course_name, Course.department, Course.seat_limit, func.count(Enrollment.id)).outerjoin(Enrollment, Enrollment.course_id == Course.id).group_by(Course.id).order_by(Course.course_name).limit(20))
+        du = await db.execute(select(Course.department, func.count(Enrollment.id), func.sum(Course.seat_limit)).outerjoin(Enrollment, Enrollment.course_id == Course.id).group_by(Course.department))
+        hm = await db.execute(select(func.date_format(Enrollment.enrollment_date, '%b'), func.date_format(Enrollment.enrollment_date, '%W'), func.count(Enrollment.id)).group_by(func.date_format(Enrollment.enrollment_date, '%b'), func.date_format(Enrollment.enrollment_date, '%W')))
+        sl = await db.execute(select(SeatExpansionLog, Course).join(Course, Course.id == SeatExpansionLog.course_id).order_by(SeatExpansionLog.timestamp.desc()).limit(15))
         
         tc = tc or 0
         ts = ts or 0

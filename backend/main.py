@@ -44,14 +44,19 @@ async def add_cache_control_header(request, call_next):
 
 @app.on_event("startup")
 async def on_startup():
-    await init_db()
-    # We rely on seed_strict_17.py for initial data to ensure 17 courses constraint.
-    # Seeding admin only.
-    from routes.auth import seed_admin
-    async with AsyncSessionLocal() as db:
-        await seed_admin(db)
-        from routes.analytics import refresh_all_vitals
-        await refresh_all_vitals()
+    try:
+        await init_db()
+        from routes.auth import seed_admin
+        async with AsyncSessionLocal() as db:
+            await seed_admin(db)
+            from routes.analytics import refresh_all_vitals
+            await refresh_all_vitals()
+    except Exception as e:
+        import traceback
+        with open("startup_error.txt", "w") as f:
+            f.write(f"Startup failed: {str(e)}\n")
+            f.write(traceback.format_exc())
+        raise e
 
 @app.on_event("shutdown")
 async def on_shutdown():
