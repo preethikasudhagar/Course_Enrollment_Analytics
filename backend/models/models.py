@@ -27,28 +27,27 @@ class Course(Base):
     __tablename__ = "courses"
     id = Column("course_id", Integer, primary_key=True, index=True, autoincrement=True)
     course_name = Column(String(100), nullable=False)
-    course_code = Column(String(50), nullable=True)
+    course_code = Column(String(50), nullable=True, index=True) # Added explicit index
     department = Column(String(100), nullable=False)
     faculty_assigned = Column(String(100), nullable=True)
     seat_limit = Column(Integer, default=40)
     enrolled_students = Column(Integer, default=0)
-    remaining_seats = Column(Integer, default=40)
     waitlist_count = Column(Integer, default=0)
     auto_expand_enabled = Column(Boolean, default=True)
     max_seat_limit = Column(Integer, default=200)
     course_description = Column(Text, nullable=True)
     course_duration = Column(String(50), nullable=True)
     credits = Column(Integer, default=3)
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime, default=datetime.utcnow, index=True)
     
     enrollments = relationship("Enrollment", back_populates="course")
 
 class Enrollment(Base):
     __tablename__ = "enrollments"
     id = Column(Integer, primary_key=True, index=True)
-    student_id = Column(Integer, ForeignKey("users.id"))
-    course_id = Column(Integer, ForeignKey("courses.course_id"))
-    enrollment_date = Column(DateTime, default=datetime.utcnow)
+    student_id = Column(Integer, ForeignKey("users.id"), index=True)
+    course_id = Column(Integer, ForeignKey("courses.course_id"), index=True)
+    enrollment_date = Column(DateTime, default=datetime.utcnow, index=True)
     
     student = relationship("User", back_populates="enrollments", foreign_keys=[student_id])
     course = relationship("Course", back_populates="enrollments", foreign_keys=[course_id])
@@ -59,8 +58,8 @@ class Notification(Base):
     message = Column(Text, nullable=False)
     target_role = Column(String(50), nullable=True)
     course_id = Column(Integer, ForeignKey("courses.course_id"), nullable=True)
-    status = Column(String(20), default="unread")
-    timestamp = Column(DateTime, default=datetime.utcnow)
+    status = Column(String(20), default="unread", index=True)
+    timestamp = Column(DateTime, default=datetime.utcnow, index=True)
 
 class SystemSetting(Base):
     __tablename__ = "system_settings"
@@ -133,6 +132,6 @@ class SeatExpansionLog(Base):
     old_limit = Column(Integer, nullable=False)
     new_limit = Column(Integer, nullable=False)
     increment_by = Column(Integer, nullable=False)
-    timestamp = Column(DateTime, default=datetime.utcnow)
+    timestamp = Column(DateTime, default=datetime.utcnow, index=True)
     
     course = relationship("Course")

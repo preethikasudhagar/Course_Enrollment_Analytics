@@ -1,120 +1,217 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, memo } from 'react';
 import DashboardLayout from '../components/DashboardLayout';
 import DashboardCard from '../components/DashboardCard';
 import StatusBadge from '../components/StatusBadge';
 import { analyticsService, courseService, enrollmentService, getErrorMessage, userService } from '../services/api';
+import Skeleton, { SkeletonCard, SkeletonTable } from '../components/Skeleton';
 import {
-    Book,
+    Activity,
     Layers,
+    Book,
+    BookOpen,
     Star,
     Search,
+    Zap,
     CheckCircle2,
     AlertCircle,
-    Zap,
     XCircle,
-    BookOpen,
 } from 'lucide-react';
 
+const CourseCard = memo(({ course, isEnrolled, onEnroll, isEnrolling }) => {
+    const remaining = Math.max(0, Number(course?.seat_limit || 0) - Number(course?.enrolled_students || 0));
+    return (
+        <div className="ui-card p-5 flex flex-col gap-4">
+            <div className="flex items-start justify-between gap-3">
+                <div>
+                    <h4 className="text-base font-bold text-slate-900">{course?.course_name || 'Untitled Course'}</h4>
+                    <p className="text-sm text-slate-500 mt-0.5">{course?.department || 'General'}</p>
+                </div>
+            </div>
+
+            <div className="text-xs text-slate-500">
+                <span className="font-medium">Instructor:</span> {course?.faculty_assigned || course?.instructor || 'TBA'}
+            </div>
+
+            <StatusBadge enrolled={course?.enrolled_students} limit={course?.seat_limit} />
+
+            <button
+                disabled={isEnrolled || isEnrolling}
+                onClick={() => onEnroll(course?.id)}
+                className={isEnrolled ? 'btn-secondary w-full opacity-50 cursor-not-allowed' : 'btn-primary w-full flex items-center justify-center gap-2'}
+            >
+                {isEnrolling ? (
+                    <>
+                        <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                        Enrolling...
+                    </>
+                ) : (
+                    isEnrolled ? 'Already Enrolled' : 'Enroll Now'
+                )}
+            </button>
+        </div>
+    );
+});
+
+const EnrollmentRow = memo(({ enrollment }) => (
+    <tr className="hover:bg-slate-50/80 transition-all">
+        <td className="px-6 py-4">
+            <div className="font-bold text-slate-900">{enrollment.course_name}</div>
+        </td>
+        <td className="px-6 py-4 text-slate-500 font-medium">
+            {enrollment?.enrollment_date ? new Date(enrollment.enrollment_date).toLocaleDateString() : 'N/A'}
+        </td>
+        <td className="px-6 py-4 text-right">
+            <div className="inline-flex items-center gap-2 px-3 py-1 bg-emerald-50 text-emerald-600 rounded-full text-[10px] font-bold uppercase border border-emerald-100">
+                <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></div>
+                Active
+            </div>
+        </td>
+    </tr>
+));
+
 const StudentDashboard = () => {
-    const [courses, setCourses] = useState([]);
-    const [myEnrollments, setMyEnrollments] = useState([]);
-    const [recommendations, setRecommendations] = useState([]);
-    const [loading, setLoading] = useState(true);
+    // Single-cycle state for absolute rendering speed
+    const [dashboardData, setDashboardData] = useState(() => {
+        try {
+            const cached = sessionStorage.getItem('student_vitals_full');
+            return cached ? JSON.parse(cached) : null;
+        } catch { return null; }
+    });
+    const [myEnrollments, setMyEnrollments] = useState(() => {
+        const cached = sessionStorage.getItem('student_vitals_enrollments');
+        return cached ? JSON.parse(cached) : [];
+    });
+    const [loading, setLoading] = useState(!dashboardData);
+    const [enrollingId, setEnrollingId] = useState(null);
     const [searchTerm, setSearchTerm] = useState('');
     const [message, setMessage] = useState(null);
     const [error, setError] = useState(null);
+    const [retryCount, setRetryCount] = useState(0);
+    const MAX_RETRIES = 2;
 
-    // Get the logged-in user's department from localStorage
-    const getUser = () => {
+    const [user, setUser] = useState(() => {
         try {
             const stored = localStorage.getItem('user');
             return stored ? JSON.parse(stored) : {};
-        } catch {
-            return {};
-        }
-    };
-    const [user, setUser] = useState(getUser());
+        } catch { return {}; }
+    });
     const userDept = user?.department || 'General';
+
+    const fetchData = React.useCallback(async (isManualRetry = false) => {
+        try {
+            if (!dashboardData || isManualRetry) setLoading(true);
+            setError(null);
+            
+            const [vitals, enrollments, profile] = await Promise.all([
+                analyticsService.getStudentVitals(),
+                enrollmentService.getMyEnc(),
+                userService.getProfile()
+            ]);
+
+            if (vitals) {
+                setDashboardData(vitals);
+                sessionStorage.setItem('student_vitals_full', JSON.stringify(vitals));
+            }
+            if (enrollments) {
+                setMyEnrollments(enrollments);
+                sessionStorage.setItem('student_vitals_enrollments', JSON.stringify(enrollments));
+            }
+            if (profile) {
+                setUser(profile);
+                localStorage.setItem('user', JSON.stringify(profile));
+            }
+            setRetryCount(0); // Reset on success
+        } catch (err) {
+            console.error('Student sync failed:', err);
+            if (retryCount < MAX_RETRIES && !isManualRetry) {
+                setRetryCount(prev => prev + 1);
+                setTimeout(() => fetchData(), 2000);
+            } else {
+                setError('Failed to refresh your dashboard. Please check your connection.');
+            }
+        } finally {
+            if (retryCount >= MAX_RETRIES || dashboardData) setLoading(false);
+        }
+    }, [dashboardData, retryCount]);
 
     useEffect(() => {
         fetchData();
     }, []);
 
-    const fetchData = async () => {
-        const safeFetch = async (promise, fallback) => {
-            try {
-                const res = await promise;
-                return res ?? fallback;
-            } catch (e) {
-                console.warn('Student dashboard API failed:', e);
-                return fallback;
-            }
-        };
-
-        try {
-            setError(null);
-            const [cRes, mRes, rRes, pRes] = await Promise.all([
-                safeFetch(courseService.getAll(), []),
-                safeFetch(enrollmentService.getMyEnc(), []),
-                safeFetch(analyticsService.getRecommendations(), []),
-                safeFetch(userService.getProfile(), null)
-            ]);
-
-            setCourses(Array.isArray(cRes) ? cRes : []);
-            setMyEnrollments(Array.isArray(mRes) ? mRes : []);
-            setRecommendations(Array.isArray(rRes) ? rRes : []);
-            if (pRes) {
-                setUser(pRes);
-                localStorage.setItem('user', JSON.stringify(pRes));
-            }
-        } catch (err) {
-            console.error('Data sync failed', err);
-            setError(null);
-        } finally {
-            setLoading(false);
-        }
-    };
-
     const handleEnroll = async (id) => {
+        if (!id || enrollingId) return;
+        setEnrollingId(id);
         try {
             const data = await enrollmentService.enroll(id);
             const courseName = data?.course_name || 'the course';
 
+            if (data) {
+                const updatedCourse = data;
+                setDashboardData(prev => ({
+                    ...prev,
+                    courses: (prev?.courses || []).map(c => 
+                        c.id === id ? { 
+                            ...c, 
+                            enrolled_students: updatedCourse.enrolled_count,
+                            seat_limit: updatedCourse.seat_limit,
+                            available_seats: updatedCourse.available_seats
+                        } : c
+                    )
+                }));
+                
+                // Optimistically update enrollments so the button instantly locks
+                setMyEnrollments(prev => [...prev, { course_id: id }]);
+            }
+
             if (data?.seat_expanded) {
                 setMessage({
                     type: 'success',
-                    text: `Seats were full! Capacity increased by 10 and you were enrolled in ${courseName}.`
+                    text: `Successfully enrolled. Seats increased automatically.`
                 });
             } else {
                 setMessage({ type: 'success', text: `Enrolled in ${courseName} successfully.` });
             }
+            
+            // Re-fetch everything else in the background
             fetchData();
             window.dispatchEvent(new Event('refreshNotifications'));
         } catch (err) {
             setMessage({ type: 'error', text: getErrorMessage(err, 'Enrollment failed.') });
+        } finally {
+            setEnrollingId(null);
         }
         setTimeout(() => setMessage(null), 6000);
     };
 
-    const filtered = (courses || []).filter((c) =>
-        (c?.course_name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (c?.department || '').toLowerCase().includes(searchTerm.toLowerCase())
-    );
-    const prioritizedCourses = [...filtered].sort((a, b) => {
-        const aMatch = userDept !== 'General' && a?.department === userDept;
-        const bMatch = userDept !== 'General' && b?.department === userDept;
-        if (aMatch === bMatch) return 0;
-        return aMatch ? -1 : 1;
-    });
+    const { 
+        courses = [], 
+        recommendations = [] 
+    } = dashboardData || {};
+
+    const prioritizedCourses = useMemo(() => {
+        const lowerSearch = searchTerm.toLowerCase();
+        const filtered = (courses || []).filter((c) =>
+            (c?.course_name || '').toLowerCase().includes(lowerSearch) ||
+            (c?.department || '').toLowerCase().includes(lowerSearch)
+        );
+        return [...filtered].sort((a, b) => {
+            const aMatch = userDept !== 'General' && a?.department === userDept;
+            const bMatch = userDept !== 'General' && b?.department === userDept;
+            if (aMatch === bMatch) return 0;
+            return aMatch ? -1 : 1;
+        });
+    }, [courses, searchTerm, userDept]);
 
     const isEnrolled = (cid) => myEnrollments.some(e => e.course_id === cid);
 
     if (loading) return (
         <DashboardLayout role="student">
-            <div className="flex items-center justify-center min-h-[60vh] text-slate-400">
-                <div className="flex flex-col items-center gap-4">
-                    <div className="w-12 h-12 border-4 border-blue-100 border-t-blue-600 rounded-full animate-spin"></div>
-                    <p className="font-medium">Loading your dashboard...</p>
+            <div className="space-y-8">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    {[...Array(3)].map((_, i) => <SkeletonCard key={i} />)}
+                </div>
+                <div className="ui-card p-6">
+                    <SkeletonTable rows={10} />
                 </div>
             </div>
         </DashboardLayout>
@@ -125,8 +222,8 @@ const StudentDashboard = () => {
             <DashboardLayout role="student">
                 <div className="flex items-center justify-center min-h-[60vh]">
                     <div className="text-center">
-                        <p className="text-rose-600 mb-3">{error}</p>
-                        <button onClick={fetchData} className="btn-primary">Retry</button>
+                        <p className="text-rose-600 mb-3 font-medium">{error}</p>
+                        <button onClick={() => fetchData(true)} className="btn-primary">Retry Now</button>
                     </div>
                 </div>
             </DashboardLayout>
@@ -205,12 +302,16 @@ const StudentDashboard = () => {
                                 <h4 className="text-base font-bold text-slate-900 group-hover:text-blue-600 transition-colors">{rec.course_name}</h4>
                                 <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mt-1">{rec.department}</p>
                                 <p className="mt-2 text-xs text-slate-500 italic">"{rec.reason}"</p>
-                                <button
-                                    onClick={() => handleEnroll(rec?.course_id)}
-                                    disabled={!rec?.course_id}
-                                    className="w-full mt-4 py-2 bg-blue-50 text-blue-600 rounded-xl text-sm font-semibold hover:bg-blue-600 hover:text-white transition-all"
+                                <button 
+                                    disabled={isEnrolled(rec.id) || enrollingId === rec.id}
+                                    onClick={() => handleEnroll(rec.id)}
+                                    className={isEnrolled(rec.id) ? 'w-full btn-secondary py-2 mt-auto opacity-50 cursor-not-allowed' : 'w-full btn-primary py-2 mt-auto flex justify-center items-center gap-2'}
                                 >
-                                    Enroll
+                                    {enrollingId === rec.id ? (
+                                        <>
+                                            ...
+                                        </>
+                                    ) : (isEnrolled(rec.id) ? 'Enrolled' : 'Enroll')}
                                 </button>
                             </div>
                         ))}
@@ -231,37 +332,15 @@ const StudentDashboard = () => {
                             <p className="text-slate-500 font-semibold">No courses available.</p>
                             <p className="text-xs text-slate-400 mt-1">Check back later for new offerings.</p>
                         </div>
-                    ) : prioritizedCourses.map((c, i) => {
-                        const remaining = Math.max(0, Number(c?.seat_limit || 0) - Number(c?.enrolled_students || 0));
-                        return (
-                            <div key={i} className="ui-card p-5 flex flex-col gap-4">
-                                <div className="flex items-start justify-between gap-3">
-                                    <div>
-                                        <h4 className="text-base font-bold text-slate-900">{c?.course_name || 'Untitled Course'}</h4>
-                                        <p className="text-sm text-slate-500 mt-0.5">{c?.department || 'General'}</p>
-                                    </div>
-                                    <span className={`shrink-0 ${remaining === 0 ? 'badge-full' : remaining <= 5 ? 'badge-almost-full' : 'badge-open'
-                                        }`}>
-                                        {remaining === 0 ? 'Full' : remaining <= 5 ? 'Almost Full' : 'Open'}
-                                    </span>
-                                </div>
-
-                                <div className="text-xs text-slate-500">
-                                    <span className="font-medium">Instructor:</span> {c?.faculty_assigned || c?.instructor || 'TBA'}
-                                </div>
-
-                                <StatusBadge enrolled={c?.enrolled_students} limit={c?.seat_limit} />
-
-                                <button
-                                    disabled={isEnrolled(c?.id)}
-                                    onClick={() => handleEnroll(c?.id)}
-                                    className={isEnrolled(c?.id) ? 'btn-secondary w-full opacity-50 cursor-not-allowed' : 'btn-primary w-full'}
-                                >
-                                    {isEnrolled(c?.id) ? 'Already Enrolled' : 'Enroll Now'}
-                                </button>
-                            </div>
-                        );
-                    })}
+                    ) : prioritizedCourses.map((c, i) => (
+                        <CourseCard 
+                            key={c.id || i} 
+                            course={c} 
+                            isEnrolled={isEnrolled(c?.id)}
+                            onEnroll={handleEnroll}
+                            isEnrolling={enrollingId === c?.id}
+                        />
+                    ))}
                 </div>
             </div>
 
@@ -289,20 +368,7 @@ const StudentDashboard = () => {
                                     </td>
                                 </tr>
                             ) : myEnrollments.map((e, i) => (
-                                <tr key={i} className="hover:bg-slate-50/80 transition-all">
-                                    <td className="px-6 py-4">
-                                        <div className="font-bold text-slate-900">{e.course_name}</div>
-                                    </td>
-                                    <td className="px-6 py-4 text-slate-500 font-medium">
-                                        {e?.enrollment_date ? new Date(e.enrollment_date).toLocaleDateString() : 'N/A'}
-                                    </td>
-                                    <td className="px-6 py-4 text-right">
-                                        <div className="inline-flex items-center gap-2 px-3 py-1 bg-emerald-50 text-emerald-600 rounded-full text-[10px] font-bold uppercase border border-emerald-100">
-                                            <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></div>
-                                            Active
-                                        </div>
-                                    </td>
-                                </tr>
+                                <EnrollmentRow key={e.id || i} enrollment={e} />
                             ))}
                         </tbody>
                     </table>

@@ -50,4 +50,4 @@ const SeatUtilizationChart = ({ data }) => {
     );
 };
 
-export default SeatUtilizationChart;
+export default React.memo(SeatUtilizationChart);

@@ -1,13 +1,15 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense, memo } from 'react';
 import DashboardLayout from '../components/DashboardLayout';
 import DashboardCard from '../components/DashboardCard';
-import CourseEnrollmentChart from '../charts/CourseEnrollmentChart';
-import MonthlyTrendChart from '../charts/MonthlyTrendChart';
-import DepartmentPieChart from '../charts/DepartmentPieChart';
-import SeatUtilizationChart from '../charts/SeatUtilizationChart';
-import HorizontalBarChart from '../charts/HorizontalBarChart';
-import HeatmapChart from '../charts/HeatmapChart';
+const CourseEnrollmentChart = React.lazy(() => import('../charts/CourseEnrollmentChart'));
+const MonthlyTrendChart = React.lazy(() => import('../charts/MonthlyTrendChart'));
+const DepartmentPieChart = React.lazy(() => import('../charts/DepartmentPieChart'));
+const SeatUtilizationChart = React.lazy(() => import('../charts/SeatUtilizationChart'));
+const HorizontalBarChart = React.lazy(() => import('../charts/HorizontalBarChart'));
+const HeatmapChart = React.lazy(() => import('../charts/HeatmapChart'));
+
 import { analyticsService, courseService } from '../services/api';
+import Skeleton, { SkeletonCard, SkeletonTable } from '../components/Skeleton';
 import {
     Users,
     BookOpen,
@@ -26,35 +28,83 @@ import {
 
 
 
+const CourseRow = memo(({ course, onViewStudents, onIncreaseLimit, onDelete }) => {
+    const limit = Number(course?.seat_limit) || 0;
+    const enrolled = Number(course?.enrolled_students) || 0;
+    const remaining = Math.max(0, limit - enrolled);
+
+    let statusLabel = "Open";
+    let statusClass = "badge-open";
+    if (remaining === 0) {
+        statusLabel = "Full";
+        statusClass = "badge-full";
+    } else if (remaining <= 5) {
+        statusLabel = "Almost Full";
+        statusClass = "badge-almost-full";
+    }
+
+    return (
+        <tr className="group hover:bg-slate-50/80 transition-all duration-200">
+            <td className="px-6 py-4 text-slate-600 font-bold tracking-tight">
+                {course.course_code || '—'}
+            </td>
+            <td className="px-6 py-4">
+                <div className="font-bold text-slate-900 truncate max-w-[250px]">{course.course_name}</div>
+            </td>
+            <td className="px-6 py-4 text-slate-600 font-medium">{course.department}</td>
+            <td className="px-6 py-4 font-bold text-slate-700">{limit}</td>
+            <td className="px-6 py-4">
+                <span className="text-blue-600 font-bold">{enrolled}</span>
+            </td>
+            <td className="px-6 py-4 text-slate-500 font-medium">{remaining}</td>
+            <td className="px-6 py-4">
+                <span className={statusClass}>{statusLabel}</span>
+            </td>
+            <td className="px-6 py-4 text-right">
+                <div className="flex items-center justify-end gap-1">
+                    <button
+                        title="View Students"
+                        onClick={() => onViewStudents(course)}
+                        className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
+                    >
+                        <Users size={15} />
+                    </button>
+                    <button
+                        title="Increase Seats +10"
+                        onClick={() => onIncreaseLimit(course)}
+                        className="p-2 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-all"
+                    >
+                        <Plus size={15} />
+                    </button>
+                    <button
+                        title="Delete Course"
+                        onClick={() => onDelete(course.id)}
+                        className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-all"
+                    >
+                        <X size={15} />
+                    </button>
+                </div>
+            </td>
+        </tr>
+    );
+});
+
 // ──────────────────────────────────────────
 // Admin Dashboard
 // ──────────────────────────────────────────
 const AdminDashboard = () => {
-    const [summary, setSummary] = useState({
-        total_students: 0,
-        total_courses: 0,
-        total_enrollments: 0,
-        top_course: 'N/A',
-        most_popular_course_enrollment_count: 0,
-        utilization: 0
+    // Single-cycle state for absolute rendering speed
+    const [dashboardData, setDashboardData] = useState(() => {
+        try {
+            const cached = sessionStorage.getItem('admin_vitals_full');
+            return cached ? JSON.parse(cached) : null;
+        } catch { return null; }
     });
-    const [charts, setCharts] = useState({
-        trends: [],
-        topCourses: [],
-        utilDetail: [],
-        deptEnroll: [],
-        prediction: [],
-        heatmap: [],
-    });
-    const [deptUtilization, setDeptUtilization] = useState([]);
-    const [courses, setCourses] = useState([]);
-    const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState(!dashboardData);
     const [error, setError] = useState(null);
     const [showCreateModal, setShowCreateModal] = useState(false);
     const [successMsg, setSuccessMsg] = useState('');
     
-    // New States
-    const [expansionLogs, setExpansionLogs] = useState([]);
     const [courseStudents, setCourseStudents] = useState([]);
     const [showStudentsModal, setShowStudentsModal] = useState(false);
     const [loadingStudents, setLoadingStudents] = useState(false);
@@ -62,69 +112,27 @@ const AdminDashboard = () => {
 
     useEffect(() => {
         fetchAdminData();
-    }, []);
+    }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-    const fetchAdminData = async () => {
+    const fetchAdminData = React.useCallback(async () => {
         try {
-            setLoading(true);
+            if (!dashboardData) setLoading(true);
             setError(null);
             
             const data = await analyticsService.getAdminVitals();
-            if (!data) throw new Error("No data received");
-
-            const { 
-                summary: sRes, 
-                trends: tRes, 
-                topCourses: uRes, 
-                prediction: pRes, 
-                deptStats: dRes, 
-                courses: cRes, 
-                deptUtilization: duRes, 
-                heatmap: hmRes, 
-                expansionLogs: logsRes 
-            } = data;
-
-            setSummary(sRes || {
-                total_students: 0,
-                total_courses: 0,
-                total_enrollments: 0,
-                top_course: 'N/A',
-                most_popular_course_enrollment_count: 0,
-                utilization: 0
-            });
-
-            setCharts({
-                trends: Array.isArray(tRes) ? tRes : [],
-                topCourses: (Array.isArray(uRes) ? uRes : []).map(p => ({
-                    name: p.course_name || p.name,
-                    students: p.value || p.students || 0
-                })),
-                utilDetail: [
-                    { name: 'Enrolled', value: sRes?.total_enrollments || 0 },
-                    { name: 'Remaining', value: Math.max(0, (sRes?.total_seats || 0) - (sRes?.total_enrollments || 0)) }
-                ],
-                deptEnroll: (Array.isArray(dRes) ? dRes : []).map(d => ({
-                    name: d.name || d.department,
-                    enrollments: d.value || d.enrollments || 0
-                })),
-                prediction: (Array.isArray(pRes) ? pRes : []).map(p => ({
-                    name: p.course_name || p.name,
-                    enrollments: p.value || p.predicted || 0
-                })),
-                heatmap: Array.isArray(hmRes) ? hmRes : [],
-            });
-            setCourses(Array.isArray(cRes) ? cRes : []);
-            setDeptUtilization(Array.isArray(duRes) ? duRes : []);
-            setExpansionLogs(Array.isArray(logsRes) ? logsRes : []);
+            if (data) {
+                setDashboardData(data);
+                sessionStorage.setItem('admin_vitals_full', JSON.stringify(data));
+            }
         } catch (error) {
             console.error("Dashboard fetch error:", error);
             setError("Failed to load dashboard statistics.");
         } finally {
             setLoading(false);
         }
-    };
+    }, []);
 
-    const handleExport = async (format, reportType = 'general') => {
+    const handleExport = React.useCallback(async (format, reportType = 'general') => {
         try {
             const res = await analyticsService.exportData(format, reportType);
             const blob = new Blob([res.data]);
@@ -138,15 +146,15 @@ const AdminDashboard = () => {
         } catch (err) {
             console.error('Export failed', err);
         }
-    };
+    }, []);
 
-    const handleCourseCreated = () => {
+    const handleCourseCreated = React.useCallback(() => {
         setSuccessMsg('Course created successfully!');
         fetchAdminData();
         setTimeout(() => setSuccessMsg(''), 5000);
-    };
+    }, [fetchAdminData]);
 
-    const handleViewStudents = async (course) => {
+    const handleViewStudents = React.useCallback(async (course) => {
         setShowStudentsModal(true);
         setLoadingStudents(true);
         try {
@@ -158,30 +166,45 @@ const AdminDashboard = () => {
         } finally {
             setLoadingStudents(false);
         }
-    };
+    }, []);
 
-    const metrics = [
-        { title: 'Total Students', value: summary.total_students || 0, icon: Users, color: 'text-blue-600', bg: 'bg-blue-50', trend: '↑ 4% this month' },
+    // Destructure for easy access in JSX
+    const { 
+        summary = {}, 
+        charts = {}, 
+        deptUtilization = [], 
+        courses = [], 
+        expansionLogs = [] 
+    } = dashboardData || {};
+
+    const metrics = React.useMemo(() => [
+        { title: 'Total Students', value: summary.total_students || 0, icon: Users, color: 'text-blue-600', bg: 'bg-blue-50', trend: summary.active_users ? `${summary.active_users} active` : '↑ 4% this month' },
         { title: 'Total Courses', value: summary.total_courses || 0, icon: BookOpen, color: 'text-blue-600', bg: 'bg-blue-50', trend: 'Stable' },
-        { title: 'Total Enrollments', value: summary.total_enrollments || 0, icon: Zap, color: 'text-amber-600', bg: 'bg-amber-50', trend: '↑ 12% this month' },
+        { title: 'Total Enrollments', value: summary.total_enrollments || 0, icon: Zap, color: 'text-amber-600', bg: 'bg-amber-50', trend: 'Live Feed' },
         {
             title: 'Most Popular',
             value: summary.top_course || 'N/A',
             icon: Shield,
             color: 'text-emerald-600',
             bg: 'bg-emerald-50',
-            trend: `${summary.most_popular_course_enrollment_count || 0} enrolled`
+            trend: `${summary.most_popular_course_enrollment_count || 0} enrolled`,
+            tooltip: `${summary.top_course || 'N/A'} capacity ${summary.top_course_capacity || 0} enrolled ${summary.most_popular_course_enrollment_count || 0}`
         },
-        { title: 'Overall Utilization', value: `${summary.utilization || 0}%`, icon: Globe, color: 'text-rose-600', bg: 'bg-rose-50', trend: '↑ 2.1%' },
-    ];
+        { title: 'Overall Utilization', value: `${summary.utilization || 0}%`, icon: Globe, color: 'text-rose-600', bg: 'bg-rose-50', trend: 'Capacity Check' },
+    ], [summary]);
+
+    // Use pre-formatted data from backend
+    const chartData = React.useMemo(() => charts, [charts]);
 
     if (loading) {
         return (
             <DashboardLayout role="admin">
-                <div className="flex items-center justify-center min-h-[60vh] text-slate-500">
-                    <div className="flex flex-col items-center gap-4">
-                        <div className="w-12 h-12 border-4 border-blue-100 border-t-blue-600 rounded-full animate-spin"></div>
-                        <p className="font-medium">Loading dashboard...</p>
+                <div className="space-y-8">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
+                        {[...Array(5)].map((_, i) => <SkeletonCard key={i} />)}
+                    </div>
+                    <div className="ui-card p-6">
+                        <SkeletonTable rows={10} />
                     </div>
                 </div>
             </DashboardLayout>
@@ -266,7 +289,7 @@ const AdminDashboard = () => {
             </header>
 
             {/* Metrics Row */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6 mb-8">
                 {metrics.map((card, i) => (
                     <DashboardCard key={i} {...card} />
                 ))}
@@ -286,9 +309,14 @@ const AdminDashboard = () => {
                         <div className="col-span-full text-sm text-slate-400 text-center py-8">No department data available.</div>
                     ) : deptUtilization.map((dept, i) => (
                         <div key={i} className="space-y-3 p-4 bg-slate-50/50 rounded-xl">
-                            <div className="flex justify-between items-center text-sm">
-                                <span className="font-bold text-slate-700">{dept.department}</span>
-                                <span className="text-slate-500 font-medium text-xs">{dept.total_students} / {dept.total_seats}</span>
+                            <div className="flex justify-between items-center text-sm gap-2 overflow-hidden">
+                                <span 
+                                    className="font-bold text-slate-700 truncate flex-1 min-w-0" 
+                                    title={dept.department}
+                                >
+                                    {dept.department}
+                                </span>
+                                <span className="text-slate-500 font-medium text-xs shrink-0">{dept.total_students} / {dept.total_seats}</span>
                             </div>
                             <div className="h-2 w-full bg-slate-200 rounded-full overflow-hidden">
                                 <div
@@ -307,7 +335,6 @@ const AdminDashboard = () => {
                 </div>
             </div>
 
-            {/* Charts Grid – 2x2 */}
             <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 mb-8">
                 <div className="ui-card p-6">
                     <div className="flex items-center justify-between mb-6">
@@ -315,7 +342,9 @@ const AdminDashboard = () => {
                         <TrendingUp size={16} className="text-blue-500" />
                     </div>
                     <div className="h-72">
-                        <HorizontalBarChart data={charts.topCourses} />
+                        <Suspense fallback={<div className="h-full bg-slate-50 animate-pulse rounded-xl" />}>
+                            <HorizontalBarChart data={charts?.topCourses || []} />
+                        </Suspense>
                     </div>
                 </div>
                 <div className="ui-card p-6">
@@ -324,7 +353,9 @@ const AdminDashboard = () => {
                         <Zap size={16} className="text-amber-500" />
                     </div>
                     <div className="h-72">
-                        <MonthlyTrendChart data={charts.trends} />
+                        <Suspense fallback={<div className="h-full bg-slate-50 animate-pulse rounded-xl" />}>
+                            <MonthlyTrendChart data={charts?.trends || []} />
+                        </Suspense>
                     </div>
                 </div>
                 <div className="ui-card p-6">
@@ -333,7 +364,9 @@ const AdminDashboard = () => {
                         <Layout size={16} className="text-purple-500" />
                     </div>
                     <div className="h-72">
-                        <CourseEnrollmentChart data={charts.deptEnroll} />
+                        <Suspense fallback={<div className="h-full bg-slate-50 animate-pulse rounded-xl" />}>
+                            <CourseEnrollmentChart data={charts?.deptEnroll || []} />
+                        </Suspense>
                     </div>
                 </div>
                 <div className="ui-card p-6">
@@ -342,7 +375,9 @@ const AdminDashboard = () => {
                         <Globe size={16} className="text-emerald-500" />
                     </div>
                     <div className="h-72">
-                        <SeatUtilizationChart data={charts.utilDetail} />
+                        <Suspense fallback={<div className="h-full bg-slate-50 animate-pulse rounded-xl" />}>
+                            <SeatUtilizationChart data={charts?.utilDetail || []} />
+                        </Suspense>
                     </div>
                 </div>
             </div>
@@ -381,86 +416,31 @@ const AdminDashboard = () => {
                                         </div>
                                     </td>
                                 </tr>
-                            ) : courses.map((c, i) => {
-                                const limit = Number(c?.seat_limit) || 0;
-                                const enrolled = Number(c?.enrolled_students) || 0;
-                                const remaining = Math.max(0, limit - enrolled);
-
-                                let statusLabel = "Open";
-                                let statusClass = "badge-open";
-                                if (remaining === 0) {
-                                    statusLabel = "Full";
-                                    statusClass = "badge-full";
-                                } else if (remaining <= 5) {
-                                    statusLabel = "Almost Full";
-                                    statusClass = "badge-almost-full";
-                                }
-
-                                const handleDelete = async (id) => {
-                                    if (window.confirm("Delete this course permanently?")) {
+                            ) : courses.map((c, i) => (
+                                <CourseRow 
+                                    key={c.id || i} 
+                                    course={c} 
+                                    onViewStudents={handleViewStudents}
+                                    onIncreaseLimit={async (course) => {
                                         try {
-                                            await courseService.delete(id);
+                                            await courseService.update(course.id, { seat_limit: course.seat_limit + 10 });
                                             fetchAdminData();
                                         } catch (e) {
-                                            alert("Delete failed");
+                                            alert("Update failed");
                                         }
-                                    }
-                                };
-
-                                const handleIncreaseLimit = async (course) => {
-                                    try {
-                                        await courseService.update(course.id, { seat_limit: course.seat_limit + 10 });
-                                        fetchAdminData();
-                                    } catch (e) {
-                                        alert("Update failed");
-                                    }
-                                };
-
-                                return (
-                                    <tr key={i} className="group hover:bg-slate-50/80 transition-all duration-200">
-                                        <td className="px-6 py-4 text-slate-600 font-bold tracking-tight">
-                                            {c.course_code || '—'}
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            <div className="font-bold text-slate-900">{c.course_name}</div>
-                                        </td>
-                                        <td className="px-6 py-4 text-slate-600 font-medium">{c.department}</td>
-                                        <td className="px-6 py-4 font-bold text-slate-700">{limit}</td>
-                                        <td className="px-6 py-4">
-                                            <span className="text-blue-600 font-bold">{enrolled}</span>
-                                        </td>
-                                        <td className="px-6 py-4 text-slate-500 font-medium">{remaining}</td>
-                                        <td className="px-6 py-4">
-                                            <span className={statusClass}>{statusLabel}</span>
-                                        </td>
-                                        <td className="px-6 py-4 text-right">
-                                            <div className="flex items-center justify-end gap-1">
-                                                <button
-                                                    title="View Students"
-                                                    onClick={() => handleViewStudents(c)}
-                                                    className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
-                                                >
-                                                    <Users size={15} />
-                                                </button>
-                                                <button
-                                                    title="Increase Seats +10"
-                                                    onClick={() => handleIncreaseLimit(c)}
-                                                    className="p-2 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-all"
-                                                >
-                                                    <Plus size={15} />
-                                                </button>
-                                                <button
-                                                    title="Delete Course"
-                                                    onClick={() => handleDelete(c.id)}
-                                                    className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-all"
-                                                >
-                                                    <X size={15} />
-                                                </button>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                );
-                            })}
+                                    }}
+                                    onDelete={async (id) => {
+                                        if (window.confirm("Delete this course permanently?")) {
+                                            try {
+                                                await courseService.delete(id);
+                                                fetchAdminData();
+                                            } catch (e) {
+                                                alert("Delete failed");
+                                            }
+                                        }
+                                    }}
+                                />
+                            ))}
                         </tbody>
                     </table>
                 </div>

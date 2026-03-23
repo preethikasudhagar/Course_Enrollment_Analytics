@@ -36,4 +36,4 @@ const MonthlyTrendChart = ({ data }) => {
     );
 };
 
-export default MonthlyTrendChart;
+export default React.memo(MonthlyTrendChart);

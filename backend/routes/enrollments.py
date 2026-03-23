@@ -18,6 +18,9 @@ from models.models import (
     SeatExpansionLog,
 )
 from utils.auth import get_current_user
+from utils.cache import analytics_cache
+from routes.analytics import refresh_all_vitals
+from fastapi import BackgroundTasks
 
 router = APIRouter(prefix="/enrollments", tags=["enrollments"])
 
@@ -28,7 +31,6 @@ class EnrollRequest(BaseModel):
 
 
 async def _sync_course_seats(db: AsyncSession, course: Course) -> None:
-    course.remaining_seats = max(0, (course.seat_limit or 0) - (course.enrolled_students or 0))
     waitlist_count = await db.scalar(select(func.count(Waitlist.id)).where(Waitlist.course_id == course.id))
     course.waitlist_count = waitlist_count or 0
 
@@ -60,10 +62,10 @@ async def _record_activity(db: AsyncSession, message: str) -> None:
     db.add(SystemActivity(action=message, timestamp=datetime.utcnow()))
 
 
-def _seat_status_from_remaining(remaining_seats: int) -> str:
-    if remaining_seats <= 0:
-        return "Full"
-    if remaining_seats <= 5:
+def _seat_status(available_seats: int) -> str:
+    if available_seats <= 0:
+        return "High Demand" # Never return Full, we expand automatically
+    if available_seats <= 5:
         return "Almost Full"
     return "Open"
 
@@ -111,13 +113,13 @@ async def _process_waitlist(db: AsyncSession, course: Course) -> int:
     return moved_count
 
 
-async def _enroll_with_seat_logic(course_id: int, db: AsyncSession, current_user: User):
+async def _enroll_with_seat_logic(course_id: int, background_tasks: BackgroundTasks, db: AsyncSession, current_user: User):
     if current_user.role != UserRole.STUDENT:
         raise HTTPException(status_code=403, detail="Only students can enroll in courses")
-    return await _enroll_target_student(course_id, current_user.id, db)
+    return await _enroll_target_student(course_id, background_tasks, current_user.id, db)
 
 
-async def _enroll_target_student(course_id: int, target_student_id: int, db: AsyncSession):
+async def _enroll_target_student(course_id: int, background_tasks: BackgroundTasks, target_student_id: int, db: AsyncSession):
     target_student_res = await db.execute(select(User).where(User.id == target_student_id))
     target_student = target_student_res.scalars().first()
     if not target_student:
@@ -148,75 +150,48 @@ async def _enroll_target_student(course_id: int, target_student_id: int, db: Asy
     expansion_triggered = False
     old_limit = course.seat_limit or 0
     seat_increase = 10
-    max_limit_from_course = course.max_seat_limit or 120
-    max_limit_from_settings = settings.max_seat_limit if settings else 120
-    max_seat_limit = min(max_limit_from_course, max_limit_from_settings, 120)
+    # Removed max limit constraint to ensure "Always allow enrollment" per requirements
 
-    predicted_enrolled = (course.enrolled_students or 0) + 1
-
-    if predicted_enrolled >= (course.seat_limit or 0):
-        if not course.auto_expand_enabled:
-            if predicted_enrolled > (course.seat_limit or 0):
-                raise HTTPException(status_code=400, detail="Course is full and auto-expansion is disabled")
-        else:
-            if (course.seat_limit or 0) >= max_seat_limit and predicted_enrolled > max_seat_limit:
-                raise HTTPException(
-                    status_code=400,
-                    detail=f"Course is full and has reached max seat limit ({max_seat_limit})"
-                )
-            
-            if (course.seat_limit or 0) < max_seat_limit:
-                print("Increasing seat limit by 10")
-                new_limit = min((course.seat_limit or 0) + seat_increase, max_seat_limit)
-                expanded_by = new_limit - (course.seat_limit or 0)
-                
-                db.add(SeatExpansionLog(
-                    course_id=course.id,
-                    old_limit=course.seat_limit,
-                    new_limit=new_limit,
-                    increment_by=expanded_by
-                ))
-                
-                course.seat_limit = new_limit
-                expansion_triggered = True
-                
-                # Admin Notification
-                admin_msg = (
-                    f"{course.course_name} course reached maximum capacity. "
-                    f"Seat limit increased automatically from {old_limit} to {course.seat_limit}."
-                )
-                db.add(Notification(
-                    message=admin_msg,
-                    target_role=UserRole.ADMIN.value,
-                    course_id=course.id
-                ))
-                await _record_activity(db, admin_msg)
-                
-                # Faculty Notification
-                db.add(Notification(
-                    message=(
-                        f"Course {course.course_name} in your department reached seat capacity. "
-                        f"Seat limit automatically increased by {expanded_by}."
-                    ),
-                    target_role=UserRole.FACULTY.value,
-                    course_id=course.id
-                ))
-
-                # Student Notification
-                db.add(Notification(
-                    message=(
-                        f"Seat capacity for {course.course_name} was reached. "
-                        f"The system automatically increased the seat limit by {expanded_by} seats. "
-                        "Your enrollment has been completed."
-                    ),
-                    target_role=UserRole.STUDENT.value,
-                    course_id=course.id
-                ))
-
+    # Step 1: Enroll student FIRST
+    course.enrolled_students = (course.enrolled_students or 0) + 1
     db.add(Enrollment(student_id=target_student_id, course_id=course_id))
-    course.enrolled_students = predicted_enrolled
-    
-    if not expansion_triggered:
+
+    # Step 2: THEN check capacity
+    if course.enrolled_students >= (course.seat_limit or 0):
+        course.seat_limit = (course.seat_limit or 0) + seat_increase
+        expanded_by = seat_increase
+        
+        db.add(SeatExpansionLog(
+            course_id=course.id,
+            old_limit=old_limit,
+            new_limit=course.seat_limit,
+            increment_by=expanded_by
+        ))
+        
+        expansion_triggered = True
+
+        admin_msg = f"Seat capacity for {course.course_name} increased from {old_limit} to {course.seat_limit} due to high demand."
+        db.add(Notification(
+            message=admin_msg,
+            target_role=UserRole.ADMIN.value,
+            course_id=course.id
+        ))
+        
+        db.add(Notification(
+            message=f"Course {course.course_name} reached capacity. Seat limit increased by {expanded_by}.",
+            target_role=UserRole.FACULTY.value,
+            course_id=course.id
+        ))
+
+        db.add(Notification(
+            message=f"You have successfully enrolled in {course.course_name}. Seats were expanded automatically.",
+            target_role=UserRole.STUDENT.value,
+            course_id=course.id
+        ))
+        
+        # Log activity
+        await _record_activity(db, admin_msg)
+    else:
         db.add(Notification(
             message=f"Enrollment successful for {course.course_name}.",
             target_role=UserRole.STUDENT.value,
@@ -237,11 +212,15 @@ async def _enroll_target_student(course_id: int, target_student_id: int, db: Asy
     await _sync_course_seats(db, course)
     await db.commit()
     await db.refresh(course)
-    seat_status = _seat_status_from_remaining(course.remaining_seats or 0)
+    analytics_cache.clear()
+    background_tasks.add_task(refresh_all_vitals)
+    
+    available_seats = max(0, (course.seat_limit or 0) - (course.enrolled_students or 0))
+    seat_status = _seat_status(available_seats)
 
-    msg = "Enrollment successful."
+    msg = f"Enrolled in {course.course_name} successfully."
     if expansion_triggered:
-        msg = f"Enrollment successful! Course capacity reached, seat limit automatically expanded by {expanded_by}."
+        msg = "Enrollment successful. Seats expanded automatically."
 
     return {
         "status": "success",
@@ -251,7 +230,7 @@ async def _enroll_target_student(course_id: int, target_student_id: int, db: Asy
             "department": course.department,
             "seat_limit": course.seat_limit,
             "enrolled_count": course.enrolled_students,
-            "remaining_seats": course.remaining_seats,
+            "available_seats": available_seats,
             "seat_status": seat_status,
             "waitlist_count": course.waitlist_count,
             "seat_expanded": expansion_triggered,
@@ -263,9 +242,9 @@ async def _enroll_target_student(course_id: int, target_student_id: int, db: Asy
 
 
 @router.post("/enroll/{course_id}")
-async def enroll_in_course(course_id: int, db: AsyncSession = Depends(get_db), current_user=Depends(get_current_user)):
+async def enroll_in_course(course_id: int, background_tasks: BackgroundTasks, db: AsyncSession = Depends(get_db), current_user=Depends(get_current_user)):
     try:
-        return await _enroll_with_seat_logic(course_id, db, current_user)
+        return await _enroll_with_seat_logic(course_id, background_tasks, db, current_user)
     except HTTPException:
         await db.rollback()
         raise
@@ -275,7 +254,7 @@ async def enroll_in_course(course_id: int, db: AsyncSession = Depends(get_db), c
 
 
 @router.post("/enroll")
-async def enroll_post(req: EnrollRequest, db: AsyncSession = Depends(get_db), current_user=Depends(get_current_user)):
+async def enroll_post(req: EnrollRequest, background_tasks: BackgroundTasks, db: AsyncSession = Depends(get_db), current_user=Depends(get_current_user)):
     try:
         if current_user.role == UserRole.STUDENT:
             if req.student_id is not None and req.student_id != current_user.id:
@@ -283,7 +262,7 @@ async def enroll_post(req: EnrollRequest, db: AsyncSession = Depends(get_db), cu
             target_student_id = current_user.id
         else:
             target_student_id = req.student_id or current_user.id
-        return await _enroll_target_student(req.course_id, target_student_id, db)
+        return await _enroll_target_student(req.course_id, background_tasks, target_student_id, db)
     except HTTPException:
         await db.rollback()
         raise
@@ -314,7 +293,7 @@ async def get_my_enrollments(db: AsyncSession = Depends(get_db), current_user=De
             "course_duration": getattr(e[1], 'course_duration', '14 Weeks'),
             "seat_limit": e[1].seat_limit,
             "enrolled_students": e[1].enrolled_students,
-            "remaining_seats": getattr(e[1], 'remaining_seats', (e[1].seat_limit or 0) - (e[1].enrolled_students or 0)),
+            "available_seats": max(0, (e[1].seat_limit or 0) - (e[1].enrolled_students or 0)),
             "faculty_assigned": getattr(e[1], 'faculty_assigned', 'TBA'),
         } for e in enrollments_data
     ]

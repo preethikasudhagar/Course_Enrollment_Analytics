@@ -1,7 +1,68 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, memo } from 'react';
 import DashboardLayout from '../components/DashboardLayout';
 import { courseService } from '../services/api';
 import { Plus, Edit, Trash2, X, Check, BookOpen, Layers, Search } from 'lucide-react';
+
+const CourseItem = memo(({ course, onEdit, onDelete }) => {
+    const limit = Number(course.seat_limit || 0);
+    const enrolled = Number(course.enrolled_students || 0);
+    const remaining = Math.max(0, limit - enrolled);
+    const status = remaining <= 5 ? 'High Demand' : 'Open';
+    
+    return (
+        <tr className="hover:bg-gray-50 transition-colors">
+            <td className="px-6 py-4">
+                <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-lg bg-blue-50 flex items-center justify-center text-blue-600">
+                        <BookOpen size={20} />
+                    </div>
+                    <div>
+                        <p className="font-medium text-gray-900">
+                            {course.course_name}
+                            {course.enrolled_students > 0 && course.enrolled_students >= (course.seat_limit * 0.8) && (
+                                <span className="ml-2 px-2 py-0.5 bg-amber-100 text-amber-700 text-[10px] font-bold rounded-full border border-amber-200" title="High Enrollment Volume">🔥 Trending</span>
+                            )}
+                        </p>
+                        <p className="text-xs text-gray-500 mt-0.5">ID: {course.id}</p>
+                    </div>
+                </div>
+            </td>
+            <td className="px-6 py-4">
+                <span className="px-2.5 py-1 bg-gray-100 text-gray-600 rounded-md text-xs font-medium">
+                    {course.department}
+                </span>
+            </td>
+            <td className="px-6 py-4 text-gray-900 font-medium">{course.seat_limit}</td>
+            <td className="px-6 py-4">
+                <span className="text-sm font-semibold text-slate-700">{remaining}</span>
+            </td>
+            <td className="px-6 py-4">
+                <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${status === 'High Demand'
+                            ? 'bg-amber-100 text-amber-700'
+                            : 'bg-emerald-100 text-emerald-700'
+                    }`}>
+                    {status}
+                </span>
+            </td>
+            <td className="px-6 py-4 text-right space-x-2">
+                <button
+                    onClick={() => onEdit(course)}
+                    className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors border border-transparent"
+                    title="Edit"
+                >
+                    <Edit size={16} />
+                </button>
+                <button
+                    onClick={() => onDelete(course.id)}
+                    className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors border border-transparent"
+                    title="Delete"
+                >
+                    <Trash2 size={16} />
+                </button>
+            </td>
+        </tr>
+    );
+});
 
 const ManageCourses = () => {
     const [courses, setCourses] = useState([]);
@@ -23,7 +84,7 @@ const ManageCourses = () => {
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
 
-    const fetchCourses = async () => {
+    const fetchCourses = useCallback(async () => {
         try {
             const res = await courseService.getAll();
             setCourses(res || []);
@@ -32,7 +93,7 @@ const ManageCourses = () => {
         } finally {
             setLoading(false);
         }
-    };
+    }, []);
 
     useEffect(() => {
         fetchCourses();
@@ -66,10 +127,14 @@ const ManageCourses = () => {
         }
     };
 
-    const filteredCourses = courses.filter((c) =>
-        (c?.course_name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (c?.department || '').toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    const filteredCourses = useMemo(() => {
+        const lowerSearch = searchTerm.toLowerCase();
+        return courses.filter((c) =>
+            (c?.course_name || '').toLowerCase().includes(lowerSearch) ||
+            (c?.department || '').toLowerCase().includes(lowerSearch) ||
+            (c?.course_code || '').toLowerCase().includes(lowerSearch)
+        );
+    }, [courses, searchTerm]);
 
     if (loading) return (
         <DashboardLayout role="admin">
@@ -126,80 +191,29 @@ const ManageCourses = () => {
                                         No courses found matching your search.
                                     </td>
                                 </tr>
-                            ) : filteredCourses.map((c) => {
-                                const remaining = Math.max(0, Number(c.remaining_seats ?? ((c.seat_limit || 0) - (c.enrolled_students || 0))));
-                                const status = remaining === 0 ? 'Full' : remaining <= 5 ? 'Almost Full' : 'Open';
-                                return (
-                                    <tr key={c.id} className="hover:bg-gray-50 transition-colors">
-                                        <td className="px-6 py-4">
-                                            <div className="flex items-center gap-3">
-                                                <div className="w-10 h-10 rounded-lg bg-blue-50 flex items-center justify-center text-blue-600">
-                                                    <BookOpen size={20} />
-                                                </div>
-                                                <div>
-                                                    <p className="font-medium text-gray-900">
-                                                        {c.course_name}
-                                                        {c.enrolled_students > 0 && c.enrolled_students >= (c.seat_limit * 0.8) && (
-                                                            <span className="ml-2 px-2 py-0.5 bg-amber-100 text-amber-700 text-[10px] font-bold rounded-full border border-amber-200" title="High Enrollment Volume">🔥 Trending</span>
-                                                        )}
-                                                    </p>
-                                                    <p className="text-xs text-gray-500 mt-0.5">ID: {c.id}</p>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            <span className="px-2.5 py-1 bg-gray-100 text-gray-600 rounded-md text-xs font-medium">
-                                                {c.department}
-                                            </span>
-                                        </td>
-                                        <td className="px-6 py-4 text-gray-900 font-medium">{c.seat_limit}</td>
-                                        <td className="px-6 py-4">
-                                            <span className="text-sm font-semibold text-slate-700">{remaining}</span>
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${status === 'Full'
-                                                    ? 'bg-rose-100 text-rose-700'
-                                                    : status === 'Almost Full'
-                                                        ? 'bg-amber-100 text-amber-700'
-                                                        : 'bg-emerald-100 text-emerald-700'
-                                                }`}>
-                                                {status}
-                                            </span>
-                                        </td>
-                                        <td className="px-6 py-4 text-right space-x-2">
-                                            <button
-                                                onClick={() => {
-                                                    setEditingCourse(c);
-                                                    setFormData({
-                                                        course_name: c.course_name || '',
-                                                        course_code: c.course_code || '',
-                                                        department: c.department || '',
-                                                        faculty_assigned: c.faculty_assigned || '',
-                                                        seat_limit: c.seat_limit || 40,
-                                                        auto_expand_enabled: c.auto_expand_enabled ?? true,
-                                                        max_seat_limit: c.max_seat_limit || 200,
-                                                        course_description: c.course_description || '',
-                                                        course_duration: c.course_duration || '',
-                                                        credits: c.credits || 3
-                                                    });
-                                                    setIsModalOpen(true);
-                                                }}
-                                                className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors border border-transparent"
-                                                title="Edit"
-                                            >
-                                                <Edit size={16} />
-                                            </button>
-                                            <button
-                                                onClick={() => handleDelete(c.id)}
-                                                className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors border border-transparent"
-                                                title="Delete"
-                                            >
-                                                <Trash2 size={16} />
-                                            </button>
-                                        </td>
-                                    </tr>
-                                );
-                            })}
+                            ) : filteredCourses.map((c) => (
+                                <CourseItem 
+                                    key={c.id} 
+                                    course={c} 
+                                    onEdit={(course) => {
+                                        setEditingCourse(course);
+                                        setFormData({
+                                            course_name: course.course_name || '',
+                                            course_code: course.course_code || '',
+                                            department: course.department || '',
+                                            faculty_assigned: course.faculty_assigned || '',
+                                            seat_limit: course.seat_limit || 40,
+                                            auto_expand_enabled: course.auto_expand_enabled ?? true,
+                                            max_seat_limit: course.max_seat_limit || 200,
+                                            course_description: course.course_description || '',
+                                            course_duration: course.course_duration || '',
+                                            credits: course.credits || 3
+                                        });
+                                        setIsModalOpen(true);
+                                    }}
+                                    onDelete={handleDelete}
+                                />
+                            ))}
                         </tbody>
                     </table>
                 </div>

@@ -1,6 +1,6 @@
 import React from 'react';
 
-const DashboardCard = ({ title, value, icon: Icon, color, bg, trend }) => {
+const DashboardCard = ({ title, value, icon: Icon, color, bg, trend, tooltip }) => {
     return (
         <div className="bg-white border border-slate-200 rounded-2xl p-6 hover:shadow-xl transition-all duration-300 group relative">
             <div className="flex items-center justify-between mb-4">
@@ -13,9 +13,13 @@ const DashboardCard = ({ title, value, icon: Icon, color, bg, trend }) => {
                     </span>
                 )}
             </div>
-            <div>
-                <h3 className="text-3xl font-black text-slate-900 tracking-tight leading-none mb-2">{value}</h3>
-                <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">{title}</p>
+            <div className="min-w-0 w-full overflow-hidden">
+                <h3 className="text-base md:text-lg font-black text-slate-900 tracking-tight leading-tight mb-1 break-words">
+                    {value}
+                </h3>
+                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest break-words">
+                    {title}
+                </p>
             </div>
 
             {/* Subtle bottom indicator */}

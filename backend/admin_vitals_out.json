@@ -1,0 +1,206 @@
+{
+  "summary": {
+    "total_courses": 12,
+    "total_students": 62,
+    "total_enrollments": 60,
+    "total_seats": "495",
+    "active_users": 60,
+    "growth_rate": "+12.5%",
+    "utilization": "12.1",
+    "top_course": "Software Engineering",
+    "most_popular_course": "Software Engineering",
+    "most_popular_course_enrollment_count": 29
+  },
+  "courses": [
+    {
+      "id": 7,
+      "course_code": "CS401",
+      "course_name": "Artificial Intelligence",
+      "department": "Artificial Intelligence",
+      "seat_limit": 30,
+      "enrolled_students": 0
+    },
+    {
+      "id": 5,
+      "course_code": "CS330",
+      "course_name": "Cloud Computing",
+      "department": "Computer Science",
+      "seat_limit": 50,
+      "enrolled_students": 0
+    },
+    {
+      "id": 8,
+      "course_code": "CS320",
+      "course_name": "Computer Networks",
+      "department": "Information Technology",
+      "seat_limit": 35,
+      "enrolled_students": 0
+    },
+    {
+      "id": 9,
+      "course_code": "CS350",
+      "course_name": "Cyber Security",
+      "department": "Information Technology",
+      "seat_limit": 30,
+      "enrolled_students": 29
+    },
+    {
+      "id": 10,
+      "course_code": "CS360",
+      "course_name": "Data Analytics",
+      "department": "Data Science",
+      "seat_limit": 60,
+      "enrolled_students": 0
+    },
+    {
+      "id": 1,
+      "course_code": "CS201",
+      "course_name": "Data Structures",
+      "department": "Computer Science",
+      "seat_limit": 45,
+      "enrolled_students": 0
+    },
+    {
+      "id": 3,
+      "course_code": "CS210",
+      "course_name": "Database Systems",
+      "department": "Software Engineering",
+      "seat_limit": 40,
+      "enrolled_students": 0
+    },
+    {
+      "id": 12,
+      "course_code": "CS450",
+      "course_name": "Deep Learning",
+      "department": "Artificial Intelligence",
+      "seat_limit": 50,
+      "enrolled_students": 0
+    },
+    {
+      "id": 4,
+      "course_code": "CS305",
+      "course_name": "Machine Learning",
+      "department": "Artificial Intelligence",
+      "seat_limit": 35,
+      "enrolled_students": 2
+    },
+    {
+      "id": 6,
+      "course_code": "CS301",
+      "course_name": "Operating Systems",
+      "department": "Computer Science",
+      "seat_limit": 40,
+      "enrolled_students": 0
+    },
+    {
+      "id": 11,
+      "course_code": "CS370",
+      "course_name": "Software Engineering",
+      "department": "Software Engineering",
+      "seat_limit": 30,
+      "enrolled_students": 29
+    },
+    {
+      "id": 2,
+      "course_code": "CS220",
+      "course_name": "Web Development",
+      "department": "Information Technology",
+      "seat_limit": 50,
+      "enrolled_students": 0
+    }
+  ],
+  "deptUtilization": [
+    {
+      "department": "Computer Science",
+      "total_students": 0,
+      "total_seats": "135",
+      "utilization_pct": "0.0"
+    },
+    {
+      "department": "Information Technology",
+      "total_students": 29,
+      "total_seats": "955",
+      "utilization_pct": "3.0"
+    },
+    {
+      "department": "Software Engineering",
+      "total_students": 29,
+      "total_seats": "910",
+      "utilization_pct": "3.2"
+    },
+    {
+      "department": "Artificial Intelligence",
+      "total_students": 2,
+      "total_seats": "150",
+      "utilization_pct": "1.3"
+    },
+    {
+      "department": "Data Science",
+      "total_students": 0,
+      "total_seats": "60",
+      "utilization_pct": "0.0"
+    }
+  ],
+  "heatmap": [
+    {
+      "month": "Mar",
+      "day": "Friday",
+      "count": 60
+    }
+  ],
+  "expansionLogs": [],
+  "charts": {
+    "utilDetail": [
+      {
+        "name": "Enrolled",
+        "value": 60
+      },
+      {
+        "name": "Remaining",
+        "value": "435"
+      }
+    ],
+    "deptEnroll": [
+      {
+        "name": "Computer Science",
+        "enrollments": 0
+      },
+      {
+        "name": "Information Technology",
+        "enrollments": 29
+      },
+      {
+        "name": "Software Engineering",
+        "enrollments": 29
+      },
+      {
+        "name": "Artificial Intelligence",
+        "enrollments": 2
+      },
+      {
+        "name": "Data Science",
+        "enrollments": 0
+      }
+    ],
+    "topCourses": [
+      {
+        "name": "Cyber Security",
+        "students": 29
+      },
+      {
+        "name": "Software Engineering",
+        "students": 29
+      },
+      {
+        "name": "Machine Learning",
+        "students": 2
+      }
+    ],
+    "trends": [
+      {
+        "month": "Mar",
+        "enrollments": 60
+      }
+    ]
+  }
+}

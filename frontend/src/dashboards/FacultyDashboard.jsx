@@ -1,9 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import DashboardLayout from '../components/DashboardLayout';
 import DashboardCard from '../components/DashboardCard';
-import CourseEnrollmentChart from '../charts/CourseEnrollmentChart';
+const CourseEnrollmentChart = React.lazy(() => import('../charts/CourseEnrollmentChart'));
+const MonthlyTrendChart = React.lazy(() => import('../charts/MonthlyTrendChart'));
+const DepartmentPieChart = React.lazy(() => import('../charts/DepartmentPieChart'));
+const SeatUtilizationChart = React.lazy(() => import('../charts/SeatUtilizationChart'));
+const HorizontalBarChart = React.lazy(() => import('../charts/HorizontalBarChart'));
+
 import StatusBadge from '../components/StatusBadge';
 import { analyticsService, courseService } from '../services/api';
+import Skeleton, { SkeletonCard, SkeletonTable } from '../components/Skeleton';
 import {
     Users,
     BookOpen,
@@ -15,46 +21,40 @@ import {
 } from 'lucide-react';
 
 const FacultyDashboard = () => {
-    const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    const [summary, setSummary] = useState({ total_courses: 0, total_enrollments: 0, top_course: 'N/A' });
-    const [performance, setPerformance] = useState([]);
-    const [enrollmentData, setEnrollmentData] = useState([]);
-    const [courses, setCourses] = useState([]);
+    // Single-cycle state for absolute rendering speed
+    const [dashboardData, setDashboardData] = useState(() => {
+        try {
+            const cached = sessionStorage.getItem('faculty_vitals_full');
+            return cached ? JSON.parse(cached) : null;
+        } catch { return null; }
+    });
+    const [loading, setLoading] = useState(!dashboardData);
     const [courseStudents, setCourseStudents] = useState([]);
     const [showStudentsModal, setShowStudentsModal] = useState(false);
     const [loadingStudents, setLoadingStudents] = useState(false);
 
-    useEffect(() => {
-        fetchFacultyData();
-    }, []);
-
-    const fetchFacultyData = async () => {
+    const fetchFacultyData = React.useCallback(async () => {
         try {
-            setLoading(true);
+            if (!dashboardData) setLoading(true);
             setError(null);
             
             const data = await analyticsService.getFacultyVitals();
-            if (!data) throw new Error("No data received");
-
-            const { 
-                summary: sRes, 
-                performance: pRes, 
-                enrollmentData: eRes, 
-                courses: cRes 
-            } = data;
-
-            setSummary(sRes || { total_courses: 0, total_enrollments: 0, top_course: 'N/A' });
-            setPerformance(Array.isArray(pRes) ? pRes : []);
-            setEnrollmentData(Array.isArray(eRes) ? eRes : []);
-            setCourses(Array.isArray(cRes) ? cRes : []);
+            if (data) {
+                setDashboardData(data);
+                sessionStorage.setItem('faculty_vitals_full', JSON.stringify(data));
+            }
         } catch (err) {
             console.error('Data sync failed', err);
             setError("We couldn't load your dashboard data. Please try again.");
         } finally {
             setLoading(false);
         }
-    };
+    }, []);
+
+    useEffect(() => {
+        fetchFacultyData();
+    }, []);
 
     if (error) return (
         <DashboardLayout role="faculty">
@@ -69,23 +69,30 @@ const FacultyDashboard = () => {
         </DashboardLayout>
     );
 
-    if (loading) return (
-        <DashboardLayout role="faculty">
-            <div className="flex items-center justify-center min-h-[60vh] text-slate-400">
-                <div className="flex flex-col items-center gap-4">
-                    <div className="w-12 h-12 border-4 border-slate-100 border-t-blue-600 rounded-full animate-spin"></div>
-                    <p className="font-medium">Loading dashboard...</p>
-                </div>
-            </div>
-        </DashboardLayout>
-    );
+    // Destructure for easy access in JSX
+    const { 
+        summary = {}, 
+        performance: performanceMetrics = [], 
+        enrollmentData = [], 
+        courses = [] 
+    } = dashboardData || {};
 
-    const performanceMetrics = performance && performance.length > 0 ? performance : [
-        { label: "Courses Handled", value: "0", icon: "book", trend: "Active" },
-        { label: "Total Enrollments", value: "0", icon: "users", trend: "↑ 12%" },
-        { label: "Average Demand", value: "0%", icon: "star", trend: "Stable" },
-        { label: "Retention Rate", value: "0%", icon: "thumbs-up", trend: "Good" }
-    ];
+    const chartData = React.useMemo(() => enrollmentData, [enrollmentData]);
+
+    if (loading) {
+        return (
+            <DashboardLayout role="faculty">
+                <div className="space-y-8">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                        {[...Array(4)].map((_, i) => <SkeletonCard key={i} />)}
+                    </div>
+                    <div className="ui-card p-6">
+                        <SkeletonTable rows={10} />
+                    </div>
+                </div>
+            </DashboardLayout>
+        );
+    }
 
     return (
         <DashboardLayout role="faculty">

@@ -83,7 +83,7 @@ async def get_notifications(
                 "category": _categorize(n.message),
                 "status": n.status,
                 "course_id": n.course_id,
-                "timestamp": n.timestamp,
+                "timestamp": n.timestamp.isoformat() + "Z" if n.timestamp else None,
             }
             for n in notifications
         ],

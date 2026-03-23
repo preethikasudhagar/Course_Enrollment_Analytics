@@ -18,7 +18,15 @@ if "aivencloud.com" in MYSQL_URL:
     ssl_context.verify_mode = ssl.CERT_NONE
     connect_args["ssl"] = ssl_context
 
-engine = create_async_engine(MYSQL_URL, echo=True, connect_args=connect_args)
+engine = create_async_engine(
+    MYSQL_URL, 
+    echo=False, 
+    pool_size=20, 
+    max_overflow=10, 
+    pool_recycle=3600,
+    pool_pre_ping=True,
+    connect_args=connect_args
+)
 AsyncSessionLocal = async_sessionmaker(engine, expire_on_commit=False, class_=AsyncSession)
 
 class Base(DeclarativeBase):
@@ -47,3 +55,6 @@ async def init_db():
             except Exception:
                 # Column may already exist; ignore and continue.
                 pass
+
+async def close_db():
+    await engine.dispose()

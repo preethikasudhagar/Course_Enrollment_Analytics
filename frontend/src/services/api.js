@@ -136,7 +136,8 @@ export const analyticsService = {
     }),
     getSeatExpansionLogs: async () => await api.get('/seat-expansion-logs'),
     getAdminVitals: async () => await api.get('/analytics/admin-vitals'),
-    getFacultyVitals: async () => await api.get('/analytics/faculty-vitals')
+    getFacultyVitals: async () => await api.get('/analytics/faculty-vitals'),
+    getStudentVitals: async () => await api.get('/analytics/student-vitals')
 };
 
 export const enrollmentService = {

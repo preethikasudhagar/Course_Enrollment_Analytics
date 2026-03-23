@@ -32,7 +32,7 @@ class CourseResponse(CourseBase):
     id: int
     enrolled_count: int = 0
     enrolled_students: int = 0
-    remaining_seats: int = 0
+    available_seats: int = 0
     waitlist_count: int = 0
     created_at: Optional[str] = None
 

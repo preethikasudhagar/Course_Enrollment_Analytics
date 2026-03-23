@@ -1,0 +1,9 @@
+Refreshing vitals...
+Exception ignored while calling deallocator <function Connection.__del__ at 0x000001EA4CC55C70>:
+Traceback (most recent call last):
+  File "C:\Users\preet\OneDrive\Desktop\Mini_Project\course-enrollment-analytics\backend\venv\Lib\site-packages\aiomysql\connection.py", line 1131, in __del__
+  File "C:\Users\preet\OneDrive\Desktop\Mini_Project\course-enrollment-analytics\backend\venv\Lib\site-packages\aiomysql\connection.py", line 339, in close
+  File "C:\Users\preet\AppData\Local\Programs\Python\Python314\Lib\asyncio\proactor_events.py", line 109, in close
+  File "C:\Users\preet\AppData\Local\Programs\Python\Python314\Lib\asyncio\base_events.py", line 827, in call_soon
+  File "C:\Users\preet\AppData\Local\Programs\Python\Python314\Lib\asyncio\base_events.py", line 550, in _check_closed
+RuntimeError: Event loop is closed

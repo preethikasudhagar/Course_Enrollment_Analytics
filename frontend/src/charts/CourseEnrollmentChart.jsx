@@ -30,4 +30,4 @@ const CourseEnrollmentChart = ({ data }) => {
     );
 };
 
-export default CourseEnrollmentChart;
+export default React.memo(CourseEnrollmentChart);

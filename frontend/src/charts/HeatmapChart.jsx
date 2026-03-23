@@ -54,4 +54,4 @@ const HeatmapChart = ({ data }) => {
     );
 };
 
-export default HeatmapChart;
+export default React.memo(HeatmapChart);

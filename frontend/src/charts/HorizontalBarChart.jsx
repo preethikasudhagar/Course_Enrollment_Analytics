@@ -37,4 +37,4 @@ const HorizontalBarChart = ({ data }) => {
     );
 };
 
-export default HorizontalBarChart;
+export default React.memo(HorizontalBarChart);
