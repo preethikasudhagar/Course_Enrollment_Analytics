@@ -34,3 +34,13 @@ venv/
 ENV/
 env.bak/
 venv.bak/
+
+# Data and Logs
+*.db
+*.log
+backend/*.txt
+backend/*.json
+*.ps1
+
+# Explicitly keep requirements.txt
+!backend/requirements.txt
