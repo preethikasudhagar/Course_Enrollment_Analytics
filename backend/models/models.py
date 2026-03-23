@@ -15,10 +15,10 @@ class User(Base):
     name = Column(String(100), nullable=False)
     email = Column(String(100), unique=True, index=True, nullable=False)
     password = Column(String(255), nullable=False)
-    role = Column(Enum(UserRole, values_callable=lambda obj: [e.value for e in obj]), default=UserRole.STUDENT)
+    role = Column(Enum(UserRole, values_callable=lambda obj: [e.value for e in obj]), default=UserRole.STUDENT, index=True)
     phone = Column(String(20), nullable=True)
     profile_photo = Column(Text, nullable=True)
-    department = Column(String(100), nullable=True)
+    department = Column(String(100), nullable=True, index=True)
     year = Column(Integer, nullable=True)
     
     enrollments = relationship("Enrollment", back_populates="student", cascade="all, delete-orphan")
@@ -26,9 +26,9 @@ class User(Base):
 class Course(Base):
     __tablename__ = "courses"
     id = Column("course_id", Integer, primary_key=True, index=True, autoincrement=True)
-    course_name = Column(String(100), nullable=False)
+    course_name = Column(String(100), nullable=False, index=True)
     course_code = Column(String(50), nullable=True, index=True) # Added explicit index
-    department = Column(String(100), nullable=False)
+    department = Column(String(100), nullable=False, index=True)
     faculty_assigned = Column(String(100), nullable=True)
     seat_limit = Column(Integer, default=40)
     enrolled_students = Column(Integer, default=0)
@@ -56,8 +56,8 @@ class Notification(Base):
     __tablename__ = "notifications"
     id = Column(Integer, primary_key=True, index=True)
     message = Column(Text, nullable=False)
-    target_role = Column(String(50), nullable=True)
-    course_id = Column(Integer, ForeignKey("courses.course_id"), nullable=True)
+    target_role = Column(String(50), nullable=True, index=True)
+    course_id = Column(Integer, ForeignKey("courses.course_id"), nullable=True, index=True)
     status = Column(String(20), default="unread", index=True)
     timestamp = Column(DateTime, default=datetime.utcnow, index=True)
 
@@ -88,8 +88,8 @@ class Suggestion(Base):
     __tablename__ = "suggestions"
     id = Column(Integer, primary_key=True, index=True)
     message = Column(Text, nullable=False)
-    course_id = Column(Integer, ForeignKey("courses.course_id"), nullable=True)
-    status = Column(String(20), default="pending")
+    course_id = Column(Integer, ForeignKey("courses.course_id"), nullable=True, index=True)
+    status = Column(String(20), default="pending", index=True)
     timestamp = Column(DateTime, default=datetime.utcnow)
 
 class Waitlist(Base):
@@ -106,18 +106,18 @@ class Waitlist(Base):
 class FacultyPerformance(Base):
     __tablename__ = "faculty_performance"
     id = Column(Integer, primary_key=True, index=True)
-    faculty_id = Column(Integer, ForeignKey("users.id"))
+    faculty_id = Column(Integer, ForeignKey("users.id"), index=True)
     courses_taught = Column(Integer, default=0)
     total_students = Column(Integer, default=0)
     rating = Column(String(10), default="0.0")
-    popularity_score = Column(Integer, default=0)
+    popularity_score = Column(Integer, default=0, index=True)
     
     faculty = relationship("User")
 
 class Analytics(Base):
     __tablename__ = "analytics"
     id = Column(Integer, primary_key=True, index=True)
-    course_id = Column(Integer, ForeignKey("courses.course_id"))
+    course_id = Column(Integer, ForeignKey("courses.course_id"), index=True)
     demand_score = Column(Integer, default=0)
     growth_rate = Column(String(50), default="0%")
     forecast = Column(String(100), nullable=True)

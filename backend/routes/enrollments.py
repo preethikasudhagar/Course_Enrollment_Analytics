@@ -74,33 +74,37 @@ def _seat_status(available_seats: int) -> str:
 
 
 async def _process_waitlist(db: AsyncSession, course: Course) -> int:
-    moved_count = 0
-    while (course.seat_limit or 0) > (course.enrolled_students or 0):
-        row = await db.execute(
-            select(Waitlist)
-            .where(Waitlist.course_id == course.id)
-            .order_by(Waitlist.position.asc(), Waitlist.created_at.asc())
-            .limit(1)
-        )
-        next_wait = row.scalars().first()
-        if not next_wait:
-            break
+    remaining_seats = (course.seat_limit or 0) - (course.enrolled_students or 0)
+    if remaining_seats <= 0:
+        return 0
 
-        existing_enrollment = await db.execute(
-            select(Enrollment).where(
-                Enrollment.student_id == next_wait.student_id,
+    # Fetch eligible waitlist entries in one go
+    row = await db.execute(
+        select(Waitlist)
+        .where(Waitlist.course_id == course.id)
+        .order_by(Waitlist.position.asc(), Waitlist.created_at.asc())
+        .limit(remaining_seats)
+    )
+    eligible_entries = row.scalars().all()
+    if not eligible_entries:
+        return 0
+
+    moved_count = 0
+    for entry in eligible_entries:
+        # Quick check for existing enrollment
+        existing_enrollment = await db.scalar(
+            select(Enrollment.id).where(
+                Enrollment.student_id == entry.student_id,
                 Enrollment.course_id == course.id
             )
         )
-        if existing_enrollment.scalars().first():
-            await db.delete(next_wait)
-            await _renumber_waitlist(db, course.id)
+        if existing_enrollment:
+            await db.delete(entry)
             continue
 
-        db.add(Enrollment(student_id=next_wait.student_id, course_id=course.id))
+        db.add(Enrollment(student_id=entry.student_id, course_id=course.id))
         course.enrolled_students = (course.enrolled_students or 0) + 1
-        await db.delete(next_wait)
-        await _renumber_waitlist(db, course.id)
+        await db.delete(entry)
         moved_count += 1
 
         db.add(Notification(
@@ -109,6 +113,9 @@ async def _process_waitlist(db: AsyncSession, course: Course) -> int:
             course_id=course.id
         ))
 
+    if moved_count > 0:
+        await _renumber_waitlist(db, course.id)
+    
     await _sync_course_seats(db, course)
     return moved_count
 

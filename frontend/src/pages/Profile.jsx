@@ -123,7 +123,7 @@ const Profile = () => {
                         <div className="relative group">
                             <div className="w-32 h-32 rounded-2xl overflow-hidden border-4 border-white bg-slate-100 shadow-xl flex items-center justify-center">
                                 {preview ? (
-                                    <img src={preview} alt="Profile" className="w-full h-full object-cover" />
+                                    <img src={preview} alt="Profile" className="w-full h-full object-cover" loading="lazy" />
                                 ) : (
                                     <UserIcon size={64} className="text-gray-600" />
                                 )}

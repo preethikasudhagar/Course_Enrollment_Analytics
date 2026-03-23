@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.staticfiles import StaticFiles
 import os
-from sqlalchemy import select, or_
+from sqlalchemy import select
 from routes import auth, courses, enrollments, analytics, notifications, users, search, settings, suggestions, activity, seat_expansion
 from sqlalchemy.ext.asyncio import AsyncSession
 from database import init_db
@@ -34,6 +34,13 @@ app.add_middleware(
 )
 
 app.add_middleware(GZipMiddleware, minimum_size=1000)
+
+@app.middleware("http")
+async def add_cache_control_header(request, call_next):
+    response = await call_next(request)
+    if request.url.path.startswith("/uploads"):
+        response.headers["Cache-Control"] = "public, max-age=31536000"
+    return response
 
 @app.on_event("startup")
 async def on_startup():
