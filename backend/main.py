@@ -87,7 +87,11 @@ async def on_startup():
                         
                         if len(ids) > 29:
                             to_delete = ids[: (len(ids) - 29)]
-                            await db.execute(text("DELETE FROM enrollments WHERE id IN :ids"), {"ids": tuple(to_delete)})
+                            from sqlalchemy import bindparam
+                            await db.execute(
+                                text("DELETE FROM enrollments WHERE id IN :ids").bindparams(bindparam("ids", expanding=True)),
+                                {"ids": list(to_delete)}
+                            )
                             print(f"DEBUG: Successfully deleted {len(to_delete)} excess enrollments for course {cid} ({name})")
                         elif len(ids) < 29:
                             print(f"DEBUG: Course {name} only has {len(ids)} enrollments. No trimming needed.")
