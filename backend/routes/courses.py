@@ -16,6 +16,8 @@ from routes.analytics import refresh_all_vitals
 from fastapi import BackgroundTasks
 
 def seat_status(available_seats: int) -> str:
+    if available_seats == 1:
+        return "Almost full"
     if available_seats <= 5:
         return "High Demand"
     return "Open"

@@ -92,7 +92,9 @@ const AvailableCourses = () => {
                                     <span className="px-2 py-1 bg-blue-50 text-blue-600 text-[10px] font-bold uppercase tracking-wider rounded border border-blue-200">
                                         {course.department}
                                     </span>
-                                    <span className={`px-2 py-1 rounded text-[10px] font-bold uppercase ${course.demand_status === 'High Demand' ? 'bg-red-500/20 text-red-400' :
+                                    <span className={`px-2 py-1 rounded text-[10px] font-bold uppercase ${
+                                        course.demand_status === 'Almost full' ? 'bg-orange-500/20 text-orange-400' :
+                                        course.demand_status === 'High Demand' ? 'bg-red-500/20 text-red-400' :
                                         course.demand_status === 'Medium Demand' ? 'bg-blue-100 text-blue-600' : 'bg-emerald-100 text-emerald-600'
                                         }`}>
                                         {course.demand_status}
