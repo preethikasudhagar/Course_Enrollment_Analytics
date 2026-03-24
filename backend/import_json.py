@@ -21,10 +21,12 @@ async def import_data(db):
                 rows = data[table_name]
                 print(f"Importing {len(rows)} records into {table_name}...")
                 
+                from sqlalchemy.dialects.mysql import insert as mysql_insert
                 for row in rows:
                     try:
-                        stmt = insert(table).values(**row).prefix_with('IGNORE')
-                        await db.execute(stmt)
+                        insert_stmt = mysql_insert(table).values(**row)
+                        on_dup_stmt = insert_stmt.on_duplicate_key_update(**row)
+                        await db.execute(on_dup_stmt)
                     except Exception as ins_err:
                         print(f"Skipping a row in {table_name}: {ins_err}")
                 
