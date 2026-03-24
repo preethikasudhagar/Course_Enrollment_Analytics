@@ -61,20 +61,41 @@ async def on_startup():
                 from import_json import import_data
                 await import_data(db)
                 
-                # Force-trim specific courses to exactly 29 enrollments
+                # Force-trim specific courses to exactly 29 enrollments by NAME
                 from sqlalchemy import text
-                target_ids = [307, 311, 315, 316, 318, 324]
-                for cid in target_ids:
-                    # Simple cleanup: Ensure seat_limit is 30 first
-                    await db.execute(text("UPDATE courses SET seat_limit = 30 WHERE id = :cid"), {"cid": cid})
-                    # Count existing enrollments
-                    res = await db.execute(text("SELECT id FROM enrollments WHERE course_id = :cid ORDER BY id DESC"), {"cid": cid})
-                    ids = [r[0] for r in res.fetchall()]
-                    if len(ids) > 29:
-                        to_delete = ids[: (len(ids) - 29)]
-                        await db.execute(text("DELETE FROM enrollments WHERE id IN :ids"), {"ids": tuple(to_delete)})
-                        print(f"DEBUG: Deleted {len(to_delete)} excess enrollments for course {cid}")
+                target_names = [
+                    "Database Systems", "Data Science", "Data Analytics", 
+                    "DevOps Practices", "Discrete Mathematics", "Quantum Computing"
+                ]
+                
+                print(f"DEBUG: Starting name-based trim for: {target_names}")
+                
+                for name in target_names:
+                    # Find course ID by name
+                    res_cid = await db.execute(text("SELECT id FROM courses WHERE course_name = :name"), {"name": name})
+                    cid_row = res_cid.fetchone()
+                    
+                    if cid_row:
+                        cid = cid_row[0]
+                        print(f"DEBUG: Found '{name}' with ID {cid}. Trimming...")
+                        # Ensure seat_limit is 30
+                        await db.execute(text("UPDATE courses SET seat_limit = 30 WHERE id = :cid"), {"cid": cid})
+                        # Count existing enrollments
+                        res = await db.execute(text("SELECT id FROM enrollments WHERE course_id = :cid ORDER BY id DESC"), {"cid": cid})
+                        ids = [r[0] for r in res.fetchall()]
+                        print(f"DEBUG: Course {cid} currently has {len(ids)} enrollments.")
+                        
+                        if len(ids) > 29:
+                            to_delete = ids[: (len(ids) - 29)]
+                            await db.execute(text("DELETE FROM enrollments WHERE id IN :ids"), {"ids": tuple(to_delete)})
+                            print(f"DEBUG: Successfully deleted {len(to_delete)} excess enrollments for course {cid} ({name})")
+                        elif len(ids) < 29:
+                            print(f"DEBUG: Course {name} only has {len(ids)} enrollments. No trimming needed.")
+                    else:
+                        print(f"DEBUG: Course '{name}' not found in database.")
+                
                 await db.commit()
+                print("DEBUG: Commit finished status updates.")
             else:
                 print("DEBUG: Seed file not found.")
             
