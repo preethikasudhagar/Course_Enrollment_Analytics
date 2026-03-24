@@ -3,8 +3,7 @@ services:
   - type: web
     name: course-analytics-backend
     env: docker
-    dockerfilePath: backend/Dockerfile
-    dockerContext: backend
+    rootDir: backend
     plan: free
     envVars:
       - key: DATABASE_URL
