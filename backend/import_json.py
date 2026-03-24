@@ -1,38 +1,38 @@
 import json
 import os
-from sqlalchemy import text
+from sqlalchemy import insert
 from models.models import Base
 
 async def import_data(db):
     try:
-        if not os.path.exists("seed_data.json"):
+        seed_path = os.path.join(os.path.dirname(__file__), "seed_data.json")
+        if not os.path.exists(seed_path):
+            print(f"Seed file not found at {seed_path}")
             return
             
-        with open("seed_data.json", "r") as f:
+        with open(seed_path, "r") as f:
             data = json.load(f)
             
         print("Starting cloud data import from JSON...")
-        tables = [t.name for t in Base.metadata.sorted_tables]
         
-        for table_name in tables:
+        for table in Base.metadata.sorted_tables:
+            table_name = table.name
             if table_name in data and data[table_name]:
                 rows = data[table_name]
                 print(f"Importing {len(rows)} records into {table_name}...")
                 
-                # Get columns ensuring we ignore any that don't exist
-                keys = list(rows[0].keys())
-                cols = ", ".join([f"`{k}`" for k in keys])
-                vals = ", ".join([f":{k}" for k in keys])
-                stmt = text(f"INSERT IGNORE INTO {table_name} ({cols}) VALUES ({vals})")
-                
                 for row in rows:
-                    await db.execute(stmt, row)
-                    
+                    try:
+                        stmt = insert(table).values(**row).prefix_with('IGNORE')
+                        await db.execute(stmt)
+                    except Exception as ins_err:
+                        print(f"Skipping a row in {table_name}: {ins_err}")
+                
         await db.commit()
         print("Legacy Data successfully restored!")
         
         # Rename so it doesn't run twice
-        os.rename("seed_data.json", "seed_data_applied.json")
+        os.rename(seed_path, seed_path + ".applied")
     except Exception as e:
-        print(f"Import failed: {e}")
+        print(f"Import failed completely: {e}")
         await db.rollback()

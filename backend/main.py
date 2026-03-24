@@ -52,7 +52,8 @@ async def on_startup():
             
             # Auto-import legacy data if the seed file is present
             import os
-            if os.path.exists("seed_data.json"):
+            seed_path = os.path.join(os.path.dirname(__file__), "seed_data.json")
+            if os.path.exists(seed_path):
                 from import_json import import_data
                 await import_data(db)
             
