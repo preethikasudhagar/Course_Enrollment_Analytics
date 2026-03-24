@@ -60,6 +60,21 @@ async def on_startup():
             if os.path.exists(seed_path):
                 from import_json import import_data
                 await import_data(db)
+                
+                # Force-trim specific courses to exactly 29 enrollments
+                from sqlalchemy import text
+                target_ids = [307, 311, 315, 316, 318, 324]
+                for cid in target_ids:
+                    # Simple cleanup: Ensure seat_limit is 30 first
+                    await db.execute(text("UPDATE courses SET seat_limit = 30 WHERE id = :cid"), {"cid": cid})
+                    # Count existing enrollments
+                    res = await db.execute(text("SELECT id FROM enrollments WHERE course_id = :cid ORDER BY id DESC"), {"cid": cid})
+                    ids = [r[0] for r in res.fetchall()]
+                    if len(ids) > 29:
+                        to_delete = ids[: (len(ids) - 29)]
+                        await db.execute(text("DELETE FROM enrollments WHERE id IN :ids"), {"ids": tuple(to_delete)})
+                        print(f"DEBUG: Deleted {len(to_delete)} excess enrollments for course {cid}")
+                await db.commit()
             else:
                 print("DEBUG: Seed file not found.")
             
