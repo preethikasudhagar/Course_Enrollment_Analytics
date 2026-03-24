@@ -49,6 +49,13 @@ async def on_startup():
         from routes.auth import seed_admin
         async with AsyncSessionLocal() as db:
             await seed_admin(db)
+            
+            # Auto-import legacy data if the seed file is present
+            import os
+            if os.path.exists("seed_data.json"):
+                from import_json import import_data
+                await import_data(db)
+            
             from routes.analytics import refresh_all_vitals
             await refresh_all_vitals()
     except Exception as e:
