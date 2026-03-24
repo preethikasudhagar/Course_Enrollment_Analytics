@@ -88,10 +88,11 @@ async def enroll_alias(
 @app.post("/create-course")
 async def create_course_alias(
     payload: CourseCreate,
+    background_tasks: BackgroundTasks,
     db=Depends(get_db),
     admin=Depends(check_admin)
 ):
-    return await create_course_handler(payload, db, admin)
+    return await create_course_handler(payload, background_tasks, db, admin)
 
 
 @app.get("/analytics")
