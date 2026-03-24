@@ -2818,12 +2818,6 @@
             "enrollment_date": "2026-03-21T11:14:33"
         },
         {
-            "id": 5483,
-            "student_id": 554,
-            "course_id": 311,
-            "enrollment_date": "2026-03-21T11:15:14"
-        },
-        {
             "id": 5484,
             "student_id": 554,
             "course_id": 310,
