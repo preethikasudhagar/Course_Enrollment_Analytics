@@ -96,8 +96,8 @@ export const authService = {
 
 export const courseService = {
     getAll: async (department = null) => await api.get('/courses/', { params: { department } }),
-    create: async (courseData) => await api.post('/courses/', courseData),
-    add: async (courseData) => await api.post('/courses/add', courseData),
+    create: async (courseData) => await api.post('/courses/create-course', courseData),
+    add: async (courseData) => await api.post('/courses/create-course', courseData),
     update: async (id, courseData) => await api.put(`/courses/update/${id}`, courseData),
     delete: async (id) => await api.delete(`/courses/delete/${id}`),
     safeGetAll: async (department = null) => await safeRequest(() => courseService.getAll(department), []),

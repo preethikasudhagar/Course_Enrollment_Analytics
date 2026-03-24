@@ -52,10 +52,16 @@ async def on_startup():
             
             # Auto-import legacy data if the seed file is present
             import os
-            seed_path = os.path.join(os.path.dirname(__file__), "seed_data.json")
+            base_dir = os.path.dirname(__file__)
+            seed_path = os.path.join(base_dir, "seed_data.json")
+            print(f"DEBUG: Checking for seed file at {seed_path}")
+            print(f"DEBUG: Current dir contents: {os.listdir(base_dir)}")
+            
             if os.path.exists(seed_path):
                 from import_json import import_data
                 await import_data(db)
+            else:
+                print("DEBUG: Seed file not found.")
             
             from routes.analytics import refresh_all_vitals
             await refresh_all_vitals()
