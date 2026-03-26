@@ -24,10 +24,16 @@ if not os.path.exists("uploads/profile_photos"):
 app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 
 # Configure CORS for deployment
-FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:3000")
+FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:3000").rstrip("/")
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[FRONTEND_URL, "http://localhost:3000"],
+    allow_origins=[
+        FRONTEND_URL,
+        f"{FRONTEND_URL}/",
+        "http://localhost:3000",
+        "http://127.0.0.1:3000",
+        "https://course-analytics-frontend-production.up.railway.app", # Explicitly allow the live URL
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
