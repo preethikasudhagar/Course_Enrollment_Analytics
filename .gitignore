@@ -44,3 +44,9 @@ backend/*.json
 
 # Explicitly keep requirements.txt
 !backend/requirements.txt
+
+# wrangler files
+.wrangler
+.dev.vars*
+!.dev.vars.example
+!.env.example
