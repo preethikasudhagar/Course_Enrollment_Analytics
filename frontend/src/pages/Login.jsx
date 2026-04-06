@@ -13,18 +13,8 @@ const Login = () => {
 
     useEffect(() => {
         const checkApi = async (retries = 3) => {
-            // Smart base URL detection
-            let apiBase = import.meta.env.VITE_API_URL;
-            if (!apiBase || apiBase.includes('localhost')) {
-                const hostname = window.location.hostname;
-                if (hostname.includes('up.railway.app')) {
-                    apiBase = 'https://course-analytics-backend-production.up.railway.app';
-                } else if (hostname.includes('onrender.com')) {
-                    apiBase = 'https://course-analytics-backend.onrender.com';
-                } else {
-                    apiBase = apiBase || 'http://localhost:8000';
-                }
-            }
+            // Hardcoded production URL for reliability
+            let apiBase = import.meta.env.VITE_API_URL || 'https://course-analytics-backend-production.up.railway.app';
             
             setApiStatus(prev => ({ ...prev, url: apiBase }));
             

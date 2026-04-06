@@ -4,17 +4,10 @@ const getBaseUrl = () => {
     // Priority 1: Use explicit env var if provided during build
     let url = import.meta.env.VITE_API_URL;
     
-    // Priority 2: Auto-detect environment if no env var was baked into the build
+    // Priority 2: Use production backend URL as the absolute fallback for production robustness
     if (!url || url.includes('localhost')) {
-        const hostname = window.location.hostname;
-        if (hostname.includes('up.railway.app')) {
-            // Force production backend if running on Railway frontend
-            url = 'https://course-analytics-backend-production.up.railway.app';
-        } else if (hostname.includes('onrender.com')) {
-            url = 'https://course-analytics-backend.onrender.com';
-        } else {
-            url = url || 'http://localhost:8000';
-        }
+        // Hardcoded production URL ensures the app works even if env vars are missing at build time
+        url = 'https://course-analytics-backend-production.up.railway.app';
     }
 
     if (url && !url.startsWith('http')) {
