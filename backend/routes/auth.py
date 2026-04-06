@@ -158,7 +158,7 @@ async def login_json(credentials: LoginJSON, db: AsyncSession = Depends(get_db))
         result = await db.execute(select(User).where(User.email == credentials.username))
         user = result.scalars().first()
         
-        if not user or not verify_password(credentials.password, user.hashed_password):
+        if not user or not verify_password(credentials.password, user.password):
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials")
             
         access_token = create_access_token(data={"sub": user.email, "role": user.role})
@@ -169,7 +169,7 @@ async def login_json(credentials: LoginJSON, db: AsyncSession = Depends(get_db))
                 "id": user.id,
                 "email": user.email,
                 "role": user.role,
-                "full_name": user.full_name
+                "name": user.name
             }
         }
     except HTTPException:
