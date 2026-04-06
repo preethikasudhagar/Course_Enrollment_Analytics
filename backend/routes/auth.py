@@ -137,6 +137,47 @@ async def register(user: UserCreate, db: AsyncSession = Depends(get_db)):
             f.write(traceback.format_exc())
         raise HTTPException(status_code=500, detail=str(e))
 
+from pydantic import BaseModel, EmailStr
+
+class LoginJSON(BaseModel):
+    username: str
+    password: str
+
+@router.post("/login-json")
+async def login_json(credentials: LoginJSON, db: AsyncSession = Depends(get_db)):
+    # Standard DB check 
+    try:
+        from sqlalchemy import text
+        import asyncio
+        await asyncio.wait_for(db.execute(text("SELECT 1")), timeout=8.0)
+    except Exception as e:
+        logger.error(f"Login-JSON DB check failure: {str(e)}")
+        raise HTTPException(status_code=500, detail="Database connection error")
+
+    try:
+        result = await db.execute(select(User).where(User.email == credentials.username))
+        user = result.scalars().first()
+        
+        if not user or not verify_password(credentials.password, user.hashed_password):
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials")
+            
+        access_token = create_access_token(data={"sub": user.email, "role": user.role})
+        return {
+            "access_token": access_token, 
+            "token_type": "bearer",
+            "user": {
+                "id": user.id,
+                "email": user.email,
+                "role": user.role,
+                "full_name": user.full_name
+            }
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Login-JSON internal error: {str(e)}")
+        raise HTTPException(status_code=500, detail="Internal login error")
+
 @router.post("/login")
 @router.post("/auth/login")
 async def login(form_data: OAuth2PasswordRequestForm = Depends(), db: AsyncSession = Depends(get_db)):

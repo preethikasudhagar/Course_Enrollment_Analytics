@@ -77,15 +77,16 @@ const Login = () => {
         setLoading(true);
         setError('');
         try {
-            // Force the same absolute URL used in the successful diagnostic tool
-            const loginUrl = `${apiStatus.url}/auth/login`;
-            const form = new URLSearchParams();
-            form.append('username', credentials.username);
-            form.append('password', credentials.password);
+            // Pivot to JSON Login to bypass Form-Data network blocks
+            const loginUrl = `${apiStatus.url}/auth/login-json`;
+            const payload = {
+                username: email,
+                password: password
+            };
 
-            const res = await axios.post(loginUrl, form, {
-                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                timeout: 10000
+            const res = await axios.post(loginUrl, payload, {
+                headers: { 'Content-Type': 'application/json' },
+                timeout: 15000
             });
 
             // Handle successful login
@@ -105,7 +106,7 @@ const Login = () => {
             if (err.response?.status === 401) {
                 setError('Invalid email or password');
             } else if (err.message === 'Network Error') {
-                setError(`Network Error (Target: ${apiStatus.url}/auth/login)`);
+                setError(`Network Error (JSON Pivot: ${apiStatus.url}/auth/login-json)`);
             } else {
                 setError(err.response?.data?.detail || 'An unexpected error occurred');
             }
