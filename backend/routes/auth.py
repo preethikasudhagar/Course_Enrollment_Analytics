@@ -4,12 +4,15 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from sqlalchemy import delete
 from datetime import timedelta, datetime
+import logging
 import random
 from database import get_db
 from models.models import User, UserRole, OTPRecord
 from schemas.user import UserCreate, UserResponse, Token
 from pydantic import BaseModel, EmailStr
 from utils.auth import get_password_hash, verify_password, create_access_token, ACCESS_TOKEN_EXPIRE_MINUTES, get_current_user
+
+logger = logging.getLogger(__name__)
 
 class ChangePasswordRequest(BaseModel):
     current_password: str
