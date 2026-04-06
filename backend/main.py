@@ -48,6 +48,23 @@ app.add_middleware(
 async def test_post():
     return {"message": "POST connection successful", "status": "ok"}
 
+# Deep Database Diagnostic route
+@app.get("/test-db")
+async def test_db(db: AsyncSession = Depends(get_db)):
+    try:
+        from sqlalchemy import text
+        import asyncio
+        # Perform a real database query with a timeout
+        result = await asyncio.wait_for(db.execute(text("SELECT 1")), timeout=5.0)
+        return {"message": "Database connection successful", "status": "ok"}
+    except Exception as e:
+        logger.error(f"Deep DB Diagnostic failed: {str(e)}")
+        return {
+            "message": f"Database failure: {str(e)}", 
+            "status": "error",
+            "hint": "Check if cryptography is installed and MySQL credentials are correct."
+        }
+
 # Ensure uploads directory exists
 if not os.path.exists("uploads/profile_photos"):
     os.makedirs("uploads/profile_photos", exist_ok=True)
@@ -167,7 +184,7 @@ async def root():
     return {
         "message": "Course Enrollment Analytics API (MySQL) is online", 
         "status": "online", 
-        "version": "5.4-STABLE",
+        "version": "5.6-TEST-DB",
         "env": "production"
     }
 

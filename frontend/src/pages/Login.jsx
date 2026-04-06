@@ -18,12 +18,17 @@ const Login = () => {
         setIsDiagnosing(true);
         setDiagnosticResult(null);
         try {
-            const res = await axios.post(`${apiStatus.url}/test-post`, {}, { timeout: 10000 });
-            setDiagnosticResult({ success: true, message: res.data.message });
+            const postRes = await axios.post(`${apiStatus.url}/test-post`, {}, { timeout: 10000 });
+            const dbRes = await axios.get(`${apiStatus.url}/test-db`, { timeout: 15000 });
+            
+            setDiagnosticResult({ 
+                success: postRes.data.status === 'ok' && dbRes.data.status === 'ok', 
+                message: `Connection: ${postRes.data.message} | Database: ${dbRes.data.message} ${dbRes.data.hint || ''}` 
+            });
         } catch (err) {
             setDiagnosticResult({ 
                 success: false, 
-                message: `POST Test Failed: ${err.message}. Status: ${err.response?.status || 'N/A'}` 
+                message: `Diagnostic Failed: ${err.message}. Status: ${err.response?.status || 'N/A'}` 
             });
         } finally {
             setIsDiagnosing(false);
