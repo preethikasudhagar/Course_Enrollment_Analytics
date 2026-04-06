@@ -7,7 +7,7 @@ const CourseItem = memo(({ course, onEdit, onDelete }) => {
     const limit = Number(course.seat_limit || 0);
     const enrolled = Number(course.enrolled_students || 0);
     const remaining = Math.max(0, limit - enrolled);
-    const status = remaining === 1 ? 'Almost full' : remaining <= 5 ? 'High Demand' : 'Open';
+    const status = remaining <= 5 ? 'High Demand' : 'Open';
     
     return (
         <tr className="hover:bg-gray-50 transition-colors">
@@ -37,11 +37,9 @@ const CourseItem = memo(({ course, onEdit, onDelete }) => {
                 <span className="text-sm font-semibold text-slate-700">{remaining}</span>
             </td>
             <td className="px-6 py-4">
-                <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${status === 'Almost full'
-                            ? 'bg-orange-100 text-orange-700'
-                            : status === 'High Demand'
-                                ? 'bg-amber-100 text-amber-700'
-                                : 'bg-emerald-100 text-emerald-700'
+                <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${status === 'High Demand'
+                            ? 'bg-amber-100 text-amber-700'
+                            : 'bg-emerald-100 text-emerald-700'
                     }`}>
                     {status}
                 </span>

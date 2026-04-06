@@ -4,7 +4,7 @@ from sqlalchemy.future import select
 from sqlalchemy import func, delete
 from typing import List, Optional
 from database import get_db
-from models.models import Course, User, UserRole, Enrollment, Waitlist, Notification, SystemActivity, Suggestion
+from models.models import Course, User, UserRole, Enrollment, Waitlist, Notification, SystemActivity
 from schemas.course import CourseCreate, CourseResponse, CourseUpdate
 from utils.auth import jwt, SECRET_KEY, ALGORITHM
 from fastapi.security import OAuth2PasswordBearer
@@ -16,8 +16,6 @@ from routes.analytics import refresh_all_vitals
 from fastapi import BackgroundTasks
 
 def seat_status(available_seats: int) -> str:
-    if available_seats == 1:
-        return "Almost full"
     if available_seats <= 5:
         return "High Demand"
     return "Open"
@@ -199,12 +197,7 @@ async def delete_course(
     if not db_course:
         raise HTTPException(status_code=404, detail="Course not found")
     
-    # Manually delete all dependents to avoid foreign key errors
     await db.execute(delete(Enrollment).where(Enrollment.course_id == course_id))
-    await db.execute(delete(Waitlist).where(Waitlist.course_id == course_id))
-    await db.execute(delete(Notification).where(Notification.course_id == course_id))
-    await db.execute(delete(Suggestion).where(Suggestion.course_id == course_id))
-    
     await db.delete(db_course)
     await db.commit()
     analytics_cache.clear()

@@ -1,13 +1,31 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import axios from 'axios';
 import { authService, getErrorMessage } from '../services/api';
-import { Mail, Lock, LogIn } from 'lucide-react';
+import { Mail, Lock, LogIn, Activity, CheckCircle, AlertTriangle } from 'lucide-react';
 
 const Login = () => {
     const [credentials, setCredentials] = useState({ username: '', password: '' });
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
+    const [apiStatus, setApiStatus] = useState({ state: 'checking', url: '' });
     const navigate = useNavigate();
+
+    useEffect(() => {
+        const checkApi = async () => {
+            const apiBase = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+            setApiStatus(prev => ({ ...prev, url: apiBase }));
+            try {
+                // Test basic connectivity to root
+                await axios.get(`${apiBase}/`, { timeout: 5000 });
+                setApiStatus({ state: 'connected', url: apiBase });
+            } catch (err) {
+                console.error("API test failed:", err);
+                setApiStatus({ state: 'error', url: apiBase });
+            }
+        };
+        checkApi();
+    }, []);
 
     const handleChange = (e) => {
         setCredentials({ ...credentials, [e.target.name]: e.target.value });
@@ -15,18 +33,24 @@ const Login = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        if (apiStatus.state === 'error') {
+            setError(`Cannot sign in. Backend is unreachable at ${apiStatus.url}. Check deployment logs.`);
+            return;
+        }
         setLoading(true);
         setError('');
         try {
             const res = await authService.login(credentials);
-            localStorage.setItem('token', res.access_token);
-            const payload = JSON.parse(atob(res.access_token.split('.')[1]));
-            const user = res.user || { email: payload.sub, role: payload.role };
-            localStorage.setItem('user', JSON.stringify(user));
+            if (res.access_token) {
+                localStorage.setItem('token', res.access_token);
+                const payload = JSON.parse(atob(res.access_token.split('.')[1]));
+                const user = res.user || { email: payload.sub, role: payload.role };
+                localStorage.setItem('user', JSON.stringify(user));
 
-            if (user.role === 'admin') navigate('/admin-dashboard');
-            else if (user.role === 'faculty') navigate('/faculty-dashboard');
-            else navigate('/student-dashboard');
+                if (user.role === 'admin') navigate('/admin-dashboard');
+                else if (user.role === 'faculty') navigate('/faculty-dashboard');
+                else navigate('/student-dashboard');
+            }
         } catch (err) {
             setError(getErrorMessage(err, 'Invalid email or password'));
         } finally {
@@ -47,6 +71,21 @@ const Login = () => {
             <div className="sm:mx-auto sm:w-full sm:max-w-md">
                 <div className="bg-white py-8 px-8 shadow-sm border border-gray-200 rounded-2xl relative overflow-hidden">
                     <form className="space-y-6" onSubmit={handleSubmit}>
+                        {/* API Connection Indicator */}
+                        <div className={`mb-4 flex items-center justify-between px-3 py-2 rounded-lg text-xs font-medium border ${
+                            apiStatus.state === 'connected' ? 'bg-green-50 text-green-700 border-green-100' :
+                            apiStatus.state === 'error' ? 'bg-red-50 text-red-700 border-red-100' :
+                            'bg-blue-50 text-blue-700 border-blue-100'
+                        }`}>
+                            <div className="flex items-center gap-2">
+                                {apiStatus.state === 'connected' ? <CheckCircle size={14} /> : 
+                                 apiStatus.state === 'error' ? <AlertTriangle size={14} /> : 
+                                 <Activity className="animate-spin" size={14} />}
+                                <span>API: {apiStatus.state === 'connected' ? 'Online' : apiStatus.state === 'error' ? 'Offline' : 'Checking connection...'}</span>
+                            </div>
+                            <span className="opacity-50 truncate max-w-[150px]">{apiStatus.url}</span>
+                        </div>
+
                         {error && (
                             <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm font-medium text-center">
                                 {error}
@@ -88,7 +127,7 @@ const Login = () => {
 
                         <button
                             type="submit"
-                            disabled={loading}
+                            disabled={loading || apiStatus.state === 'checking'}
                             className="w-full py-2.5 px-4 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors text-sm shadow-sm flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed mt-2"
                         >
                             {loading ? 'Signing in...' : 'Sign in'}

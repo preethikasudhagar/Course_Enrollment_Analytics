@@ -7,6 +7,9 @@ import ssl
 
 import logging
 
+import time
+import ssl
+
 # Set up logging for Railway
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -19,24 +22,22 @@ if not db_url:
     logger.warning("Neither DATABASE_URL nor MYSQL_URL found in environment! Defaulting to localhost.")
     db_url = f"mysql+aiomysql://root:{password}@localhost:3306/course_analytics_db"
 
-MYSQL_URL = db_url
-
 # Automatically fix dialect if the user provides standard mysql:// or pymysql
-if MYSQL_URL.startswith("mysql://"):
-    MYSQL_URL = MYSQL_URL.replace("mysql://", "mysql+aiomysql://", 1)
-elif MYSQL_URL.startswith("mysql+pymysql://"):
-    MYSQL_URL = MYSQL_URL.replace("mysql+pymysql://", "mysql+aiomysql://", 1)
+if db_url.startswith("mysql://"):
+    db_url = db_url.replace("mysql://", "mysql+aiomysql://", 1)
+elif db_url.startswith("mysql+pymysql://"):
+    db_url = db_url.replace("mysql+pymysql://", "mysql+aiomysql://", 1)
 
-logger.info(f"Using database host: {MYSQL_URL.split('@')[-1].split('/')[0] if '@' in MYSQL_URL else 'localhost'}")
-
-# Engine configuration with SSL support for cloud providers
+# Ensure SSL is handled for Railway/Aiven remote hosts
 connect_args = {}
-if "aivencloud.com" in MYSQL_URL:
-    # Use a permissive SSL context for cloud connections to avoid certificate verification issues in different environments
+if any(provider in db_url for provider in ["aivencloud.com", "up.railway.app"]):
     ssl_context = ssl.create_default_context()
     ssl_context.check_hostname = False
     ssl_context.verify_mode = ssl.CERT_NONE
     connect_args["ssl"] = ssl_context
+
+MYSQL_URL = db_url
+logger.info(f"Database connection string resolved (dialect fixed).")
 
 engine = create_async_engine(
     MYSQL_URL, 

@@ -40,13 +40,13 @@ class Course(Base):
     credits = Column(Integer, default=3)
     created_at = Column(DateTime, default=datetime.utcnow, index=True)
     
-    enrollments = relationship("Enrollment", back_populates="course", cascade="all, delete-orphan")
+    enrollments = relationship("Enrollment", back_populates="course")
 
 class Enrollment(Base):
     __tablename__ = "enrollments"
     id = Column(Integer, primary_key=True, index=True)
     student_id = Column(Integer, ForeignKey("users.id"), index=True)
-    course_id = Column(Integer, ForeignKey("courses.course_id", ondelete="CASCADE"), index=True)
+    course_id = Column(Integer, ForeignKey("courses.course_id"), index=True)
     enrollment_date = Column(DateTime, default=datetime.utcnow, index=True)
     
     student = relationship("User", back_populates="enrollments", foreign_keys=[student_id])
@@ -57,7 +57,7 @@ class Notification(Base):
     id = Column(Integer, primary_key=True, index=True)
     message = Column(Text, nullable=False)
     target_role = Column(String(50), nullable=True, index=True)
-    course_id = Column(Integer, ForeignKey("courses.course_id", ondelete="CASCADE"), nullable=True, index=True)
+    course_id = Column(Integer, ForeignKey("courses.course_id"), nullable=True, index=True)
     status = Column(String(20), default="unread", index=True)
     timestamp = Column(DateTime, default=datetime.utcnow, index=True)
 
@@ -88,7 +88,7 @@ class Suggestion(Base):
     __tablename__ = "suggestions"
     id = Column(Integer, primary_key=True, index=True)
     message = Column(Text, nullable=False)
-    course_id = Column(Integer, ForeignKey("courses.course_id", ondelete="CASCADE"), nullable=True, index=True)
+    course_id = Column(Integer, ForeignKey("courses.course_id"), nullable=True, index=True)
     status = Column(String(20), default="pending", index=True)
     timestamp = Column(DateTime, default=datetime.utcnow)
 

@@ -3,7 +3,12 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.staticfiles import StaticFiles
 import os
+import logging
 from sqlalchemy import select
+
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 from routes import auth, courses, enrollments, analytics, notifications, users, search, settings, suggestions, activity, seat_expansion
 from sqlalchemy.ext.asyncio import AsyncSession
 from database import init_db
@@ -43,21 +48,39 @@ async def add_cache_control_header(request, call_next):
         response.headers["Cache-Control"] = "public, max-age=31536000"
     return response
 
+import asyncio
+
 @app.on_event("startup")
 async def on_startup():
+    logger.info("Application event: startup. Starting infrastructure initialization...")
     try:
+        # Critical: Initialize DB schema
         await init_db()
-        from routes.auth import seed_admin
-        async with AsyncSessionLocal() as db:
-            await seed_admin(db)
-            
-            from routes.analytics import refresh_all_vitals
-            await refresh_all_vitals()
+        logger.info("Database schema initialized/migrated.")
+        
+        # Start seeding and heavy analytics in the background so we don't block Railway's health check
+        async def background_initialization():
+            try:
+                from routes.auth import seed_admin
+                async with AsyncSessionLocal() as db:
+                    await seed_admin(db)
+                    logger.info("Background: Admin seeding checked.")
+                
+                from routes.analytics import refresh_all_vitals
+                logger.info("Background: Starting analytics precomputation...")
+                await refresh_all_vitals()
+                logger.info("Background: Analytics precomputed.")
+            except Exception as bg_err:
+                logger.error(f"Background initialization failed: {bg_err}")
+
+        asyncio.create_task(background_initialization())
+        logger.info("Startup sequence complete. Server is now healthy.")
+                
     except Exception as e:
+        logger.error(f"CRITICAL STARTUP FAILURE: {str(e)}")
         import traceback
-        with open("startup_error.txt", "w") as f:
-            f.write(f"Startup failed: {str(e)}\n")
-            f.write(traceback.format_exc())
+        logger.error(traceback.format_exc())
+        # We raise here because the container should fail if DB init is broken
         raise e
 
 @app.on_event("shutdown")
