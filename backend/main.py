@@ -42,6 +42,24 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Request Logger Middleware to debug production connectivity
+@app.middleware("http")
+async def log_requests(request: Request, call_next):
+    logger.info(f"Incoming: {request.method} {request.url.path}")
+    try:
+        response = await call_next(request)
+        logger.info(f"Response: {response.status_code}")
+        return response
+    except Exception as e:
+        logger.error(f"Request Failed: {str(e)}")
+        raise e
+
+# Simple Test Post route
+@app.get("/test-post")
+@app.post("/test-post")
+async def test_post():
+    return {"message": "POST connection successful", "status": "ok"}
+
 # Ensure uploads directory exists
 if not os.path.exists("uploads/profile_photos"):
     os.makedirs("uploads/profile_photos", exist_ok=True)
@@ -161,7 +179,7 @@ async def root():
     return {
         "message": "Course Enrollment Analytics API (MySQL) is online", 
         "status": "online", 
-        "version": "5.1",
+        "version": "5.3-DEBUG",
         "env": "production"
     }
 

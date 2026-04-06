@@ -11,6 +11,25 @@ const Login = () => {
     const [apiStatus, setApiStatus] = useState({ state: 'checking', url: '' });
     const navigate = useNavigate();
 
+    const [diagnosticResult, setDiagnosticResult] = useState(null);
+    const [isDiagnosing, setIsDiagnosing] = useState(false);
+
+    const runDiagnostic = async () => {
+        setIsDiagnosing(true);
+        setDiagnosticResult(null);
+        try {
+            const res = await axios.post(`${apiStatus.url}/test-post`, {}, { timeout: 10000 });
+            setDiagnosticResult({ success: true, message: res.data.message });
+        } catch (err) {
+            setDiagnosticResult({ 
+                success: false, 
+                message: `POST Test Failed: ${err.message}. Status: ${err.response?.status || 'N/A'}` 
+            });
+        } finally {
+            setIsDiagnosing(false);
+        }
+    };
+
     useEffect(() => {
         const checkApi = async (retries = 3) => {
             console.log("--- FRONTEND VERSION 5.2 ---");
@@ -140,13 +159,33 @@ const Login = () => {
                             </div>
                         </div>
 
-                        <button
-                            type="submit"
-                            disabled={loading || apiStatus.state === 'checking'}
-                            className="w-full py-2.5 px-4 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors text-sm shadow-sm flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed mt-2"
-                        >
-                            {loading ? 'Signing in...' : 'Sign in'}
-                        </button>
+                        {diagnosticResult && (
+                            <div className={`mb-4 p-3 rounded-lg text-xs font-mono border ${
+                                diagnosticResult.success ? 'bg-green-50 text-green-700 border-green-100' : 'bg-red-50 text-red-700 border-red-100'
+                            }`}>
+                                <div className="font-bold mb-1">Diagnostic Report:</div>
+                                {diagnosticResult.message}
+                            </div>
+                        )}
+
+                        <div className="flex flex-col gap-3">
+                            <button
+                                type="submit"
+                                disabled={loading}
+                                className="w-full py-3 bg-blue-600 text-white rounded-xl font-medium hover:bg-blue-700 disabled:opacity-50 transition-all shadow-md"
+                            >
+                                {loading ? 'Signing in...' : 'Sign in'}
+                            </button>
+
+                            <button
+                                type="button"
+                                onClick={runDiagnostic}
+                                disabled={isDiagnosing}
+                                className="w-full py-2 bg-slate-100 text-slate-600 rounded-lg text-xs font-medium hover:bg-slate-200 transition-all"
+                            >
+                                {isDiagnosing ? 'Running Diagnostic...' : 'Run Connection Diagnostic'}
+                            </button>
+                        </div>
                     </form>
 
                     <div className="mt-8 text-center text-sm">
