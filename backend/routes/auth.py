@@ -140,17 +140,21 @@ async def register(user: UserCreate, db: AsyncSession = Depends(get_db)):
 @router.post("/login")
 @router.post("/auth/login")
 async def login(form_data: OAuth2PasswordRequestForm = Depends(), db: AsyncSession = Depends(get_db)):
-    # Fail-fast check for database connectivity with explicit timeout to avoid "Network Error" hangs
+    # Simple check for database connectivity - Fail fast
     try:
         import asyncio
         from sqlalchemy import text
-        await asyncio.wait_for(db.execute(text("SELECT 1")), timeout=10.0)
-    except (asyncio.TimeoutError, Exception) as db_err:
-        logger.error(f"Login database connectivity check failed or timed out: {db_err}")
-        raise HTTPException(
-            status_code=503,
-            detail="Database is currently unresponsive. Please check your Railway/MySQL status."
-        )
+        # Test basic connection with timeout to prevent hangs
+        await asyncio.wait_for(db.execute(text("SELECT 1")), timeout=8.0)
+    except asyncio.TimeoutError:
+        logger.error("Login database check TIMED OUT (8s)")
+        raise HTTPException(status_code=503, detail="Database is temporarily busy. Please try again.")
+    except Exception as e:
+        logger.error(f"Login database CRITICAL failure: {str(e)}")
+        # If it's a cryptography missing error or similar, log it clearly
+        if "cryptography" in str(e).lower():
+            logger.critical("MISSING CRYPTOGRAPHY LIBRARY FOR MYSQL AUTH")
+        raise HTTPException(status_code=500, detail="Internal connection error. Please contact administrator.")
 
     try:
         result = await db.execute(select(User).where(User.email == form_data.username))

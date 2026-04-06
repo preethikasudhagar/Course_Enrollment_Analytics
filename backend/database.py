@@ -48,20 +48,27 @@ if "@" in MYSQL_URL:
         host_info = "unknown"
 logger.info(f"Database dialect resolved. Connecting to: {host_info}")
 
+# Configure the database engine with robust settings for production Railway/Render
 engine = create_async_engine(
     MYSQL_URL, 
     echo=False, 
-    pool_size=10, # Reduced pool size for better stability in small containers
+    pool_size=10, 
     max_overflow=5, 
     pool_recycle=1800,
-    pool_pre_ping=True,
-    pool_timeout=30, # Max seconds to wait for a connection from the pool
+    pool_pre_ping=True,      # Check connection health before using
+    pool_timeout=30,      # Give it plenty of time for cold starts
     connect_args={
         **connect_args,
-        "connect_timeout": 10 # Max seconds to wait for initial handshake
+        "connect_timeout": 10,       # Connection timeout for aiomysql
+        "program_name": "FastAPI_CourseEnrollment"
     }
 )
-AsyncSessionLocal = async_sessionmaker(engine, expire_on_commit=False, class_=AsyncSession)
+
+AsyncSessionLocal = async_sessionmaker(
+    engine, 
+    class_=AsyncSession, 
+    expire_on_commit=False
+)
 
 class Base(DeclarativeBase):
     pass
