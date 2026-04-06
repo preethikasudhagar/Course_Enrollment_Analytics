@@ -1,4 +1,13 @@
 {
+  "name": "course-enrollment-analytics",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "build": "echo 'Root build successful'",
+    "start": "echo 'Root start successful'",
+    "frontend-build": "cd frontend && npm install && npm run build",
+    "backend-install": "cd backend && pip install -r requirements.txt"
+  },
   "devDependencies": {
     "autoprefixer": "^10.4.27",
     "postcss": "^8.5.8",
