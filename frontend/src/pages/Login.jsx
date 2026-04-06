@@ -12,16 +12,26 @@ const Login = () => {
     const navigate = useNavigate();
 
     useEffect(() => {
-        const checkApi = async () => {
+        const checkApi = async (retries = 3) => {
             const apiBase = import.meta.env.VITE_API_URL || 'http://localhost:8000';
             setApiStatus(prev => ({ ...prev, url: apiBase }));
-            try {
-                // Test basic connectivity to root
-                await axios.get(`${apiBase}/`, { timeout: 5000 });
-                setApiStatus({ state: 'connected', url: apiBase });
-            } catch (err) {
-                console.error("API test failed:", err);
-                setApiStatus({ state: 'error', url: apiBase });
+            
+            for (let i = 0; i < retries; i++) {
+                try {
+                    // Test basic connectivity to root with 8s timeout
+                    await axios.get(`${apiBase}/`, { timeout: 8000 });
+                    setApiStatus({ state: 'connected', url: apiBase });
+                    return; // Success
+                } catch (err) {
+                    console.warn(`API connection attempt ${i + 1} failed:`, err.message);
+                    if (i === retries - 1) {
+                        setApiStatus({ state: 'error', url: apiBase });
+                        setError(`CRITICAL: Backend unreachable at ${apiBase}. Backend may be cold-starting or Railway project may be suspended.`);
+                    } else {
+                        // Wait 2 seconds before retry
+                        await new Promise(r => setTimeout(r, 2000));
+                    }
+                }
             }
         };
         checkApi();

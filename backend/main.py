@@ -25,14 +25,17 @@ from models.models import Course
 app = FastAPI(title="Course Enrollment Analytics System")
 
 # Configure CORS for deployment - MUST BE FIRST
-FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:3000").rstrip("/")
+BACKEND_CORS_ORIGINS = os.getenv("CORS_ORIGINS", "").split(",")
+ALLOWED_ORIGINS = [
+    "http://localhost:5173", 
+    "http://localhost:3000",
+    "https://course-analytics-frontend-production.up.railway.app",
+    "https://course-analytics-frontend.onrender.com"
+] + [origin.strip() for origin in BACKEND_CORS_ORIGINS if origin.strip()]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:5173", 
-        "http://localhost:3000",
-        "https://course-analytics-frontend-production.up.railway.app"
-    ], 
+    allow_origins=ALLOWED_ORIGINS,
     allow_origin_regex=r"https://.*\.up\.railway\.app|https://.*\.onrender\.com",
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
@@ -46,9 +49,8 @@ if not os.path.exists("uploads/profile_photos"):
 app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 app.add_middleware(GZipMiddleware, minimum_size=1000)
 
-@app.get("/health")
-async def health_check():
-    return {"status": "ok", "timestamp": datetime.now(), "deploy_id": "final_fix_v4"}
+# Primary health route removed to avoid duplication with lower one
+# Keeping only one robust /health route below
 
 @app.middleware("http")
 async def add_cache_control_header(request, call_next):
@@ -97,7 +99,13 @@ async def on_shutdown():
 
 @app.get("/health")
 async def health_check():
-    return {"status": "ok", "timestamp": datetime.now()}
+    """Lightweight health check that returns 200 without DB hits."""
+    return {
+        "status": "ok", 
+        "timestamp": datetime.now().isoformat(), 
+        "deploy_id": "final_fix_v5",
+        "service": "backend"
+    }
 
 app.include_router(auth.router)
 app.include_router(courses.router)

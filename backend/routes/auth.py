@@ -140,15 +140,16 @@ async def register(user: UserCreate, db: AsyncSession = Depends(get_db)):
 @router.post("/login")
 @router.post("/auth/login")
 async def login(form_data: OAuth2PasswordRequestForm = Depends(), db: AsyncSession = Depends(get_db)):
-    # Fail-fast check for database connectivity to prevent "Network Error" timeouts
+    # Fail-fast check for database connectivity with explicit timeout to avoid "Network Error" hangs
     try:
+        import asyncio
         from sqlalchemy import text
-        await db.execute(text("SELECT 1"))
-    except Exception as db_err:
-        logger.error(f"Login database connectivity check failed: {db_err}")
+        await asyncio.wait_for(db.execute(text("SELECT 1")), timeout=10.0)
+    except (asyncio.TimeoutError, Exception) as db_err:
+        logger.error(f"Login database connectivity check failed or timed out: {db_err}")
         raise HTTPException(
             status_code=503,
-            detail="Database is currently unavailable. Please try again in 30 seconds."
+            detail="Database is currently unresponsive. Please check your Railway/MySQL status."
         )
 
     try:

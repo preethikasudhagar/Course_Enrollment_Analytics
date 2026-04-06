@@ -55,7 +55,11 @@ engine = create_async_engine(
     max_overflow=5, 
     pool_recycle=1800,
     pool_pre_ping=True,
-    connect_args=connect_args
+    pool_timeout=30, # Max seconds to wait for a connection from the pool
+    connect_args={
+        **connect_args,
+        "connect_timeout": 10 # Max seconds to wait for initial handshake
+    }
 )
 AsyncSessionLocal = async_sessionmaker(engine, expire_on_commit=False, class_=AsyncSession)
 

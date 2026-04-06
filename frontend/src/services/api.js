@@ -39,6 +39,21 @@ api.interceptors.response.use(
         return response.data;
     },
     (error) => {
+        // Detailed logging for debugging production connectivity issues
+        const errorDetail = {
+            message: error.message,
+            url: error.config?.url,
+            method: error.config?.method,
+            status: error.response?.status,
+            data: error.response?.data
+        };
+        
+        if (error.message === 'Network Error') {
+            console.error('CRITICAL: Network Error detected. This usually means CORS failure or Backend is DOWN.', errorDetail);
+        } else {
+            console.warn('API Response Error:', errorDetail);
+        }
+        
         return Promise.reject(error);
     }
 );
