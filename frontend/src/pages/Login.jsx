@@ -13,6 +13,7 @@ const Login = () => {
 
     useEffect(() => {
         const checkApi = async (retries = 3) => {
+            console.log("--- FRONTEND VERSION 5.2 ---");
             // Hardcoded production URL for reliability
             let apiBase = import.meta.env.VITE_API_URL || 'https://course-analytics-backend-production.up.railway.app';
             
