@@ -159,24 +159,30 @@ async def login_json(credentials: LoginJSON, db: AsyncSession = Depends(get_db))
         user = result.scalars().first()
         
         if not user or not verify_password(credentials.password, user.password):
-            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials")
+            logger.warning(f"Login failed for user: {credentials.username}")
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid email or password")
             
-        access_token = create_access_token(data={"sub": user.email, "role": user.role})
+        # CRITICAL: Convert Enum to string value for JWT serialization
+        role_str = user.role.value if hasattr(user.role, 'value') else str(user.role)
+        
+        access_token = create_access_token(data={"sub": user.email, "role": role_str})
+        
         return {
             "access_token": access_token, 
             "token_type": "bearer",
             "user": {
                 "id": user.id,
                 "email": user.email,
-                "role": user.role,
+                "role": role_str,
                 "name": user.name
             }
         }
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Login-JSON internal error: {str(e)}")
-        raise HTTPException(status_code=500, detail="Internal login error")
+        import traceback
+        logger.error(f"Login-JSON CRITICAL ERROR: {str(e)}\n{traceback.format_exc()}")
+        raise HTTPException(status_code=500, detail=f"Internal Server Error: {str(e)}")
 
 @router.post("/login")
 @router.post("/auth/login")
