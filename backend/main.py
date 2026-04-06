@@ -27,7 +27,8 @@ app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:3000").rstrip("/")
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"], # Allow all origins temporarily to fix Network Errors
+    allow_origins=[FRONTEND_URL, "http://localhost:5173", "http://localhost:3000"], 
+    allow_origin_regex=r"https://.*\.up\.railway\.app|https://.*\.onrender\.com",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
