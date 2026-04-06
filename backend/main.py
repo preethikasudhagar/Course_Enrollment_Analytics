@@ -24,22 +24,13 @@ from models.models import Course
 
 app = FastAPI(title="Course Enrollment Analytics System")
 
-# Configure CORS for deployment - MUST BE FIRST
-BACKEND_CORS_ORIGINS = os.getenv("CORS_ORIGINS", "").split(",")
-ALLOWED_ORIGINS = [
-    "http://localhost:5173", 
-    "http://localhost:3000",
-    "https://course-analytics-frontend-production.up.railway.app",
-    "https://course-analytics-frontend.onrender.com"
-] + [origin.strip() for origin in BACKEND_CORS_ORIGINS if origin.strip()]
-
+# Relaxed CORS for debugging production Network Errors - WILL REVERT once fixed
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=ALLOWED_ORIGINS,
-    allow_origin_regex=r"https://.*\.up\.railway\.app|https://.*\.onrender\.com",
+    allow_origins=["*"],
     allow_credentials=True,
-    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
-    allow_headers=["*"], # More permissive for debugging
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 # Ensure uploads directory exists
@@ -158,6 +149,11 @@ async def notifications_alias(
 
 @app.get("/")
 async def root():
-    return {"message": "Course Enrollment Analytics API (MySQL) is running", "status": "online", "version": "4.1"}
+    return {
+        "message": "Course Enrollment Analytics API (MySQL) is online", 
+        "status": "online", 
+        "version": "5.1",
+        "env": "production"
+    }
 
 logger.info("Main script fully loaded. Application object ready for uvicorn.")

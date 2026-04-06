@@ -99,13 +99,15 @@ const Login = () => {
                             apiStatus.state === 'error' ? 'bg-red-50 text-red-700 border-red-100' :
                             'bg-blue-50 text-blue-700 border-blue-100'
                         }`}>
-                            <div className="flex items-center gap-2">
-                                {apiStatus.state === 'connected' ? <CheckCircle size={14} /> : 
-                                 apiStatus.state === 'error' ? <AlertTriangle size={14} /> : 
-                                 <Activity className="animate-spin" size={14} />}
-                                <span>API: {apiStatus.state === 'connected' ? 'Online' : apiStatus.state === 'error' ? 'Offline' : 'Checking connection...'}</span>
+                            <div className="flex flex-col items-start gap-1">
+                                <div className="flex items-center gap-2">
+                                    {apiStatus.state === 'connected' ? <CheckCircle size={14} /> : 
+                                     apiStatus.state === 'error' ? <AlertTriangle size={14} /> : 
+                                     <Activity className="animate-spin" size={14} />}
+                                    <span>API: {apiStatus.state === 'connected' ? 'Online' : apiStatus.state === 'error' ? 'Offline' : 'Checking connection...'}</span>
+                                </div>
+                                <span className="text-[10px] opacity-60 font-mono break-all">{apiStatus.url}</span>
                             </div>
-                            <span className="opacity-50 truncate max-w-[150px]">{apiStatus.url}</span>
                         </div>
 
                         {error && (
