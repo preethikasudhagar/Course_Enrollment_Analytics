@@ -13,7 +13,19 @@ const Login = () => {
 
     useEffect(() => {
         const checkApi = async (retries = 3) => {
-            const apiBase = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+            // Smart base URL detection
+            let apiBase = import.meta.env.VITE_API_URL;
+            if (!apiBase || apiBase.includes('localhost')) {
+                const hostname = window.location.hostname;
+                if (hostname.includes('up.railway.app')) {
+                    apiBase = 'https://course-analytics-backend-production.up.railway.app';
+                } else if (hostname.includes('onrender.com')) {
+                    apiBase = 'https://course-analytics-backend.onrender.com';
+                } else {
+                    apiBase = apiBase || 'http://localhost:8000';
+                }
+            }
+            
             setApiStatus(prev => ({ ...prev, url: apiBase }));
             
             for (let i = 0; i < retries; i++) {
@@ -23,10 +35,10 @@ const Login = () => {
                     setApiStatus({ state: 'connected', url: apiBase });
                     return; // Success
                 } catch (err) {
-                    console.warn(`API connection attempt ${i + 1} failed:`, err.message);
+                    console.warn(`API connection attempt ${i + 1} failed for ${apiBase}:`, err.message);
                     if (i === retries - 1) {
                         setApiStatus({ state: 'error', url: apiBase });
-                        setError(`CRITICAL: Backend unreachable at ${apiBase}. Backend may be cold-starting or Railway project may be suspended.`);
+                        setError(`CRITICAL: Backend unreachable at ${apiBase}. If this is production, please check if the backend service is running.`);
                     } else {
                         // Wait 2 seconds before retry
                         await new Promise(r => setTimeout(r, 2000));

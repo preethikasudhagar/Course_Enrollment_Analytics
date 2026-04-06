@@ -1,13 +1,30 @@
 import axios from 'axios';
 
-let API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
-if (API_URL && !API_URL.startsWith('http')) {
-    API_URL = `https://${API_URL}`;
-}
-// Strip trailing slashes to prevent //auth/login redirects
-if (API_URL) {
-    API_URL = API_URL.replace(/\/+$/, "");
-}
+const getBaseUrl = () => {
+    // Priority 1: Use explicit env var if provided during build
+    let url = import.meta.env.VITE_API_URL;
+    
+    // Priority 2: Auto-detect environment if no env var was baked into the build
+    if (!url || url.includes('localhost')) {
+        const hostname = window.location.hostname;
+        if (hostname.includes('up.railway.app')) {
+            // Force production backend if running on Railway frontend
+            url = 'https://course-analytics-backend-production.up.railway.app';
+        } else if (hostname.includes('onrender.com')) {
+            url = 'https://course-analytics-backend.onrender.com';
+        } else {
+            url = url || 'http://localhost:8000';
+        }
+    }
+
+    if (url && !url.startsWith('http')) {
+        url = `https://${url}`;
+    }
+    // Strip trailing slashes to prevent //auth/login redirects
+    return url ? url.replace(/\/+$/, "") : "";
+};
+
+const API_URL = getBaseUrl();
 
 const api = axios.create({
     baseURL: API_URL,
