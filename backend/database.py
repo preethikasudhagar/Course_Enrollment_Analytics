@@ -5,15 +5,29 @@ from urllib.parse import quote_plus
 import os
 import ssl
 
+import logging
+
+# Set up logging for Railway
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
 # MySQL Connection String: mysql+aiomysql://user:password@host:port/dbname
 password = quote_plus("Preethika_13#")
-MYSQL_URL = os.getenv("DATABASE_URL", f"mysql+aiomysql://root:{password}@localhost:3306/course_analytics_db")
+# Railway often uses MYSQL_URL instead of DATABASE_URL
+db_url = os.getenv("DATABASE_URL") or os.getenv("MYSQL_URL")
+if not db_url:
+    logger.warning("Neither DATABASE_URL nor MYSQL_URL found in environment! Defaulting to localhost.")
+    db_url = f"mysql+aiomysql://root:{password}@localhost:3306/course_analytics_db"
+
+MYSQL_URL = db_url
 
 # Automatically fix dialect if the user provides standard mysql:// or pymysql
 if MYSQL_URL.startswith("mysql://"):
     MYSQL_URL = MYSQL_URL.replace("mysql://", "mysql+aiomysql://", 1)
 elif MYSQL_URL.startswith("mysql+pymysql://"):
     MYSQL_URL = MYSQL_URL.replace("mysql+pymysql://", "mysql+aiomysql://", 1)
+
+logger.info(f"Using database host: {MYSQL_URL.split('@')[-1].split('/')[0] if '@' in MYSQL_URL else 'localhost'}")
 
 # Engine configuration with SSL support for cloud providers
 connect_args = {}
