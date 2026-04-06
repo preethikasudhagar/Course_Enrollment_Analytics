@@ -1,11 +1,10 @@
 fastapi
 uvicorn
-sqlalchemy[asyncio]
+sqlalchemy>=2.0.0
 aiomysql
-mysqlclient
 cryptography
 python-multipart
-pydantic
+pydantic>=2.0.0
 pydantic-settings
 python-jose[cryptography]
 passlib[bcrypt]

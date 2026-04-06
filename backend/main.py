@@ -150,4 +150,6 @@ async def notifications_alias(
 
 @app.get("/")
 async def root():
-    return {"message": "Course Enrollment Analytics API (MySQL) is running"}
+    return {"message": "Course Enrollment Analytics API (MySQL) is running", "status": "online", "version": "4.1"}
+
+logger.info("Main script fully loaded. Application object ready for uvicorn.")
