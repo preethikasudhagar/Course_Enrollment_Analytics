@@ -24,10 +24,19 @@ from models.models import Course
 
 app = FastAPI(title="Course Enrollment Analytics System")
 
-# Relaxed CORS for debugging production Network Errors - WILL REVERT once fixed
+# Required explicit origins for credentials support (True)
+# Wildcard "*" is NOT ALLOWED when allow_credentials=True
+ALLOWED_ORIGINS = [
+    "http://localhost:5173", 
+    "http://localhost:3000",
+    "https://course-analytics-frontend-production.up.railway.app",
+    "https://course-analytics-frontend.onrender.com"
+]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=ALLOWED_ORIGINS,
+    allow_origin_regex=r"https://.*\.up\.railway\.app|https://.*\.onrender\.com",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
