@@ -24,18 +24,11 @@ from models.models import Course
 
 app = FastAPI(title="Course Enrollment Analytics System")
 
-# Ensure uploads directory exists
-if not os.path.exists("uploads/profile_photos"):
-    os.makedirs("uploads/profile_photos", exist_ok=True)
-
-app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
-
-# Configure CORS for deployment
+# Configure CORS for deployment - MUST BE FIRST
 FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:3000").rstrip("/")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
-        FRONTEND_URL, 
         "http://localhost:5173", 
         "http://localhost:3000",
         "https://course-analytics-frontend-production.up.railway.app"
@@ -43,18 +36,25 @@ app.add_middleware(
     allow_origin_regex=r"https://.*\.up\.railway\.app|https://.*\.onrender\.com",
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
-    allow_headers=["Content-Type", "Authorization", "Accept", "X-Requested-With"],
+    allow_headers=["*"], # More permissive for debugging
 )
+
+# Ensure uploads directory exists
+if not os.path.exists("uploads/profile_photos"):
+    os.makedirs("uploads/profile_photos", exist_ok=True)
+
+app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
+app.add_middleware(GZipMiddleware, minimum_size=1000)
 
 @app.get("/health")
 async def health_check():
-    from datetime import datetime
-    return {"status": "ok", "timestamp": datetime.now(), "database": "async"}
-
-app.add_middleware(GZipMiddleware, minimum_size=1000)
+    return {"status": "ok", "timestamp": datetime.now(), "deploy_id": "final_fix_v4"}
 
 @app.middleware("http")
 async def add_cache_control_header(request, call_next):
+    # Skip for CORS preflight
+    if request.method == "OPTIONS":
+        return await call_next(request)
     response = await call_next(request)
     if request.url.path.startswith("/uploads"):
         response.headers["Cache-Control"] = "public, max-age=31536000"
