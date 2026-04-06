@@ -42,18 +42,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Request Logger Middleware to debug production connectivity
-@app.middleware("http")
-async def log_requests(request: Request, call_next):
-    logger.info(f"Incoming: {request.method} {request.url.path}")
-    try:
-        response = await call_next(request)
-        logger.info(f"Response: {response.status_code}")
-        return response
-    except Exception as e:
-        logger.error(f"Request Failed: {str(e)}")
-        raise e
-
 # Simple Test Post route
 @app.get("/test-post")
 @app.post("/test-post")
@@ -179,7 +167,7 @@ async def root():
     return {
         "message": "Course Enrollment Analytics API (MySQL) is online", 
         "status": "online", 
-        "version": "5.3-DEBUG",
+        "version": "5.4-STABLE",
         "env": "production"
     }
 
