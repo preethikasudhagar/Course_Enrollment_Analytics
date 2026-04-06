@@ -4,6 +4,10 @@ let API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 if (API_URL && !API_URL.startsWith('http')) {
     API_URL = `https://${API_URL}`;
 }
+// Strip trailing slashes to prevent //auth/login redirects
+if (API_URL) {
+    API_URL = API_URL.replace(/\/+$/, "");
+}
 
 const api = axios.create({
     baseURL: API_URL,

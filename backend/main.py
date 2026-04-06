@@ -34,12 +34,22 @@ app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:3000").rstrip("/")
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[FRONTEND_URL, "http://localhost:5173", "http://localhost:3000"], 
+    allow_origins=[
+        FRONTEND_URL, 
+        "http://localhost:5173", 
+        "http://localhost:3000",
+        "https://course-analytics-frontend-production.up.railway.app"
+    ], 
     allow_origin_regex=r"https://.*\.up\.railway\.app|https://.*\.onrender\.com",
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
+    allow_headers=["Content-Type", "Authorization", "Accept", "X-Requested-With"],
 )
+
+@app.get("/health")
+async def health_check():
+    from datetime import datetime
+    return {"status": "ok", "timestamp": datetime.now(), "database": "async"}
 
 app.add_middleware(GZipMiddleware, minimum_size=1000)
 

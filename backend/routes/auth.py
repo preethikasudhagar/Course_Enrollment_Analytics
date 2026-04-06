@@ -140,36 +140,53 @@ async def register(user: UserCreate, db: AsyncSession = Depends(get_db)):
 @router.post("/login")
 @router.post("/auth/login")
 async def login(form_data: OAuth2PasswordRequestForm = Depends(), db: AsyncSession = Depends(get_db)):
-    result = await db.execute(select(User).where(User.email == form_data.username))
-    user = result.scalars().first()
-    
-    if not user or not verify_password(form_data.password, user.password):
+    # Fail-fast check for database connectivity to prevent "Network Error" timeouts
+    try:
+        from sqlalchemy import text
+        await db.execute(text("SELECT 1"))
+    except Exception as db_err:
+        logger.error(f"Login database connectivity check failed: {db_err}")
         raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Incorrect email or password",
-            headers={"WWW-Authenticate": "Bearer"},
+            status_code=503,
+            detail="Database is currently unavailable. Please try again in 30 seconds."
         )
-    
-    access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
-    access_token = create_access_token(
-        data={"sub": user.email, "role": user.role.value}, 
-        expires_delta=access_token_expires
-    )
-    return {
-        "status": "success",
-        "data": {
-            "access_token": access_token,
-            "token_type": "bearer",
-            "user": {
-                "id": user.id,
-                "name": user.name,
-                "email": user.email,
-                "role": user.role.value,
-                "department": user.department,
-                "year": user.year
+
+    try:
+        result = await db.execute(select(User).where(User.email == form_data.username))
+        user = result.scalars().first()
+        
+        if not user or not verify_password(form_data.password, user.password):
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Incorrect email or password",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
+        
+        access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+        access_token = create_access_token(
+            data={"sub": user.email, "role": user.role.value}, 
+            expires_delta=access_token_expires
+        )
+        return {
+            "status": "success",
+            "data": {
+                "access_token": access_token,
+                "token_type": "bearer",
+                "user": {
+                    "id": user.id,
+                    "name": user.name,
+                    "email": user.email,
+                    "role": user.role.value,
+                    "department": user.department,
+                    "year": user.year
+                }
             }
         }
-    }
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Unexpected login error: {e}")
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.post("/change-password")
 async def change_password(req: ChangePasswordRequest, db: AsyncSession = Depends(get_db), current_user = Depends(get_current_user)):
