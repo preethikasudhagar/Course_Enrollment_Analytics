@@ -77,19 +77,38 @@ const Login = () => {
         setLoading(true);
         setError('');
         try {
-            const res = await authService.login(credentials);
-            if (res.access_token) {
-                localStorage.setItem('token', res.access_token);
-                const payload = JSON.parse(atob(res.access_token.split('.')[1]));
-                const user = res.user || { email: payload.sub, role: payload.role };
-                localStorage.setItem('user', JSON.stringify(user));
+            // Force the same absolute URL used in the successful diagnostic tool
+            const loginUrl = `${apiStatus.url}/auth/login`;
+            const form = new URLSearchParams();
+            form.append('username', credentials.username);
+            form.append('password', credentials.password);
 
-                if (user.role === 'admin') navigate('/admin-dashboard');
-                else if (user.role === 'faculty') navigate('/faculty-dashboard');
-                else navigate('/student-dashboard');
+            const res = await axios.post(loginUrl, form, {
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                timeout: 10000
+            });
+
+            // Handle successful login
+            const data = res.data;
+            if (data.access_token) {
+                localStorage.setItem('token', data.access_token);
+                localStorage.setItem('user', JSON.stringify(data.user));
+                
+                // Redirect based on role
+                const role = data.user.role;
+                if (role === 'admin') navigate('/admin');
+                else if (role === 'faculty') navigate('/faculty');
+                else navigate('/student');
             }
         } catch (err) {
-            setError(getErrorMessage(err, 'Invalid email or password'));
+            console.error('Login attempt failed:', err);
+            if (err.response?.status === 401) {
+                setError('Invalid email or password');
+            } else if (err.message === 'Network Error') {
+                setError(`Network Error (Target: ${apiStatus.url}/auth/login)`);
+            } else {
+                setError(err.response?.data?.detail || 'An unexpected error occurred');
+            }
         } finally {
             setLoading(false);
         }
