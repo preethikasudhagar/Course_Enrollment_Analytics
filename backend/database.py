@@ -28,23 +28,32 @@ if db_url.startswith("mysql://"):
 elif db_url.startswith("mysql+pymysql://"):
     db_url = db_url.replace("mysql+pymysql://", "mysql+aiomysql://", 1)
 
-# Ensure SSL is handled for Railway/Aiven remote hosts
+# Ensure SSL is handled for cloud hosts (Aiven etc)
+# Railway internal connections (e.g. mysql-something.railway.internal) usually don't need SSL
 connect_args = {}
-if any(provider in db_url for provider in ["aivencloud.com", "up.railway.app"]):
+if "aivencloud.com" in db_url:
     ssl_context = ssl.create_default_context()
     ssl_context.check_hostname = False
     ssl_context.verify_mode = ssl.CERT_NONE
     connect_args["ssl"] = ssl_context
+    logger.info("SSL context configured for Aiven Cloud.")
 
 MYSQL_URL = db_url
-logger.info(f"Database connection string resolved (dialect fixed).")
+# Log connection host safely
+host_info = "localhost"
+if "@" in MYSQL_URL:
+    try:
+        host_info = MYSQL_URL.split("@")[-1].split("/")[0]
+    except:
+        host_info = "unknown"
+logger.info(f"Database dialect resolved. Connecting to: {host_info}")
 
 engine = create_async_engine(
     MYSQL_URL, 
     echo=False, 
-    pool_size=20, 
-    max_overflow=10, 
-    pool_recycle=3600,
+    pool_size=10, # Reduced pool size for better stability in small containers
+    max_overflow=5, 
+    pool_recycle=1800,
     pool_pre_ping=True,
     connect_args=connect_args
 )

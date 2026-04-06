@@ -48,45 +48,44 @@ async def add_cache_control_header(request, call_next):
         response.headers["Cache-Control"] = "public, max-age=31536000"
     return response
 
-import asyncio
-
 @app.on_event("startup")
 async def on_startup():
-    logger.info("Application event: startup. Starting infrastructure initialization...")
-    try:
-        # Critical: Initialize DB schema
-        await init_db()
-        logger.info("Database schema initialized/migrated.")
-        
-        # Start seeding and heavy analytics in the background so we don't block Railway's health check
-        async def background_initialization():
-            try:
-                from routes.auth import seed_admin
-                async with AsyncSessionLocal() as db:
-                    await seed_admin(db)
-                    logger.info("Background: Admin seeding checked.")
-                
-                from routes.analytics import refresh_all_vitals
-                logger.info("Background: Starting analytics precomputation...")
-                await refresh_all_vitals()
-                logger.info("Background: Analytics precomputed.")
-            except Exception as bg_err:
-                logger.error(f"Background initialization failed: {bg_err}")
+    logger.info("Application starting up... Phase: Global Initialization.")
+    
+    # Run infrastructure tasks in a safely wrapped background task
+    async def init_infrastructure():
+        logger.info("Infrastructure Task: Starting database initialization.")
+        try:
+            from database import init_db
+            await init_db()
+            logger.info("Infrastructure Task: Database schema verified.")
+            
+            from routes.auth import seed_admin
+            async with AsyncSessionLocal() as db:
+                await seed_admin(db)
+                logger.info("Infrastructure Task: Admin seeding complete.")
+            
+            from routes.analytics import refresh_all_vitals
+            logger.info("Infrastructure Task: Re-calculating analytics cache...")
+            await refresh_all_vitals()
+            logger.info("Infrastructure Task: Cache pre-warming complete.")
+        except Exception as infra_err:
+            logger.error(f"Infrastructure Task FAILED (Server remains online): {infra_err}")
+            import traceback
+            logger.error(traceback.format_exc())
 
-        asyncio.create_task(background_initialization())
-        logger.info("Startup sequence complete. Server is now healthy.")
-                
-    except Exception as e:
-        logger.error(f"CRITICAL STARTUP FAILURE: {str(e)}")
-        import traceback
-        logger.error(traceback.format_exc())
-        # We raise here because the container should fail if DB init is broken
-        raise e
+    # We do NOT await this. We let it run in parallel to avoid blocking the port binding.
+    asyncio.create_task(init_infrastructure())
+    logger.info("Startup sequence handed off to background. Port binding should succeed immediately.")
 
 @app.on_event("shutdown")
 async def on_shutdown():
     from database import close_db
     await close_db()
+
+@app.get("/health")
+async def health_check():
+    return {"status": "ok", "timestamp": datetime.now()}
 
 app.include_router(auth.router)
 app.include_router(courses.router)
