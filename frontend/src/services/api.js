@@ -1,9 +1,23 @@
 import axios from 'axios';
 
-let API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
-if (API_URL && !API_URL.startsWith('http')) {
-    API_URL = `https://${API_URL}`;
-}
+const getBaseUrl = () => {
+    // Priority 1: Use explicit env var if provided during build
+    let url = import.meta.env.VITE_API_URL;
+    
+    // Priority 2: Use production backend URL as the absolute fallback for production robustness
+    if (!url || url.includes('localhost')) {
+        // Hardcoded production URL ensures the app works even if env vars are missing at build time
+        url = 'https://course-analytics-backend-production.up.railway.app';
+    }
+
+    if (url && !url.startsWith('http')) {
+        url = `https://${url}`;
+    }
+    // Strip trailing slashes to prevent //auth/login redirects
+    return url ? url.replace(/\/+$/, "") : "";
+};
+
+const API_URL = getBaseUrl();
 
 const api = axios.create({
     baseURL: API_URL,
@@ -35,6 +49,21 @@ api.interceptors.response.use(
         return response.data;
     },
     (error) => {
+        // Detailed logging for debugging production connectivity issues
+        const errorDetail = {
+            message: error.message,
+            url: error.config?.url,
+            method: error.config?.method,
+            status: error.response?.status,
+            data: error.response?.data
+        };
+        
+        if (error.message === 'Network Error') {
+            console.error('CRITICAL: Network Error detected. This usually means CORS failure or Backend is DOWN.', errorDetail);
+        } else {
+            console.warn('API Response Error:', errorDetail);
+        }
+        
         return Promise.reject(error);
     }
 );

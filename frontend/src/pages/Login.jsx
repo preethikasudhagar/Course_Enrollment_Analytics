@@ -1,13 +1,68 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import axios from 'axios';
 import { authService, getErrorMessage } from '../services/api';
-import { Mail, Lock, LogIn } from 'lucide-react';
+import { Mail, Lock, LogIn, Activity, CheckCircle, AlertTriangle } from 'lucide-react';
 
 const Login = () => {
     const [credentials, setCredentials] = useState({ username: '', password: '' });
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
+    const [apiStatus, setApiStatus] = useState({ state: 'checking', url: '' });
     const navigate = useNavigate();
+
+    const [diagnosticResult, setDiagnosticResult] = useState(null);
+    const [isDiagnosing, setIsDiagnosing] = useState(false);
+
+    const runDiagnostic = async () => {
+        setIsDiagnosing(true);
+        setDiagnosticResult(null);
+        try {
+            const postRes = await axios.post(`${apiStatus.url}/test-post`, {}, { timeout: 10000 });
+            const dbRes = await axios.get(`${apiStatus.url}/test-db`, { timeout: 15000 });
+            
+            setDiagnosticResult({ 
+                success: postRes.data.status === 'ok' && dbRes.data.status === 'ok', 
+                message: `Connection: ${postRes.data.message} | Database: ${dbRes.data.message} ${dbRes.data.hint || ''}` 
+            });
+        } catch (err) {
+            setDiagnosticResult({ 
+                success: false, 
+                message: `Diagnostic Failed: ${err.message}. Status: ${err.response?.status || 'N/A'}` 
+            });
+        } finally {
+            setIsDiagnosing(false);
+        }
+    };
+
+    useEffect(() => {
+        const checkApi = async (retries = 3) => {
+            console.log("--- FRONTEND VERSION 5.2 ---");
+            // Hardcoded production URL for reliability
+            let apiBase = import.meta.env.VITE_API_URL || 'https://course-analytics-backend-production.up.railway.app';
+            
+            setApiStatus(prev => ({ ...prev, url: apiBase }));
+            
+            for (let i = 0; i < retries; i++) {
+                try {
+                    // Test basic connectivity to root with 8s timeout
+                    await axios.get(`${apiBase}/`, { timeout: 8000 });
+                    setApiStatus({ state: 'connected', url: apiBase });
+                    return; // Success
+                } catch (err) {
+                    console.warn(`API connection attempt ${i + 1} failed for ${apiBase}:`, err.message);
+                    if (i === retries - 1) {
+                        setApiStatus({ state: 'error', url: apiBase });
+                        setError(`CRITICAL: Backend unreachable at ${apiBase}. If this is production, please check if the backend service is running.`);
+                    } else {
+                        // Wait 2 seconds before retry
+                        await new Promise(r => setTimeout(r, 2000));
+                    }
+                }
+            }
+        };
+        checkApi();
+    }, []);
 
     const handleChange = (e) => {
         setCredentials({ ...credentials, [e.target.name]: e.target.value });
@@ -15,20 +70,46 @@ const Login = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        if (apiStatus.state === 'error') {
+            setError(`Cannot sign in. Backend is unreachable at ${apiStatus.url}. Check deployment logs.`);
+            return;
+        }
         setLoading(true);
         setError('');
         try {
-            const res = await authService.login(credentials);
-            localStorage.setItem('token', res.access_token);
-            const payload = JSON.parse(atob(res.access_token.split('.')[1]));
-            const user = res.user || { email: payload.sub, role: payload.role };
-            localStorage.setItem('user', JSON.stringify(user));
+            // Pivot to JSON Login to bypass Form-Data network blocks
+            const loginUrl = `${apiStatus.url}/auth/login-json`;
+            const payload = {
+                username: email,
+                password: password
+            };
 
-            if (user.role === 'admin') navigate('/admin-dashboard');
-            else if (user.role === 'faculty') navigate('/faculty-dashboard');
-            else navigate('/student-dashboard');
+            const res = await axios.post(loginUrl, payload, {
+                headers: { 'Content-Type': 'application/json' },
+                timeout: 15000
+            });
+
+            // Handle successful login
+            const data = res.data;
+            if (data.access_token) {
+                localStorage.setItem('token', data.access_token);
+                localStorage.setItem('user', JSON.stringify(data.user));
+                
+                // Redirect based on role
+                const role = data.user.role;
+                if (role === 'admin') navigate('/admin');
+                else if (role === 'faculty') navigate('/faculty');
+                else navigate('/student');
+            }
         } catch (err) {
-            setError(getErrorMessage(err, 'Invalid email or password'));
+            console.error('Login attempt failed:', err);
+            if (err.response?.status === 401) {
+                setError('Invalid email or password');
+            } else if (err.message === 'Network Error') {
+                setError(`Network Error (JSON Pivot: ${apiStatus.url}/auth/login-json)`);
+            } else {
+                setError(err.response?.data?.detail || 'An unexpected error occurred');
+            }
         } finally {
             setLoading(false);
         }
@@ -47,6 +128,23 @@ const Login = () => {
             <div className="sm:mx-auto sm:w-full sm:max-w-md">
                 <div className="bg-white py-8 px-8 shadow-sm border border-gray-200 rounded-2xl relative overflow-hidden">
                     <form className="space-y-6" onSubmit={handleSubmit}>
+                        {/* API Connection Indicator */}
+                        <div className={`mb-4 flex items-center justify-between px-3 py-2 rounded-lg text-xs font-medium border ${
+                            apiStatus.state === 'connected' ? 'bg-green-50 text-green-700 border-green-100' :
+                            apiStatus.state === 'error' ? 'bg-red-50 text-red-700 border-red-100' :
+                            'bg-blue-50 text-blue-700 border-blue-100'
+                        }`}>
+                            <div className="flex flex-col items-start gap-1">
+                                <div className="flex items-center gap-2">
+                                    {apiStatus.state === 'connected' ? <CheckCircle size={14} /> : 
+                                     apiStatus.state === 'error' ? <AlertTriangle size={14} /> : 
+                                     <Activity className="animate-spin" size={14} />}
+                                    <span>API: {apiStatus.state === 'connected' ? 'Online' : apiStatus.state === 'error' ? 'Offline' : 'Checking connection...'}</span>
+                                </div>
+                                <span className="text-[10px] opacity-60 font-mono break-all">{apiStatus.url}</span>
+                            </div>
+                        </div>
+
                         {error && (
                             <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm font-medium text-center">
                                 {error}
@@ -86,13 +184,33 @@ const Login = () => {
                             </div>
                         </div>
 
-                        <button
-                            type="submit"
-                            disabled={loading}
-                            className="w-full py-2.5 px-4 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors text-sm shadow-sm flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed mt-2"
-                        >
-                            {loading ? 'Signing in...' : 'Sign in'}
-                        </button>
+                        {diagnosticResult && (
+                            <div className={`mb-4 p-3 rounded-lg text-xs font-mono border ${
+                                diagnosticResult.success ? 'bg-green-50 text-green-700 border-green-100' : 'bg-red-50 text-red-700 border-red-100'
+                            }`}>
+                                <div className="font-bold mb-1">Diagnostic Report:</div>
+                                {diagnosticResult.message}
+                            </div>
+                        )}
+
+                        <div className="flex flex-col gap-3">
+                            <button
+                                type="submit"
+                                disabled={loading}
+                                className="w-full py-3 bg-blue-600 text-white rounded-xl font-medium hover:bg-blue-700 disabled:opacity-50 transition-all shadow-md"
+                            >
+                                {loading ? 'Signing in...' : 'Sign in'}
+                            </button>
+
+                            <button
+                                type="button"
+                                onClick={runDiagnostic}
+                                disabled={isDiagnosing}
+                                className="w-full py-2 bg-slate-100 text-slate-600 rounded-lg text-xs font-medium hover:bg-slate-200 transition-all"
+                            >
+                                {isDiagnosing ? 'Running Diagnostic...' : 'Run Connection Diagnostic'}
+                            </button>
+                        </div>
                     </form>
 
                     <div className="mt-8 text-center text-sm">

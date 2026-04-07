@@ -3,7 +3,14 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.staticfiles import StaticFiles
 import os
+import logging
+import asyncio
+from datetime import datetime
 from sqlalchemy import select
+
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 from routes import auth, courses, enrollments, analytics, notifications, users, search, settings, suggestions, activity, seat_expansion
 from sqlalchemy.ext.asyncio import AsyncSession
 from database import init_db
@@ -17,32 +24,62 @@ from models.models import Course
 
 app = FastAPI(title="Course Enrollment Analytics System")
 
-# Ensure uploads directory exists
-if not os.path.exists("uploads/profile_photos"):
-    os.makedirs("uploads/profile_photos", exist_ok=True)
+# Required explicit origins for credentials support (True)
+# Wildcard "*" is NOT ALLOWED when allow_credentials=True
+ALLOWED_ORIGINS = [
+    "http://localhost:5173", 
+    "http://localhost:3000",
+    "https://course-analytics-frontend-production.up.railway.app",
+    "https://course-analytics-frontend.onrender.com"
+]
 
-app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
-
-# Configure CORS for deployment
-FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:3000").rstrip("/")
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        FRONTEND_URL,
-        f"{FRONTEND_URL}/",
-        "http://localhost:3000",
-        "http://127.0.0.1:3000",
-        "https://course-analytics-frontend-production.up.railway.app", # Explicitly allow the live URL
-    ],
+    allow_origins=ALLOWED_ORIGINS,
+    allow_origin_regex=r"https://.*\.up\.railway\.app|https://.*\.onrender\.com",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
+# Simple Test Post route
+@app.get("/test-post")
+@app.post("/test-post")
+async def test_post():
+    return {"message": "POST connection successful", "status": "ok"}
+
+# Deep Database Diagnostic route
+@app.get("/test-db")
+async def test_db(db: AsyncSession = Depends(get_db)):
+    try:
+        from sqlalchemy import text
+        import asyncio
+        # Perform a real database query with a timeout
+        result = await asyncio.wait_for(db.execute(text("SELECT 1")), timeout=5.0)
+        return {"message": "Database connection successful", "status": "ok"}
+    except Exception as e:
+        logger.error(f"Deep DB Diagnostic failed: {str(e)}")
+        return {
+            "message": f"Database failure: {str(e)}", 
+            "status": "error",
+            "hint": "Check if cryptography is installed and MySQL credentials are correct."
+        }
+
+# Ensure uploads directory exists
+if not os.path.exists("uploads/profile_photos"):
+    os.makedirs("uploads/profile_photos", exist_ok=True)
+
+app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 app.add_middleware(GZipMiddleware, minimum_size=1000)
+
+# Primary health route removed to avoid duplication with lower one
+# Keeping only one robust /health route below
 
 @app.middleware("http")
 async def add_cache_control_header(request, call_next):
+    # Skip for CORS preflight
+    if request.method == "OPTIONS":
+        return await call_next(request)
     response = await call_next(request)
     if request.url.path.startswith("/uploads"):
         response.headers["Cache-Control"] = "public, max-age=31536000"
@@ -50,25 +87,48 @@ async def add_cache_control_header(request, call_next):
 
 @app.on_event("startup")
 async def on_startup():
-    try:
-        await init_db()
-        from routes.auth import seed_admin
-        async with AsyncSessionLocal() as db:
-            await seed_admin(db)
+    logger.info("Application starting up... Phase: Global Initialization.")
+    
+    # Run infrastructure tasks in a safely wrapped background task
+    async def init_infrastructure():
+        logger.info("Infrastructure Task: Starting database initialization.")
+        try:
+            from database import init_db
+            await init_db()
+            logger.info("Infrastructure Task: Database schema verified.")
+            
+            from routes.auth import seed_admin
+            async with AsyncSessionLocal() as db:
+                await seed_admin(db)
+                logger.info("Infrastructure Task: Admin seeding complete.")
             
             from routes.analytics import refresh_all_vitals
+            logger.info("Infrastructure Task: Re-calculating analytics cache...")
             await refresh_all_vitals()
-    except Exception as e:
-        import traceback
-        with open("startup_error.txt", "w") as f:
-            f.write(f"Startup failed: {str(e)}\n")
-            f.write(traceback.format_exc())
-        raise e
+            logger.info("Infrastructure Task: Cache pre-warming complete.")
+        except Exception as infra_err:
+            logger.error(f"Infrastructure Task FAILED (Server remains online): {infra_err}")
+            import traceback
+            logger.error(traceback.format_exc())
+
+    # We do NOT await this. We let it run in parallel to avoid blocking the port binding.
+    asyncio.create_task(init_infrastructure())
+    logger.info("Startup sequence handed off to background. Port binding should succeed immediately.")
 
 @app.on_event("shutdown")
 async def on_shutdown():
     from database import close_db
     await close_db()
+
+@app.get("/health")
+async def health_check():
+    """Lightweight health check that returns 200 without DB hits."""
+    return {
+        "status": "ok", 
+        "timestamp": datetime.now().isoformat(), 
+        "deploy_id": "final_fix_v5",
+        "service": "backend"
+    }
 
 app.include_router(auth.router)
 app.include_router(courses.router)
@@ -121,4 +181,11 @@ async def notifications_alias(
 
 @app.get("/")
 async def root():
-    return {"message": "Course Enrollment Analytics API (MySQL) is running"}
+    return {
+        "message": "Course Enrollment Analytics API (MySQL) is online", 
+        "status": "online", 
+        "version": "5.6-TEST-DB",
+        "env": "production"
+    }
+
+logger.info("Main script fully loaded. Application object ready for uvicorn.")

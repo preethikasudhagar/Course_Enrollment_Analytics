@@ -4,12 +4,15 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from sqlalchemy import delete
 from datetime import timedelta, datetime
+import logging
 import random
 from database import get_db
 from models.models import User, UserRole, OTPRecord
 from schemas.user import UserCreate, UserResponse, Token
 from pydantic import BaseModel, EmailStr
 from utils.auth import get_password_hash, verify_password, create_access_token, ACCESS_TOKEN_EXPIRE_MINUTES, get_current_user
+
+logger = logging.getLogger(__name__)
 
 class ChangePasswordRequest(BaseModel):
     current_password: str
@@ -137,39 +140,108 @@ async def register(user: UserCreate, db: AsyncSession = Depends(get_db)):
             f.write(traceback.format_exc())
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("/login")
-@router.post("/auth/login")
-async def login(form_data: OAuth2PasswordRequestForm = Depends(), db: AsyncSession = Depends(get_db)):
-    result = await db.execute(select(User).where(User.email == form_data.username))
-    user = result.scalars().first()
-    
-    if not user or not verify_password(form_data.password, user.password):
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Incorrect email or password",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
-    
-    access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
-    access_token = create_access_token(
-        data={"sub": user.email, "role": user.role.value}, 
-        expires_delta=access_token_expires
-    )
-    return {
-        "status": "success",
-        "data": {
-            "access_token": access_token,
+from pydantic import BaseModel, EmailStr
+
+class LoginJSON(BaseModel):
+    username: str
+    password: str
+
+@router.post("/login-json")
+async def login_json(credentials: LoginJSON, db: AsyncSession = Depends(get_db)):
+    # Standard DB check 
+    try:
+        from sqlalchemy import text
+        import asyncio
+        await asyncio.wait_for(db.execute(text("SELECT 1")), timeout=8.0)
+    except Exception as e:
+        logger.error(f"Login-JSON DB check failure: {str(e)}")
+        raise HTTPException(status_code=500, detail="Database connection error")
+
+    try:
+        result = await db.execute(select(User).where(User.email == credentials.username))
+        user = result.scalars().first()
+        
+        if not user or not verify_password(credentials.password, user.password):
+            logger.warning(f"Login failed for user: {credentials.username}")
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid email or password")
+            
+        # CRITICAL: Convert Enum to string value for JWT serialization
+        role_str = user.role.value if hasattr(user.role, 'value') else str(user.role)
+        
+        access_token = create_access_token(data={"sub": user.email, "role": role_str})
+        
+        return {
+            "access_token": access_token, 
             "token_type": "bearer",
             "user": {
                 "id": user.id,
-                "name": user.name,
                 "email": user.email,
-                "role": user.role.value,
-                "department": user.department,
-                "year": user.year
+                "role": role_str,
+                "name": user.name
             }
         }
-    }
+    except HTTPException:
+        raise
+    except Exception as e:
+        import traceback
+        logger.error(f"Login-JSON CRITICAL ERROR: {str(e)}\n{traceback.format_exc()}")
+        raise HTTPException(status_code=500, detail=f"Internal Server Error: {str(e)}")
+
+@router.post("/login")
+@router.post("/auth/login")
+async def login(form_data: OAuth2PasswordRequestForm = Depends(), db: AsyncSession = Depends(get_db)):
+    # Simple check for database connectivity - Fail fast
+    try:
+        import asyncio
+        from sqlalchemy import text
+        # Test basic connection with timeout to prevent hangs
+        await asyncio.wait_for(db.execute(text("SELECT 1")), timeout=8.0)
+    except asyncio.TimeoutError:
+        logger.error("Login database check TIMED OUT (8s)")
+        raise HTTPException(status_code=503, detail="Database is temporarily busy. Please try again.")
+    except Exception as e:
+        logger.error(f"Login database CRITICAL failure: {str(e)}")
+        # If it's a cryptography missing error or similar, log it clearly
+        if "cryptography" in str(e).lower():
+            logger.critical("MISSING CRYPTOGRAPHY LIBRARY FOR MYSQL AUTH")
+        raise HTTPException(status_code=500, detail="Internal connection error. Please contact administrator.")
+
+    try:
+        result = await db.execute(select(User).where(User.email == form_data.username))
+        user = result.scalars().first()
+        
+        if not user or not verify_password(form_data.password, user.password):
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Incorrect email or password",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
+        
+        access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+        access_token = create_access_token(
+            data={"sub": user.email, "role": user.role.value}, 
+            expires_delta=access_token_expires
+        )
+        return {
+            "status": "success",
+            "data": {
+                "access_token": access_token,
+                "token_type": "bearer",
+                "user": {
+                    "id": user.id,
+                    "name": user.name,
+                    "email": user.email,
+                    "role": user.role.value,
+                    "department": user.department,
+                    "year": user.year
+                }
+            }
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Unexpected login error: {e}")
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.post("/change-password")
 async def change_password(req: ChangePasswordRequest, db: AsyncSession = Depends(get_db), current_user = Depends(get_current_user)):
