@@ -128,8 +128,7 @@ async def seed_all_data(db: AsyncSession):
                     course_code=code,
                     department=dept,
                     seat_limit=capacity,
-                    enrolled_students=0,
-                    remaining_seats=capacity
+                    enrolled_students=0
                 )
                 db.add(c)
             courses.append((c, enrolled))
@@ -164,8 +163,7 @@ async def seed_all_data(db: AsyncSession):
                         count += 1
                 
                 c_obj.enrolled_students = count
-                # Correct logic for remaining_seats based on models.py
-                # Note: models.py doesn't have remaining_seats, but it has enrolled_students
+                # Note: 'remaining_seats' is not a database column, it is calculated by the app.
             
             # Analytics check for Monthly Trends
             check_ana = await db.execute(select(Analytics).where(Analytics.course_id == c_obj.id))
