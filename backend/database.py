@@ -15,6 +15,12 @@ if MYSQL_URL.startswith("mysql://"):
 elif MYSQL_URL.startswith("mysql+pymysql://"):
     MYSQL_URL = MYSQL_URL.replace("mysql+pymysql://", "mysql+aiomysql://", 1)
 
+# aiomysql doesn't accept ssl-mode in the connection string
+if "?ssl-mode=" in MYSQL_URL:
+    MYSQL_URL = MYSQL_URL.split("?ssl-mode=")[0]
+elif "&ssl-mode=" in MYSQL_URL:
+    MYSQL_URL = MYSQL_URL.split("&ssl-mode=")[0]
+
 # Engine configuration with SSL support for cloud providers
 connect_args = {}
 if "aivencloud.com" in MYSQL_URL:
