@@ -55,9 +55,9 @@ async def on_startup():
         await init_db()
         from routes.auth import seed_admin
         async with AsyncSessionLocal() as db:
-            # Check if seeding is required (empty courses table)
+            # Check if seeding is required (if we have less than the full 17 sample courses)
             course_count_res = await db.execute(text("SELECT count(*) FROM courses"))
-            if course_count_res.scalar() == 0:
+            if course_count_res.scalar() < 17:
                 print("No courses found in database. Seeding institutional sample data...")
                 await seed_all_data(db)
             else:

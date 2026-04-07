@@ -53,7 +53,6 @@ async def seed_all_data(db: AsyncSession):
         student_password = get_password_hash("preethika")
         print("Step 3: Processing 70 student accounts...")
         
-        # User's provided 30 names
         provided_names = [
             ("Preethika Sudhagar", "Information Science"), ("Arjun Kumar", "Computer Science"),
             ("Meena R", "Data Science"), ("Karthik S", "Information Technology"), ("Priya N", "Software Engineering"),
@@ -68,44 +67,34 @@ async def seed_all_data(db: AsyncSession):
             ("Swathi P", "Software Engineering"), ("Dinesh K", "Data Science"), ("Varsha R", "Information Technology")
         ]
         
-        # Target distribution (70 students total)
+        # Fetch ALL existing student emails at once to avoid 70 separate queries
+        res_all_emails = await db.execute(select(User.email).where(User.role == UserRole.STUDENT))
+        existing_emails = set(res_all_emails.scalars().all())
+        print(f"Step 3: Found {len(existing_emails)} existing student emails.")
+
         # CS: 20, IT: 15, DS: 18, SE: 17
         depts = ["Computer Science"] * 20 + ["Information Technology"] * 15 + ["Data Science"] * 18 + ["Software Engineering"] * 17
         random.shuffle(depts)
         
-        students = []
-        # First use provided names
-        for i, (name, _) in enumerate(provided_names):
-            email = name.lower().replace(" ", ".") + "@example.com"
-            res_student = await db.execute(select(User).where(User.email == email))
-            existing_s = res_student.scalars().first()
-            if not existing_s:
+        # Actually I will rewrite this whole block for clarity and speed
+        for i in range(70):
+            if i < 30:
+                name, _ = provided_names[i]
+                email = name.lower().replace(" ", ".") + "@example.com"
+            else:
+                name = f"Student {i+1}"
+                email = f"student{i+1}@example.com"
+            
+            if email not in existing_emails:
                 s = User(name=name, email=email, password=student_password, role=UserRole.STUDENT, department=depts[i], year=random.randint(1, 4))
                 db.add(s)
-                students.append(s)
-            else:
-                students.append(existing_s)
-        
-        # Add 40 generic students to reach 70
-        for i in range(30, 70):
-            name = f"Student {i+1}"
-            email = f"student{i+1}@example.com"
-            res_student = await db.execute(select(User).where(User.email == email))
-            existing_s = res_student.scalars().first()
-            if not existing_s:
-                s = User(name=name, email=email, password=student_password, role=UserRole.STUDENT, department=depts[i], year=random.randint(1, 4))
-                db.add(s)
-                students.append(s)
-            else:
-                students.append(existing_s)
-        
-        print(f"Step 3: Committing students...")
+            
         await db.commit()
         
-        # Refetch all created students
+        # Need the students list for Step 5 (enrollments)
         res_all_students = await db.execute(select(User).where(User.role == UserRole.STUDENT))
         students = res_all_students.scalars().all()
-        print(f"Step 3: 70 students handled.")
+        print(f"Step 3: Total {len(students)} students handled.")
 
         # 4. Create 17 Courses
         print("Step 4: Creating 17 sample courses...")
