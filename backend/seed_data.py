@@ -13,7 +13,7 @@ async def seed_all_data(db: AsyncSession):
     # 1. Clear existing data
     await db.execute(text("SET FOREIGN_KEY_CHECKS = 0;"))
     for table in ["enrollments", "notifications", "analytics", "courses", "users", "system_settings", "system_activities", "waitlist", "faculty_performance", "suggestions", "seat_expansion_logs"]:
-        await db.execute(text(f"TRUNCATE TABLE {table};"))
+        await db.execute(text(f"DELETE FROM {table};"))
     await db.execute(text("SET FOREIGN_KEY_CHECKS = 1;"))
     await db.commit()
     print("Database wiped clean.")
