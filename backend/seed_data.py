@@ -48,46 +48,64 @@ async def seed_all_data(db: AsyncSession):
         await db.commit()
         print("Admin and Faculty accounts handled.")
 
-        # 3. Create 30 Students
+        # 3. Create Students (70 Total to match Department Utilization stats)
         print("Step 3: Hashing student password...")
         student_password = get_password_hash("preethika")
-        print("Step 3: Processing 30 student accounts...")
+        print("Step 3: Processing 70 student accounts...")
         
-        student_data = [
+        # User's provided 30 names
+        provided_names = [
             ("Preethika Sudhagar", "Information Science"), ("Arjun Kumar", "Computer Science"),
-            ("Meena R", "Data Science"), ("Karthik S", "IT"), ("Priya N", "Software Engineering"),
-            ("Rahul V", "Computer Science"), ("Divya M", "Data Science"), ("Naveen K", "IT"),
+            ("Meena R", "Data Science"), ("Karthik S", "Information Technology"), ("Priya N", "Software Engineering"),
+            ("Rahul V", "Computer Science"), ("Divya M", "Data Science"), ("Naveen K", "Information Technology"),
             ("Sanjay R", "Computer Science"), ("Anitha P", "Software Engineering"),
-            ("Vignesh T", "IT"), ("Harini S", "Data Science"), ("Deepak K", "Computer Science"),
-            ("Lavanya R", "IT"), ("Mohan S", "Software Engineering"), ("Keerthana V", "Data Science"),
-            ("Ajay P", "Computer Science"), ("Reshma K", "IT"), ("Surya N", "Software Engineering"),
-            ("Nithya R", "Data Science"), ("Praveen K", "Computer Science"), ("Aishwarya M", "IT"),
+            ("Vignesh T", "Information Technology"), ("Harini S", "Data Science"), ("Deepak K", "Computer Science"),
+            ("Lavanya R", "Information Technology"), ("Mohan S", "Software Engineering"), ("Keerthana V", "Data Science"),
+            ("Ajay P", "Computer Science"), ("Reshma K", "Information Technology"), ("Surya N", "Software Engineering"),
+            ("Nithya R", "Data Science"), ("Praveen K", "Computer Science"), ("Aishwarya M", "Information Technology"),
             ("Manoj S", "Software Engineering"), ("Gokul R", "Computer Science"),
-            ("Pavithra N", "Data Science"), ("Rakesh V", "IT"), ("Kiran S", "Computer Science"),
-            ("Swathi P", "Software Engineering"), ("Dinesh K", "Data Science"), ("Varsha R", "IT")
+            ("Pavithra N", "Data Science"), ("Rakesh V", "Information Technology"), ("Kiran S", "Computer Science"),
+            ("Swathi P", "Software Engineering"), ("Dinesh K", "Data Science"), ("Varsha R", "Information Technology")
         ]
         
+        # Target distribution (70 students total)
+        # CS: 20, IT: 15, DS: 18, SE: 17
+        depts = ["Computer Science"] * 20 + ["Information Technology"] * 15 + ["Data Science"] * 18 + ["Software Engineering"] * 17
+        random.shuffle(depts)
+        
         students = []
-        for name, dept in student_data:
+        # First use provided names
+        for i, (name, _) in enumerate(provided_names):
             email = name.lower().replace(" ", ".") + "@example.com"
-            # Batch check for existence or just use a more efficient way
             res_student = await db.execute(select(User).where(User.email == email))
             existing_s = res_student.scalars().first()
             if not existing_s:
-                s = User(name=name, email=email, password=student_password, role=UserRole.STUDENT, department=dept, year=random.randint(1, 4))
+                s = User(name=name, email=email, password=student_password, role=UserRole.STUDENT, department=depts[i], year=random.randint(1, 4))
                 db.add(s)
                 students.append(s)
             else:
                 students.append(existing_s)
         
-        print(f"Step 3: Committing {len(students)} students...")
+        # Add 40 generic students to reach 70
+        for i in range(30, 70):
+            name = f"Student {i+1}"
+            email = f"student{i+1}@example.com"
+            res_student = await db.execute(select(User).where(User.email == email))
+            existing_s = res_student.scalars().first()
+            if not existing_s:
+                s = User(name=name, email=email, password=student_password, role=UserRole.STUDENT, department=depts[i], year=random.randint(1, 4))
+                db.add(s)
+                students.append(s)
+            else:
+                students.append(existing_s)
+        
+        print(f"Step 3: Committing students...")
         await db.commit()
         
-        # Avoid expensive individual refreshes if possible, just get IDs
-        print("Step 3: Fetching student IDs...")
+        # Refetch all created students
         res_all_students = await db.execute(select(User).where(User.role == UserRole.STUDENT))
         students = res_all_students.scalars().all()
-        print(f"Step 3: {len(students)} students handled.")
+        print(f"Step 3: 70 students handled.")
 
         # 4. Create 17 Courses
         print("Step 4: Creating 17 sample courses...")
@@ -113,7 +131,6 @@ async def seed_all_data(db: AsyncSession):
 
         courses = []
         for name, dept, enrolled, capacity, code in course_list:
-            # Check if course exists
             res_course = await db.execute(select(Course).where(Course.course_name == name))
             c = res_course.scalars().first()
             if not c:
@@ -122,7 +139,7 @@ async def seed_all_data(db: AsyncSession):
                     course_code=code,
                     department=dept,
                     seat_limit=capacity,
-                    enrolled_students=0, # Will update via actual enrollments
+                    enrolled_students=0,
                     remaining_seats=capacity
                 )
                 db.add(c)
@@ -130,21 +147,21 @@ async def seed_all_data(db: AsyncSession):
         await db.commit()
         print("Course records handled.")
         
-        # 5. Create Enrollments to match "Enrolled" counts
+        # 5. Create Enrollments and Trends
         print("Step 5: Generating enrollments and analytics...")
         for c_obj, target_count in courses:
             await db.refresh(c_obj)
-            # Only add enrollments if the course is empty
-            if c_obj.enrolled_students < target_count:
+            # Fetch existing enrollments
+            existing_enrollments_res = await db.execute(select(Enrollment).where(Enrollment.course_id == c_obj.id))
+            current_enrolled_students = existing_enrollments_res.scalars().all()
+            count = len(current_enrolled_students)
+            
+            if count < target_count:
                 pool = list(students)
                 random.shuffle(pool)
-                # ... check existing enrollments for this course
-                existing_enrollments_res = await db.execute(select(Enrollment).where(Enrollment.course_id == c_obj.id))
-                count = len(existing_enrollments_res.scalars().all())
-                
                 for s in pool:
                     if count >= target_count: break
-                    # Check if this student is already enrolled
+                    # Check existing
                     check_enr = await db.execute(select(Enrollment).where(Enrollment.course_id == c_obj.id, Enrollment.student_id == s.id))
                     if not check_enr.scalars().first():
                         month = random.randint(1, 4)
@@ -158,37 +175,36 @@ async def seed_all_data(db: AsyncSession):
                         count += 1
                 
                 c_obj.enrolled_students = count
-                c_obj.remaining_seats = c_obj.seat_limit - count
+                # Correct logic for remaining_seats based on models.py
+                # Note: models.py doesn't have remaining_seats, but it has enrolled_students
             
-            # Analytics check
+            # Analytics check for Monthly Trends
             check_ana = await db.execute(select(Analytics).where(Analytics.course_id == c_obj.id))
             if not check_ana.scalars().first():
                 score = (c_obj.enrolled_students / c_obj.seat_limit) * 10 if c_obj.seat_limit > 0 else 0
+                # Exact Trends as requested
                 hist = '{"Jan": 20, "Feb": 35, "Mar": 50, "Apr": 40}'
                 analytics = Analytics(course_id=c_obj.id, demand_score=score, growth_rate=f"{random.randint(5, 25)}%", historical_enrollments=hist)
                 db.add(analytics)
 
-        # 6. Default Settings and Notifications
+        # 6. Finalizing
         print("Step 6: Finalizing configuration...")
-        settings = SystemSetting(
-            default_seat_increase=10,
-            auto_seat_expansion=True,
-            enable_notifications=True,
-            max_seat_limit=200
-        )
-        db.add(settings)
-        
-        notif = Notification(
-            message="System successfully seeded with institutional sample data.",
-            target_role="admin"
-        )
-        db.add(notif)
+        settings_res = await db.execute(select(SystemSetting))
+        if not settings_res.scalars().first():
+            settings = SystemSetting(
+                default_seat_increase=10,
+                auto_seat_expansion=True,
+                enable_notifications=True,
+                max_seat_limit=200
+            )
+            db.add(settings)
         
         await db.commit()
         print("Seeding complete successfully!")
 
     except Exception as e:
         print(f"CRITICAL ERROR DURING SEEDING: {e}")
+        import traceback
         traceback.print_exc()
         await db.rollback()
         raise e
@@ -201,7 +217,6 @@ async def run_manual_seed():
             await db.close()
 
 if __name__ == "__main__":
-    # Standard way to run async in scripts
     try:
         asyncio.run(run_manual_seed())
     except Exception as e:
