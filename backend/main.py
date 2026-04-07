@@ -55,9 +55,18 @@ async def on_startup():
         await init_db()
         from routes.auth import seed_admin
         async with AsyncSessionLocal() as db:
-            # Ensure admin is seeded
+            # 1. Ensure admin is seeded
             await seed_admin(db)
-            # Proactively refresh all analytics caches for the server process
+            
+            # 2. Check if seeding is required (populate realistic data if empty)
+            from sqlalchemy import text
+            from seed_data import seed_all_data
+            enroll_count_res = await db.execute(text("SELECT count(*) FROM enrollments"))
+            if enroll_count_res.scalar() == 0:
+                print("No enrollments found in database. Seeding realistic sample data...")
+                await seed_all_data(db)
+            
+            # 3. Proactively refresh all analytics caches for the server process
             from routes.analytics import refresh_all_vitals
             await refresh_all_vitals()
             print("Active cache refresh triggered on startup.")
