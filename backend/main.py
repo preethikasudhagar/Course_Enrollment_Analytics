@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.staticfiles import StaticFiles
 import os
-from sqlalchemy import select
+from sqlalchemy import select, text
 from routes import auth, courses, enrollments, analytics, notifications, users, search, settings, suggestions, activity, seat_expansion
 from sqlalchemy.ext.asyncio import AsyncSession
 from database import init_db
