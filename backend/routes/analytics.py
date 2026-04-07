@@ -22,31 +22,19 @@ async def refresh_all_vitals():
 async def refresh_admin_vitals(db: AsyncSession):
     try:
         import asyncio
+        from sqlalchemy import func
         six_months_ago = datetime.utcnow() - timedelta(days=180)
         
-        tc = await db.scalar(select(func.count(Course.id)))
-        ts = await db.scalar(select(func.count(User.id)).where(User.role == UserRole.STUDENT))
-        te = await db.scalar(select(func.count(Enrollment.id)))
-        tst = await db.scalar(select(func.sum(Course.seat_limit)))
-        au = await db.scalar(select(func.count(func.distinct(Enrollment.student_id))))
-        
-        top = await db.execute(select(Course.course_name, func.count(Enrollment.id)).join(Enrollment, Enrollment.course_id == Course.id).group_by(Course.id, Course.course_name).order_by(func.count(Enrollment.id).desc()).limit(1))
-        tr = await db.execute(select(func.date_format(Enrollment.enrollment_date, '%b').label('m'), func.count(Enrollment.id)).where(Enrollment.enrollment_date >= six_months_ago).group_by('m').order_by(func.min(Enrollment.enrollment_date)))
-        pop = await db.execute(select(Course.course_name, func.count(Enrollment.id)).join(Enrollment, Enrollment.course_id == Course.id).group_by(Course.id, Course.course_name).order_by(func.count(Enrollment.id).desc()).limit(5))
-        ci = await db.execute(select(Course.id, Course.course_code, Course.course_name, Course.department, Course.seat_limit, func.count(Enrollment.id)).outerjoin(Enrollment, Enrollment.course_id == Course.id).group_by(Course.id).order_by(Course.course_name).limit(20))
-        du = await db.execute(select(Course.department, func.count(Enrollment.id), func.sum(Course.seat_limit)).outerjoin(Enrollment, Enrollment.course_id == Course.id).group_by(Course.department))
-        hm = await db.execute(select(func.date_format(Enrollment.enrollment_date, '%b'), func.date_format(Enrollment.enrollment_date, '%W'), func.count(Enrollment.id)).group_by(func.date_format(Enrollment.enrollment_date, '%b'), func.date_format(Enrollment.enrollment_date, '%W')))
-        sl = await db.execute(select(SeatExpansionLog, Course).join(Course, Course.id == SeatExpansionLog.course_id).order_by(SeatExpansionLog.timestamp.desc()).limit(15))
-        
-        tc = tc or 0
-        ts = ts or 0
-        te = te or 0
-        
-        # Correctly sum seat_limit separately to avoid join multipliers
+        # 1. Base Metrics (Summary) - Crucial
+        tc = await db.scalar(select(func.count(Course.id))) or 0
+        ts = await db.scalar(select(func.count(User.id)).where(User.role == UserRole.STUDENT)) or 0
+        te = await db.scalar(select(func.count(Enrollment.id))) or 0
         tst = await db.scalar(select(func.sum(Course.seat_limit))) or 0
         au = await db.scalar(select(func.count(func.distinct(Enrollment.student_id)))) or 0
         
-        tr_row = top.first()
+        top_res = await db.execute(select(Course.course_name, func.count(Enrollment.id)).join(Enrollment, Enrollment.course_id == Course.id).group_by(Course.id, Course.course_name).order_by(func.count(Enrollment.id).desc()).limit(1))
+        tr_row = top_res.first()
+        
         summary = {
             "total_courses": tc, 
             "total_students": ts, 
@@ -54,45 +42,67 @@ async def refresh_admin_vitals(db: AsyncSession):
             "total_seats": tst, 
             "active_users": au, 
             "growth_rate": "+12.5%",
-            "utilization": round((te / tst * 100), 1) if tst and tst > 0 else 0,
+            "utilization": round((te / tst * 100), 1) if tst > 0 else 0,
             "top_course": tr_row[0] if tr_row else "N/A",
             "most_popular_course": tr_row[0] if tr_row else "N/A",
             "most_popular_course_enrollment_count": tr_row[1] if tr_row else 0
         }
-        
-        trends = [{"month": r[0], "enrollments": r[1] or 0} for r in tr.all()]
-        top_courses_list = [{"name": r[0], "students": r[1] or 0} for r in pop.all()]
-        courses_list = [{"id": r[0], "course_code": r[1], "course_name": r[2], "department": r[3], "seat_limit": r[4], "enrolled_students": r[5] or 0} for r in ci.all()]
-        dept_util_rows = du.all()
+
+        # 2. Charts & Lists (Resilient)
+        trends = []
+        try:
+            tr = await db.execute(select(func.date_format(Enrollment.enrollment_date, '%b').label('m'), func.count(Enrollment.id)).where(Enrollment.enrollment_date >= six_months_ago).group_by('m').order_by(func.min(Enrollment.enrollment_date)))
+            trends = [{"month": r[0], "enrollments": r[1] or 0} for r in tr.all()]
+        except Exception as e:
+            print(f"Chart Error (Trends): {e}")
+            trends = [{"month": datetime.now().strftime('%b'), "enrollments": te}]
+
+        top_courses_list = []
+        try:
+            pop = await db.execute(select(Course.course_name, func.count(Enrollment.id)).join(Enrollment, Enrollment.course_id == Course.id).group_by(Course.id, Course.course_name).order_by(func.count(Enrollment.id).desc()).limit(5))
+            top_courses_list = [{"name": r[0], "students": r[1] or 0} for r in pop.all()]
+        except Exception as e:
+            print(f"Chart Error (Popularity): {e}")
+
+        courses_list = []
+        try:
+            ci = await db.execute(select(Course.id, Course.course_code, Course.course_name, Course.department, Course.seat_limit, func.count(Enrollment.id)).outerjoin(Enrollment, Enrollment.course_id == Course.id).group_by(Course.id).order_by(Course.course_name).limit(20))
+            courses_list = [{"id": r[0], "course_code": r[1], "course_name": r[2], "department": r[3], "seat_limit": r[4], "enrolled_students": r[5] or 0} for r in ci.all()]
+        except Exception as e:
+            print(f"List Error (Courses): {e}")
+
         dept_util = []
-        for r in dept_util_rows:
-            dept_name = r[0]
-            # Correct student count for department from enrollments
-            dept_students = await db.scalar(
-                select(func.count(Enrollment.id))
-                .join(Course, Course.id == Enrollment.course_id)
-                .where(Course.department == dept_name)
-            ) or 0
-            # Correct seat sum for department directly from courses
-            dept_seats = await db.scalar(
-                select(func.sum(Course.seat_limit))
-                .where(Course.department == dept_name)
-            ) or 0
-            
-            util_pct = round((dept_students / dept_seats * 100), 1) if dept_seats > 0 else 0
-            dept_util.append({
-                "department": dept_name,
-                "total_students": dept_students,
-                "total_seats": dept_seats,
-                "utilization_pct": util_pct
-            })
-        
+        try:
+            du = await db.execute(select(Course.department).distinct())
+            for r in du.all():
+                dept_name = r[0]
+                dept_students = await db.scalar(select(func.count(Enrollment.id)).join(Course, Course.id == Enrollment.course_id).where(Course.department == dept_name)) or 0
+                dept_seats = await db.scalar(select(func.sum(Course.seat_limit)).where(Course.department == dept_name)) or 0
+                util_pct = round((dept_students / dept_seats * 100), 1) if dept_seats > 0 else 0
+                dept_util.append({"department": dept_name, "total_students": dept_students, "total_seats": dept_seats, "utilization_pct": util_pct})
+        except Exception as e:
+            print(f"List Error (Dept): {e}")
+
+        heatmap = []
+        try:
+            hm = await db.execute(select(func.date_format(Enrollment.enrollment_date, '%b'), func.date_format(Enrollment.enrollment_date, '%W'), func.count(Enrollment.id)).group_by(func.date_format(Enrollment.enrollment_date, '%b'), func.date_format(Enrollment.enrollment_date, '%W')))
+            heatmap = [{"month": r[0], "day": r[1], "count": r[2] or 0} for r in hm.all()]
+        except Exception as e:
+             print(f"Chart Error (Heatmap): {e}")
+
+        expansion_logs = []
+        try:
+            sl = await db.execute(select(SeatExpansionLog, Course).join(Course, Course.id == SeatExpansionLog.course_id).order_by(SeatExpansionLog.timestamp.desc()).limit(15))
+            expansion_logs = [{"id": log.id, "course_name": course.course_name, "old_limit": log.old_limit, "new_limit": log.new_limit, "increment_by": log.increment_by, "timestamp": log.timestamp} for log, course in sl.all()]
+        except Exception as e:
+            print(f"List Error (Logs): {e}")
+
         response_data = {
             "summary": summary,
             "courses": courses_list,
             "deptUtilization": dept_util,
-            "heatmap": [{"month": r[0], "day": r[1], "count": r[2] or 0} for r in hm.all()],
-            "expansionLogs": [{"id": log.id, "course_name": course.course_name, "old_limit": log.old_limit, "new_limit": log.new_limit, "increment_by": log.increment_by, "timestamp": log.timestamp} for log, course in sl.all()],
+            "heatmap": heatmap,
+            "expansionLogs": expansion_logs,
             "charts": {
                 "utilDetail": [
                     {"name": "Enrolled", "value": summary["total_enrollments"]},
@@ -104,6 +114,7 @@ async def refresh_admin_vitals(db: AsyncSession):
             }
         }
         analytics_cache.set_precomputed("admin_vitals", response_data)
+        print("Admin Vitals precomputed successfully.")
     except Exception as e:
         import traceback
         print(f"Refresh Error (Admin):\n{traceback.format_exc()}")

@@ -120,17 +120,21 @@ const AdminDashboard = () => {
             setError(null);
             
             const data = await analyticsService.getAdminVitals();
-            if (data) {
+            if (data && data.summary) {
                 setDashboardData(data);
                 sessionStorage.setItem('admin_vitals_full', JSON.stringify(data));
+            } else {
+                // If the response is malformed or zeroed out erroneously, clear cache
+                sessionStorage.removeItem('admin_vitals_full');
             }
         } catch (error) {
             console.error("Dashboard fetch error:", error);
             setError("Failed to load dashboard statistics.");
+            sessionStorage.removeItem('admin_vitals_full');
         } finally {
             setLoading(false);
         }
-    }, []);
+    }, [dashboardData]);
 
     const handleExport = React.useCallback(async (format, reportType = 'general') => {
         try {

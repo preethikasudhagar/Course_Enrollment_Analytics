@@ -55,17 +55,12 @@ async def on_startup():
         await init_db()
         from routes.auth import seed_admin
         async with AsyncSessionLocal() as db:
-            # Check if seeding is required (if we have less than the full 17 sample courses)
-            course_count_res = await db.execute(text("SELECT count(*) FROM courses"))
-            if course_count_res.scalar() < 17:
-                print("No courses found in database. Seeding institutional sample data...")
-                await seed_all_data(db)
-            else:
-                # If courses exist, just ensure admin is seeded for safety
-                await seed_admin(db)
-            
+            # Ensure admin is seeded
+            await seed_admin(db)
+            # Proactively refresh all analytics caches for the server process
             from routes.analytics import refresh_all_vitals
             await refresh_all_vitals()
+            print("Active cache refresh triggered on startup.")
     except Exception as e:
         import traceback
         with open("startup_error.txt", "w") as f:
