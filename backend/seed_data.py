@@ -23,22 +23,30 @@ async def seed_all_data(db: AsyncSession):
 
         # 2. Create Admin and Faculty
         print("Step 2: Creating Admin and Faculty accounts...")
-        admin = User(
-            name="System Admin",
-            email="admin@example.com",
-            password=get_password_hash("admin123"),
-            role=UserRole.ADMIN
-        )
-        faculty = User(
-            name="Main Faculty",
-            email="faculty@example.com",
-            password=get_password_hash("faculty123"),
-            role=UserRole.FACULTY,
-            department="Computer Science"
-        )
-        db.add_all([admin, faculty])
+        # Check if admin already exists (handling potential concurrency)
+        res_admin = await db.execute(select(User).where(User.email == "admin@example.com"))
+        if not res_admin.scalars().first():
+            admin = User(
+                name="System Admin",
+                email="admin@example.com",
+                password=get_password_hash("admin123"),
+                role=UserRole.ADMIN
+            )
+            db.add(admin)
+        
+        res_faculty = await db.execute(select(User).where(User.email == "faculty@example.com"))
+        if not res_faculty.scalars().first():
+            faculty = User(
+                name="Main Faculty",
+                email="faculty@example.com",
+                password=get_password_hash("faculty123"),
+                role=UserRole.FACULTY,
+                department="Computer Science"
+            )
+            db.add(faculty)
+            
         await db.commit()
-        print("Admin and Faculty accounts created.")
+        print("Admin and Faculty accounts handled.")
 
         # 3. Create 30 Students
         print("Step 3: Creating 30 student accounts...")
@@ -60,12 +68,17 @@ async def seed_all_data(db: AsyncSession):
         student_password = get_password_hash("preethika")
         for name, dept in student_data:
             email = name.lower().replace(" ", ".") + "@example.com"
-            s = User(name=name, email=email, password=student_password, role=UserRole.STUDENT, department=dept, year=random.randint(1, 4))
-            db.add(s)
-            students.append(s)
+            # Check if student exists
+            res_student = await db.execute(select(User).where(User.email == email))
+            if not res_student.scalars().first():
+                s = User(name=name, email=email, password=student_password, role=UserRole.STUDENT, department=dept, year=random.randint(1, 4))
+                db.add(s)
+                students.append(s)
+            else:
+                students.append(res_student.scalars().first())
         await db.commit()
         for s in students: await db.refresh(s)
-        print(f"Created {len(students)} students with password 'preethika'.")
+        print(f"Students handled.")
 
         # 4. Create 17 Courses
         print("Step 4: Creating 17 sample courses...")
@@ -91,45 +104,60 @@ async def seed_all_data(db: AsyncSession):
 
         courses = []
         for name, dept, enrolled, capacity, code in course_list:
-            c = Course(
-                course_name=name,
-                course_code=code,
-                department=dept,
-                seat_limit=capacity,
-                enrolled_students=0, # Will update via actual enrollments
-                remaining_seats=capacity
-            )
-            db.add(c)
+            # Check if course exists
+            res_course = await db.execute(select(Course).where(Course.course_name == name))
+            c = res_course.scalars().first()
+            if not c:
+                c = Course(
+                    course_name=name,
+                    course_code=code,
+                    department=dept,
+                    seat_limit=capacity,
+                    enrolled_students=0, # Will update via actual enrollments
+                    remaining_seats=capacity
+                )
+                db.add(c)
             courses.append((c, enrolled))
         await db.commit()
-        print("Course records created.")
+        print("Course records handled.")
         
         # 5. Create Enrollments to match "Enrolled" counts
         print("Step 5: Generating enrollments and analytics...")
-        for c, target_count in courses:
-            await db.refresh(c)
-            pool = list(students)
-            random.shuffle(pool)
-            count = 0
-            for s in pool:
-                if count >= target_count: break
-                month = random.randint(1, 4)
-                day = random.randint(1, 28)
-                enrollment = Enrollment(
-                    student_id=s.id, 
-                    course_id=c.id, 
-                    enrollment_date=datetime(2026, month, day)
-                )
-                db.add(enrollment)
-                count += 1
+        for c_obj, target_count in courses:
+            await db.refresh(c_obj)
+            # Only add enrollments if the course is empty
+            if c_obj.enrolled_students < target_count:
+                pool = list(students)
+                random.shuffle(pool)
+                # ... check existing enrollments for this course
+                existing_enrollments_res = await db.execute(select(Enrollment).where(Enrollment.course_id == c_obj.id))
+                count = len(existing_enrollments_res.scalars().all())
+                
+                for s in pool:
+                    if count >= target_count: break
+                    # Check if this student is already enrolled
+                    check_enr = await db.execute(select(Enrollment).where(Enrollment.course_id == c_obj.id, Enrollment.student_id == s.id))
+                    if not check_enr.scalars().first():
+                        month = random.randint(1, 4)
+                        day = random.randint(1, 28)
+                        enrollment = Enrollment(
+                            student_id=s.id, 
+                            course_id=c_obj.id, 
+                            enrollment_date=datetime(2026, month, day)
+                        )
+                        db.add(enrollment)
+                        count += 1
+                
+                c_obj.enrolled_students = count
+                c_obj.remaining_seats = c_obj.seat_limit - count
             
-            c.enrolled_students = count
-            c.remaining_seats = c.seat_limit - count
-            
-            score = (count / c.seat_limit) * 10 if c.seat_limit > 0 else 0
-            hist = '{"Jan": 20, "Feb": 35, "Mar": 50, "Apr": 40}'
-            analytics = Analytics(course_id=c.id, demand_score=score, growth_rate=f"{random.randint(5, 25)}%", historical_enrollments=hist)
-            db.add(analytics)
+            # Analytics check
+            check_ana = await db.execute(select(Analytics).where(Analytics.course_id == c_obj.id))
+            if not check_ana.scalars().first():
+                score = (c_obj.enrolled_students / c_obj.seat_limit) * 10 if c_obj.seat_limit > 0 else 0
+                hist = '{"Jan": 20, "Feb": 35, "Mar": 50, "Apr": 40}'
+                analytics = Analytics(course_id=c_obj.id, demand_score=score, growth_rate=f"{random.randint(5, 25)}%", historical_enrollments=hist)
+                db.add(analytics)
 
         # 6. Default Settings and Notifications
         print("Step 6: Finalizing configuration...")
