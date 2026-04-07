@@ -49,7 +49,10 @@ async def seed_all_data(db: AsyncSession):
         print("Admin and Faculty accounts handled.")
 
         # 3. Create 30 Students
-        print("Step 3: Creating 30 student accounts...")
+        print("Step 3: Hashing student password...")
+        student_password = get_password_hash("preethika")
+        print("Step 3: Processing 30 student accounts...")
+        
         student_data = [
             ("Preethika Sudhagar", "Information Science"), ("Arjun Kumar", "Computer Science"),
             ("Meena R", "Data Science"), ("Karthik S", "IT"), ("Priya N", "Software Engineering"),
@@ -65,20 +68,26 @@ async def seed_all_data(db: AsyncSession):
         ]
         
         students = []
-        student_password = get_password_hash("preethika")
         for name, dept in student_data:
             email = name.lower().replace(" ", ".") + "@example.com"
-            # Check if student exists
+            # Batch check for existence or just use a more efficient way
             res_student = await db.execute(select(User).where(User.email == email))
-            if not res_student.scalars().first():
+            existing_s = res_student.scalars().first()
+            if not existing_s:
                 s = User(name=name, email=email, password=student_password, role=UserRole.STUDENT, department=dept, year=random.randint(1, 4))
                 db.add(s)
                 students.append(s)
             else:
-                students.append(res_student.scalars().first())
+                students.append(existing_s)
+        
+        print(f"Step 3: Committing {len(students)} students...")
         await db.commit()
-        for s in students: await db.refresh(s)
-        print(f"Students handled.")
+        
+        # Avoid expensive individual refreshes if possible, just get IDs
+        print("Step 3: Fetching student IDs...")
+        res_all_students = await db.execute(select(User).where(User.role == UserRole.STUDENT))
+        students = res_all_students.scalars().all()
+        print(f"Step 3: {len(students)} students handled.")
 
         # 4. Create 17 Courses
         print("Step 4: Creating 17 sample courses...")
