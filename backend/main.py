@@ -60,7 +60,7 @@ async def on_startup():
             from routes.analytics import refresh_all_vitals
             
             # Check if seeding is required (empty courses table)
-            course_count = await db.execute(select(text("SELECT count(*) FROM courses")))
+            course_count = await db.execute(text("SELECT count(*) FROM courses"))
             if course_count.scalar() == 0:
                 print("No courses found in database. Seeding institutional sample data...")
                 await seed_all_data(db)
