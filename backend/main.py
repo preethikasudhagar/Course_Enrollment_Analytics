@@ -13,7 +13,8 @@ from routes.enrollments import EnrollRequest, enroll_post
 from schemas.course import CourseCreate
 from routes.courses import create_course as create_course_handler
 from routes.analytics import get_dashboard_summary
-from models.models import Course
+from models.models import Course, User
+from seed_data import seed_all_data
 
 app = FastAPI(title="Course Enrollment Analytics System")
 
@@ -57,6 +58,13 @@ async def on_startup():
             await seed_admin(db)
             
             from routes.analytics import refresh_all_vitals
+            
+            # Check if seeding is required (empty courses table)
+            course_count = await db.execute(select(text("SELECT count(*) FROM courses")))
+            if course_count.scalar() == 0:
+                print("No courses found in database. Seeding institutional sample data...")
+                await seed_all_data(db)
+            
             await refresh_all_vitals()
     except Exception as e:
         import traceback
